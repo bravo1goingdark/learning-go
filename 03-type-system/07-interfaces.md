@@ -2,6 +2,8 @@
 
 > **Goal:** Master Go's most powerful feature. Interfaces are implicit — no `implements` keyword.
 
+![Interfaces Overview](../assets/07.png)
+
 ---
 
 ## Table of Contents

@@ -2,6 +2,8 @@
 
 > **Goal:** Master Go's approach to data structures. No classes. No inheritance. Composition over inheritance.
 
+![Structs and Methods](../assets/05.png)
+
 ---
 
 ## Table of Contents

@@ -2,6 +2,8 @@
 
 > **Goal:** Master Go pointers — safe, simple, and without C's complexity. No pointer arithmetic.
 
+![Pointers Overview](../assets/06.png)
+
 ---
 
 ## Table of Contents

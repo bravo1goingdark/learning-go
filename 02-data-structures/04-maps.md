@@ -2,6 +2,8 @@
 
 > **Goal:** Master Go maps — creation, usage, concurrency, and every production pitfall.
 
+![Maps Overview](../assets/04.png)
+
 ---
 
 ## Table of Contents

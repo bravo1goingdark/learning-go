@@ -3,7 +3,7 @@
 > **Goal:** Master every way to declare variables, understand zero values, and know the subtle gotchas that trip up production code.
 
 ---
-
+![Zero Values Overview](../assets/02.png)
 ## Table of Contents
 
 1. [Basic Types](#1-basic-types)
@@ -177,7 +177,7 @@ p.Name = "Alice"
 | `struct` | All fields zero | Struct itself is NOT nil |
 | `array` | All elements zero | Array itself is NOT nil |
 
-![Zero Values Overview](../assets/zeroVar.png)
+
 
 ### Zero Values in Action
 

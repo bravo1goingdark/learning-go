@@ -2,6 +2,8 @@
 
 > **Goal:** Understand every command a production Go developer uses daily. No hand-waving.
 
+![Go Toolchain Overview](../assets/01.png)
+
 ---
 
 ## Table of Contents

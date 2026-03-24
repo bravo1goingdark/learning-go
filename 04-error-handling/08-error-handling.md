@@ -2,6 +2,8 @@
 
 > **Goal:** Master Go's unique approach to errors. No exceptions, no try/catch. Errors are values.
 
+![Error Handling](../assets/08.png)
+
 ---
 
 ## Table of Contents

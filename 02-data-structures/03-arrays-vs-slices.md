@@ -2,6 +2,8 @@
 
 > **Goal:** Understand arrays as the foundation, slices as the fat pointer on top, and every production gotcha that exists.
 
+![Arrays and Slices](../assets/03.png)
+
 ---
 
 ## Table of Contents
