@@ -67,7 +67,7 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
-### [09-project-csv-processor.md](09-project-csv-processor.md) — Put Topics 1-9 Together
+### [projects/09-project-csv-processor.md](projects/09-project-csv-processor.md) — Put Topics 1-9 Together
 > Build a CLI CSV processor. Uses concepts from topics 1-9 (Foundations → Error Handling).
 
 | Concepts Used |
@@ -79,7 +79,7 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
-### [19-concurrency-project.md](19-concurrency-project.md) — Put Topics 10-18 Together
+### [projects/19-concurrency-project.md](projects/19-concurrency-project.md) — Put Topics 10-18 Together
 > Build a concurrent worker pool with graceful shutdown. Uses concepts from topics 10-18 (Concurrency).
 
 | Concepts Used |
