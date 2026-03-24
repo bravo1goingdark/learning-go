@@ -51,7 +51,8 @@ ADVANCED: CONCURRENCY (Go's killer feature)
     ↓
     
 PUT IT TOGETHER
-    └── Final Project: CLI CSV Processor
+    ├── Project 1: CLI CSV Processor (Topics 1-9)
+    └── Project 2: Worker Pool (Topics 10-18)
 ```
 
 ---
@@ -201,7 +202,10 @@ If you're confused, take a break. Come back later with fresh eyes.
 
 ```
 study/
-├── README.md              ← You are here
+├── README.md              ← Main index
+├── GETTING_STARTED.md     ← You are here
+├── CHEATSHEET.md          ← Quick reference
+├── 00-hello-world-review.md ← Warm-up exercise
 ├── 01-foundations/
 │   ├── 01-go-toolchain.md
 │   └── 02-variables-zero-values.md
@@ -225,7 +229,10 @@ study/
 │   ├── 16-worker-pools.md
 │   ├── 17-pipelines.md
 │   └── 18-fan-in-fan-out.md
-└── 10-final-project.md    ← Final project
+├── projects/
+│   ├── 09-project-csv-processor.md   ← Project 1: Topics 1-9
+│   └── 19-concurrency-project.md    ← Project 2: Topics 10-18
+└── assets/                ← Images and diagrams
 ```
 
 ---
