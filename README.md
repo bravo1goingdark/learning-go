@@ -91,6 +91,34 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
+### [06-software-patterns/](06-software-patterns/) — Production Patterns
+> Essential patterns for building scalable, maintainable Go services.
+
+| # | Topic | What You'll Learn |
+|---|-------|-------------------|
+| 01 | [Project Structure](06-software-patterns/01-project-structure.md) | Layer organization, naming conventions, import groups |
+| 02 | [Repository Pattern](06-software-patterns/02-repository-pattern.md) | Data access abstraction, interface-based storage |
+| 03 | [Service Layer](06-software-patterns/03-service-layer.md) | Business logic, orchestration, validation |
+| 04 | [Dependency Injection](06-software-patterns/04-dependency-injection.md) | Constructor-based DI, testing with mocks |
+| 05 | [Clean Architecture](06-software-patterns/05-clean-architecture.md) | Domain, application, infrastructure layers |
+| 06 | [Pub-Sub Design](06-software-patterns/06-pub-sub-design.md) | Event-driven decoupling, async handlers |
+| 07 | [Retry + Circuit Breaker](06-software-patterns/07-retry-circuit-breaker.md) | Resilience, failure isolation |
+| 08 | [Backpressure Strategies](06-software-patterns/08-backpressure-strategies.md) | Rate limiting, load shedding |
+
+---
+
+### [projects/20-layered-http-service.md](projects/20-layered-http-service.md) — Put Patterns Together
+> Build a complete CRUD HTTP service. Uses all software patterns (topics 01-08).
+
+| Concepts Used |
+|---------------|
+| Project Structure, Repository Pattern, Service Layer, Dependency Injection, Pub-Sub, Handlers, Middleware |
+
+**Build:** `go build -o server ./cmd/server`  
+**Run:** `./server`
+
+---
+
 ## Rules
 
 1. **Don't skip ahead.** If a later topic feels confusing, revisit the folder it depends on.

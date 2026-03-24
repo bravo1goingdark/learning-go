@@ -52,7 +52,18 @@ ADVANCED: CONCURRENCY (Go's killer feature)
     
 PUT IT TOGETHER
     ├── Project 1: CLI CSV Processor (Topics 1-9)
-    └── Project 2: Worker Pool (Topics 10-18)
+    ├── Project 2: Worker Pool (Topics 10-18)
+    └── Project 3: Layered HTTP Service (Software Patterns)
+
+SOFTWARE PATTERNS (Production-Ready Code)
+    ├── 01: Project Structure    ← How to organize Go code
+    ├── 02: Repository Pattern   ← Data access abstraction
+    ├── 03: Service Layer        ← Business logic isolation
+    ├── 04: Dependency Injection ← Wiring components
+    ├── 05: Clean Architecture    ← Layer boundaries
+    ├── 06: Pub-Sub Design        ← Event-driven decoupling
+    ├── 07: Retry + Circuit Breaker ← Resilience patterns
+    └── 08: Backpressure         ← Handle system overload
 ```
 
 ---
@@ -231,7 +242,17 @@ study/
 │   └── 18-fan-in-fan-out.md
 ├── projects/
 │   ├── 09-project-csv-processor.md   ← Project 1: Topics 1-9
-│   └── 19-concurrency-project.md    ← Project 2: Topics 10-18
+│   ├── 19-concurrency-project.md    ← Project 2: Topics 10-18
+│   └── 20-layered-http-service.md   ← Project 3: Software Patterns
+├── 06-software-patterns/
+│   ├── 01-project-structure.md
+│   ├── 02-repository-pattern.md
+│   ├── 03-service-layer.md
+│   ├── 04-dependency-injection.md
+│   ├── 05-clean-architecture.md
+│   ├── 06-pub-sub-design.md
+│   ├── 07-retry-circuit-breaker.md
+│   └── 08-backpressure-strategies.md
 └── assets/                ← Images and diagrams
 ```
 
