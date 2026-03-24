@@ -177,6 +177,8 @@ p.Name = "Alice"
 | `struct` | All fields zero | Struct itself is NOT nil |
 | `array` | All elements zero | Array itself is NOT nil |
 
+![Zero Values Overview](assets/zeroVar.png)
+
 ### Zero Values in Action
 
 ```go
