@@ -79,8 +79,15 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
+### [19-concurrency-project.md](19-concurrency-project.md) — Put Topics 10-18 Together
+> Build a concurrent worker pool with graceful shutdown. Uses concepts from topics 10-18 (Concurrency).
 
-*(Coming soon - covers goroutines, channels, worker pools, pipelines, fan-in/fan-out)*
+| Concepts Used |
+|---------------|
+| Goroutines, Channels, Select, Context, WaitGroup, Mutex, Worker Pools, Pipelines, Fan-In/Fan-Out |
+
+**Build:** `go build -o urlworker .`  
+**Run:** `./urlworker urls.txt --workers 5`
 
 ---
 
