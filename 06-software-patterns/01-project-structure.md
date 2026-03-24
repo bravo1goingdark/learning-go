@@ -6,22 +6,56 @@
 
 ## Why Structure Matters
 
+When you open a codebase, you should know where to find things in under 10 seconds.
+
+Bad structure:
+- **Cognitive overload** — everything is everywhere
+- **Searching** takes minutes instead of seconds
+- **Testing** is hard because code is tangled
+- **Onboarding** new developers is painful
+
+Good structure:
+- **Clear ownership** — each folder has one job
+- **Navigation** — find any file in seconds
+- **Testing** — components have natural boundaries
+- **Onboarding** — the structure itself explains the code
+
+---
+
+## The `internal` vs `pkg` Rule
+
+Go has a **built-in access control mechanism** — the `internal` package.
+
 ```
-Your brain can only track ~7 things at once.
-A good structure reduces cognitive load.
+┌─────────────────────────────────────────────────────────────┐
+│                      Your Project                            │
+│                                                              │
+│  ┌─────────────────┐    ┌─────────────────┐                 │
+│  │   internal/     │    │      pkg/       │                 │
+│  │                 │    │                 │                 │
+│  │  Can ONLY be    │    │  Public API,    │                 │
+│  │  imported by    │    │  importable by  │                 │
+│  │  your project   │    │  ANY project    │                 │
+│  │                 │    │                 │                 │
+│  │  USE THIS FOR:  │    │  USE THIS FOR:  │                 │
+│  │  - Handlers     │    │  - Libraries    │                 │
+│  │  - Services     │    │  - Shared utils │                 │
+│  │  - Repos        │    │  - Clients      │                 │
+│  └─────────────────┘    └─────────────────┘                 │
+│                                                              │
+│  Most projects: 95% internal, 5% pkg                        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-Bad structure → Everything is hard:
-- Finding where to add code
-- Understanding what code does
-- Testing individual components
-- Onboarding new team members
+**When to use `pkg`:**
+- Building a library others will import
+- Shared utilities used across multiple projects
+- Client SDKs
 
-Good structure → Everything is easier:
-- Clear ownership of code
-- Easy to find what you need
-- Natural testing boundaries
-- Simple onboarding
+**When to use `internal`:**
+- Everything else (handlers, services, repos)
+- Application-specific business logic
+- Any code you don't want imported externally
 
 ---
 
@@ -29,76 +63,237 @@ Good structure → Everything is easier:
 
 ```
 myapp/
-├── cmd/                    # Entry points
-│   └── myapp/
-│       └── main.go         # Or: api/, worker/, etc.
-├── internal/               # Private code (not importable)
-│   ├── handlers/           # HTTP handlers
-│   ├── services/           # Business logic
-│   ├── repositories/       # Data access
-│   ├── models/             # Data structures
-│   └── middleware/         # HTTP middleware
-├── pkg/                    # Public code (importable by other projects)
-│   └── utils/
-├── api/                    # OpenAPI/Swagger specs
-├── configs/                # Configuration files
-├── scripts/                # Build/utility scripts
+├── cmd/                         # Entry points (applications)
+│   ├── api/
+│   │   └── main.go             # HTTP server
+│   ├── worker/
+│   │   └── main.go             # Background worker
+│   └── cli/
+│       └── main.go             # Command-line tool
+│
+├── internal/                    # Private application code
+│   ├── handler/                 # HTTP/GRPC handlers
+│   ├── service/                 # Business logic
+│   ├── repository/              # Data access
+│   ├── model/                   # Domain models
+│   ├── middleware/              # HTTP middleware
+│   └── events/                  # Event definitions
+│
+├── pkg/                         # Public libraries (rare)
+│   └── logger/
+│
+├── api/                         # API specifications
+│   └── openapi.yaml
+│
+├── configs/                     # Configuration files
+│   └── config.yaml
+│
+├── scripts/                     # Build scripts
+│   └── migrate.sh
+│
+├── docs/                        # Documentation
+│   └── architecture.md
+│
+├── test/                        # Integration tests
+│   └── integration/
+│
 ├── go.mod
+├── go.sum
+├── Makefile
+├── Dockerfile
 └── README.md
 ```
 
-### Key Rule: `internal` over `pkg`
+### Why `cmd/` is Separate
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  Your Project                        │
-│                                                      │
-│   ┌─────────────┐     ┌─────────────┐               │
-│   │   cmd/      │     │   internal/ │               │
-│   │  (entry)    │     │  (private)  │               │
-│   └─────────────┘     └─────────────┘               │
-│                         ┌─────────────┐               │
-│                         │    pkg/     │               │
-│                         │ (public)    │               │
-│                         └─────────────┘               │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│   WHY NOT JUST ONE main.go?                                 │
+│                                                              │
+│   A real service often has multiple executables:            │
+│                                                              │
+│   cmd/api/main.go      → HTTP API server                    │
+│   cmd/worker/main.go   → Background job processor           │
+│   cmd/migrate/main.go  → Database migration tool            │
+│   cmd/seed/main.go     → Data seeding script                │
+│                                                              │
+│   All share internal/ code but have different entry points  │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-- `internal/` - Anything you don't want imported by external projects
-- `pkg/` - Code explicitly meant to be reusable elsewhere
 
 ---
 
 ## Layered Structure (Most Common)
 
-For HTTP services, a simpler layered approach often works better:
+For HTTP services, organize by layer — each layer has ONE job:
 
 ```
 internal/
-├── handler/      # HTTP layer (decode request, encode response)
-├── service/      # Business logic (validation, orchestration)
-├── repository/   # Data access (database queries)
-├── model/        # Data structures
+├── handler/      # HTTP request/response (protocol layer)
+│   └── user.go
+├── service/      # Business logic (domain layer)
+│   └── user.go
+├── repository/   # Data access (persistence layer)
+│   └── user.go
+├── model/        # Data structures (domain layer)
+│   └── user.go
 └── middleware/   # Cross-cutting concerns
+    ├── auth.go
+    ├── logging.go
+    └── recovery.go
 ```
 
-### Data Flow
+### What Each Layer Does
 
 ```
-┌──────────┐    ┌──────────┐    ┌──────────────┐
-│  HTTP    │───▶│ Service  │───▶│ Repository   │
-│ Request  │    │ (logic)  │    │ (data fetch) │
-└──────────┘    └──────────┘    └──────────────┘
-                   ▲                   │
-                   └───────────────────┘
-                         (return data)
+┌─────────────────────────────────────────────────────────────┐
+│                    HTTP Request                              │
+│                         │                                    │
+│                         ▼                                    │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  HANDLER (http package)                               │  │
+│  │  - Decode JSON/protobuf to Go struct                  │  │
+│  │  - Validate request format (not business rules)       │  │
+│  │  - Call service method                                │  │
+│  │  - Encode response to JSON/protobuf                   │  │
+│  │  - Set HTTP status codes                              │  │
+│  │  - DO NOT: business logic, database queries           │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                         │                                    │
+│                         ▼                                    │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  SERVICE (business logic)                             │  │
+│  │  - Validate business rules                            │  │
+│  │  - Create domain models                               │  │
+│  │  - Call repository methods                            │  │
+│  │  - Orchestrate multiple repositories                  │  │
+│  │  - Publish events                                     │  │
+│  │  - DO NOT: HTTP, database queries, HTTP status codes  │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                         │                                    │
+│                         ▼                                    │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  REPOSITORY (data access)                             │  │
+│  │  - Execute SQL queries                                │  │
+│  │  - Read/write to database                             │  │
+│  │  - Return domain models                               │  │
+│  │  - DO NOT: business logic, HTTP handling              │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                         │                                    │
+│                         ▼                                    │
+│                    Database                                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Example: Each Layer
+
+**model/user.go** — Domain entity
+```go
+package model
+
+import "time"
+
+type User struct {
+    ID        string    `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    Status    string    `json:"status"`
+    CreatedAt time.Time `json:"created_at"`
+}
+```
+
+**repository/user.go** — Interface
+```go
+package repository
+
+import "myapp/internal/model"
+
+type UserRepository interface {
+    Create(user *model.User) error
+    GetByID(id string) (*model.User, error)
+    List() []*model.User
+}
+```
+
+**service/user.go** — Business logic
+```go
+package service
+
+import (
+    "errors"
+    "myapp/internal/model"
+    "myapp/internal/repository"
+)
+
+type UserService struct {
+    repo repository.UserRepository
+}
+
+func New(repo repository.UserRepository) *UserService {
+    return &UserService{repo: repo}
+}
+
+func (s *UserService) CreateUser(name, email string) (*model.User, error) {
+    // Business validation
+    if name == "" {
+        return nil, errors.New("name required")
+    }
+    
+    user := &model.User{
+        ID:    generateID(),
+        Name:  name,
+        Email: email,
+    }
+    
+    return user, s.repo.Create(user)
+}
+```
+
+**handler/user.go** — HTTP handling
+```go
+package handler
+
+import (
+    "encoding/json"
+    "net/http"
+    "myapp/internal/service"
+)
+
+type UserHandler struct {
+    svc *service.UserService
+}
+
+func New(svc *service.UserService) *UserHandler {
+    return &UserHandler{svc: svc}
+}
+
+func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
+    var req struct {
+        Name  string `json:"name"`
+        Email string `json:"email"`
+    }
+    
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "invalid request", http.StatusBadRequest)
+        return
+    }
+    
+    user, err := h.svc.CreateUser(req.Name, req.Email)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(user)
+}
 ```
 
 ---
 
 ## Feature-Based Structure (Alternative)
 
-For larger projects, group by feature instead of layer:
+For large projects with 10+ features, group by feature instead of layer:
 
 ```
 internal/
@@ -106,23 +301,30 @@ internal/
 │   ├── handler.go
 │   ├── service.go
 │   ├── repository.go
-│   └── model.go
+│   ├── model.go
+│   └── errors.go
 ├── order/
 │   ├── handler.go
 │   ├── service.go
+│   ├── repository.go
+│   └── model.go
+├── payment/
+│   ├── handler.go
 │   └── ...
-└── payment/
-    └── ...
+└── shared/                    # Cross-feature utilities
+    ├── middleware/
+    └── errors/
 ```
 
-**When to use:**
-- Team ownership by feature
-- Many features with tight coupling
-- Clearer boundaries for large teams
+### When to Use Each
 
-**When not to use:**
-- Shared infrastructure (logging, auth)
-- Many small, related features
+| Factor | Layer-Based | Feature-Based |
+|--------|-------------|---------------|
+| Team size | 1-5 people | 5+ people |
+| Features | < 10 features | 10+ features |
+| Ownership | Shared code | Feature teams |
+| Scaling | Moderate | High |
+| Complexity | Low-medium | High |
 
 ---
 
@@ -131,11 +333,11 @@ internal/
 ### Package Names
 
 ```go
-// Good
-package user          // single word, lowercase
-package userService   // compound, camelCase in code, hyphen in import
+// ✓ Good
+package user          // singular, lowercase
+package httpserver    // compound, lowercase
 
-// Bad
+// ✗ Bad
 package UserService   // Don't capitalize
 package user_service  // No underscores
 package Users         // Avoid plurals
@@ -144,85 +346,231 @@ package Users         // Avoid plurals
 ### File Names
 
 ```go
-// Good
-user.go              // singular, describing contents
+// ✓ Good
+user.go              // singular, lowercase
 user_handler.go      // feature + purpose
-user_service_test.go // _test suffix for test files
+user_service_test.go // _test suffix for tests
+main.go              // entry point
 
-// Bad
-User.go              // Don't capitalize
+// ✗ Bad
+User.go              // No PascalCase
 users.go             // Avoid plurals
-UserHandler.go       // No PascalCase
+UserHandler.go       // No mixed case
+user-handler.go      // No hyphens
+```
+
+### Function/Type Names
+
+```go
+// ✓ Good — exported names describe WHAT
+func NewUserService(repo Repository) *UserService
+func (s *UserService) CreateUser(name string) (*User, error)
+type UserRepository interface { ... }
+
+// ✓ Good — unexported names describe WHAT
+func validateEmail(email string) bool
+func hashPassword(pw string) string
+
+// ✗ Bad
+func init()           // Avoid — confusing with Go's init()
+func Do()             // Do what?
+func Handle()         // Handle what?
 ```
 
 ---
 
 ## Import Organization
 
-Go formatter organizes imports in three groups (use `go fmt` or `goimports`):
+Go imports are organized in three groups (enforced by `goimports`):
 
 ```go
 package main
 
 import (
-    // Standard library
+    // Group 1: Standard library
     "context"
     "encoding/json"
     "net/http"
+    "time"
 
-    // External packages
+    // Group 2: External packages
     "github.com/google/uuid"
     "go.uber.org/zap"
 
-    // Internal packages
+    // Group 3: Internal packages (your project)
     "myapp/internal/handler"
+    "myapp/internal/repository"
     "myapp/internal/service"
+)
+```
+
+### Import Aliases
+
+```go
+// Use when package name conflicts
+import (
+    "fmt"
+    mysql "github.com/go-sql-driver/mysql" // aliased
+)
+
+// Use for convenience
+import (
+    "encoding/json"
+    "net/http"
+    
+    httpHandler "myapp/internal/handler"
 )
 ```
 
 ---
 
-## Project Structure in Action
+## Dependency Injection in main.go
 
-```
-cmd/
-└── api/
-    └── main.go
-
-internal/
-├── model/
-│   └── user.go
-├── repository/
-│   └── user.go
-├── service/
-│   └── user.go
-└── handler/
-    └── user.go
-```
-
-### File: `cmd/api/main.go`
+The `main.go` file is your **wiring point** — it connects all layers:
 
 ```go
+// cmd/api/main.go
 package main
 
 import (
     "log"
     "net/http"
 
-    "learning-go/internal/handler"
-    "learning-go/internal/repository"
-    "learning-go/internal/service"
+    "myapp/internal/handler"
+    "myapp/internal/middleware"
+    "myapp/internal/repository"
+    "myapp/internal/service"
 )
 
 func main() {
-    // Wire up dependencies (see Dependency Injection topic)
-    repo := repository.NewInMemory()
-    svc := service.New(repo)
-    h := handler.New(svc)
+    // 1. Create infrastructure (external services)
+    db := connectToDatabase()      // returns *sql.DB
+    logger := setupLogger()        // returns *zap.Logger
+    metrics := setupMetrics()      // returns *Metrics
 
-    // Start server
-    log.Fatal(http.ListenAndServe(":8080", h))
+    // 2. Create repositories (data access)
+    userRepo := repository.NewUser(db, logger)
+    orderRepo := repository.NewOrder(db, logger)
+
+    // 3. Create services (business logic)
+    userService := service.NewUser(userRepo, logger, metrics)
+    orderService := service.NewOrder(orderRepo, userRepo, logger)
+
+    // 4. Create handlers (HTTP layer)
+    userHandler := handler.NewUser(userService)
+    orderHandler := handler.NewOrder(orderService)
+
+    // 5. Set up routes
+    mux := http.NewServeMux()
+    mux.HandleFunc("POST /users", userHandler.Create)
+    mux.HandleFunc("GET /users/{id}", userHandler.Get)
+    mux.HandleFunc("POST /orders", orderHandler.Create)
+
+    // 6. Add middleware chain
+    server := middleware.Chain(
+        mux,
+        middleware.Logger(logger),
+        middleware.Recovery(logger),
+        middleware.Metrics(metrics),
+        middleware.Auth(jwtSecret),
+    )
+
+    // 7. Start server
+    log.Fatal(http.ListenAndServe(":8080", server))
 }
+```
+
+---
+
+## Configuration Management
+
+```
+myapp/
+├── config/
+│   ├── config.yaml        # Default config
+│   ├── config.dev.yaml    # Development overrides
+│   └── config.prod.yaml   # Production overrides
+└── internal/
+    └── config/
+        └── config.go      # Config struct + loader
+```
+
+```go
+// internal/config/config.go
+package config
+
+import (
+    "os"
+    "github.com/spf13/viper"
+)
+
+type Config struct {
+    Server ServerConfig `yaml:"server"`
+    Database DBConfig   `yaml:"database"`
+}
+
+type ServerConfig struct {
+    Host string `yaml:"host"`
+    Port int    `yaml:"port"`
+}
+
+type DBConfig struct {
+    Host     string `yaml:"host"`
+    Port     int    `yaml:"port"`
+    Name     string `yaml:"name"`
+    User     string `yaml:"user"`
+    Password string `yaml:"password"` // From env var
+}
+
+func Load() (*Config, error) {
+    v := viper.New()
+    v.SetConfigName("config")
+    v.SetConfigType("yaml")
+    v.AddConfigPath(".")
+    
+    // Environment variable overrides
+    v.SetEnvPrefix("MYAPP")
+    v.AutomaticEnv()
+    
+    if err := v.ReadInConfig(); err != nil {
+        return nil, err
+    }
+    
+    var cfg Config
+    return &cfg, v.Unmarshal(&cfg)
+}
+```
+
+---
+
+## Makefile for Development
+
+```makefile
+.PHONY: build test lint run clean
+
+build:
+	go build -o bin/api ./cmd/api
+
+test:
+	go test ./... -v -race -cover
+
+lint:
+	golangci-lint run ./...
+
+run: build
+	./bin/api
+
+dev:
+	air  # Hot reload with air
+
+clean:
+	rm -rf bin/
+
+migrate:
+	go run ./cmd/migrate up
+
+seed:
+	go run ./cmd/seed
 ```
 
 ---
@@ -231,27 +579,32 @@ func main() {
 
 | Aspect | Recommendation |
 |--------|----------------|
-| Entry point | `cmd/<appname>/main.go` |
+| Entry point | `cmd/<app>/main.go` |
 | Private code | `internal/` |
-| Public code | `pkg/` |
+| Public code | `pkg/` (use rarely) |
 | Package names | lowercase, singular |
-| File names | lowercase, descriptive |
+| File names | lowercase, underscore separated |
 | Layer order | handler → service → repository |
-| Group imports | stdlib → external → internal |
+| Import order | stdlib → external → internal |
+| Config | `config/` + env vars |
+| API specs | `api/` |
 
 ---
 
 ## Common Pitfalls
 
-1. **Putting everything in root** - Hard to find anything
-2. **Deep nesting** - `internal/a/b/c/d/e.go` is painful
-3. **Mixed layer types** - Handler, service, and model in one file
-4. **No clear boundaries** - What's public vs private?
+1. **Everything in root** — No folder structure, hard to navigate
+2. **Deep nesting** — `internal/a/b/c/d/e.go` is painful
+3. **Mixed layers** — Handler + service + repo in one file
+4. **No clear access control** — Use `internal` for privacy
+5. **Circular imports** — Separate packages don't import each other
+6. **god package** — One giant package that does everything
 
 ---
 
 ## Next Steps
 
-- [Repository Pattern](07-repository-pattern.md) - Data access abstraction
-- [Service Layer](08-service-layer.md) - Business logic isolation
-- [Dependency Injection](09-dependency-injection.md) - Wiring components together
+- [Repository Pattern](02-repository-pattern.md) — Data access abstraction
+- [Service Layer](03-service-layer.md) — Business logic isolation
+- [Dependency Injection](04-dependency-injection.md) — Wiring components
+- [Clean Architecture](05-clean-architecture.md) — Layer boundaries

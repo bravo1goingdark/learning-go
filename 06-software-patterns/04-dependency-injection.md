@@ -4,217 +4,400 @@
 
 ---
 
-## The Problem
+## What is Dependency Injection?
 
-Hard dependencies make testing impossible and flexibility nonexistent:
+Dependency Injection (DI) means **passing dependencies to a component** instead of the component creating them internally.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  WITHOUT DI (Hard Dependencies)                            │
+│                                                              │
+│  type UserService struct {                                  │
+│      repo *PostgresUserRepo  // Concrete type               │
+│  }                                                          │
+│                                                              │
+│  func New() *UserService {                                  │
+│      return &UserService{                                   │
+│          repo: &PostgresUserRepo{...},  // Created inside! │
+│      }                                                      │
+│  }                                                          │
+│                                                              │
+│  Problems:                                                   │
+│  ✗ Can't test without real database                         │
+│  ✗ Can't swap to different DB                               │
+│  ✗ Hard dependencies everywhere                             │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  WITH DI (Injected Dependencies)                           │
+│                                                              │
+│  type UserService struct {                                  │
+│      repo UserRepository  // Interface (not concrete)       │
+│  }                                                          │
+│                                                              │
+│  func New(repo UserRepository) *UserService {               │
+│      return &UserService{                                   │
+│          repo: repo,  // Passed in from outside!           │
+│      }                                                      │
+│  }                                                          │
+│                                                              │
+│  Benefits:                                                   │
+│  ✓ Easy to test with mocks                                  │
+│  ✓ Can swap implementations freely                          │
+│  ✓ Clear dependency graph                                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Why DI Matters
+
+### 1. Testing
+
+Without DI, testing requires real dependencies:
 
 ```go
-// Bad: Concrete dependency
+// BAD: Hard to test
 type UserService struct {
-    repo *PostgresUserRepo  // Can't swap, hard to test
+    db *sql.DB  // Concrete dependency
 }
 
 func New() *UserService {
-    return &UserService{
-        repo: &PostgresUserRepo{},  // Hardcoded
-    }
+    db, _ := sql.Open("postgres", "...")
+    return &UserService{db: db}
+}
+
+func TestCreateUser(t *testing.T) {
+    // Need a REAL database to test!
+    svc := New()
+    // ... test with real DB (slow, flaky)
 }
 ```
 
----
-
-## Constructor-Based DI
-
-Pass dependencies via constructor:
+With DI, testing is fast:
 
 ```go
-// Good: Dependency via interface
+// GOOD: Easy to test
 type UserService struct {
-    repo repository.UserRepository  // Interface, not concrete type
+    repo UserRepository  // Interface
 }
 
-func New(repo repository.UserRepository) *UserService {
+func New(repo UserRepository) *UserService {
     return &UserService{repo: repo}
 }
+
+func TestCreateUser(t *testing.T) {
+    // Use a mock — no database needed
+    mock := &mockUserRepo{}
+    svc := New(mock)
+    
+    user, err := svc.CreateUser("Alice", "alice@example.com")
+    // ... fast, reliable test
+}
 ```
 
-Now the caller decides what implementation to use:
+### 2. Flexibility
+
+Swap implementations based on environment:
 
 ```go
-// Production: real database
-repo := repository.NewPostgres("connection-string")
-svc := service.New(repo)
+// Production
+repo := repository.NewPostgres(os.Getenv("DB_URL"))
 
-// Testing: mock repository
-mock := &mockUserRepository{}
-svc := service.New(mock)
+// Testing
+repo := repository.NewInMemory()
+
+// Development
+repo := repository.NewSQLite("dev.db")
+
+// All three implement UserRepository interface
 ```
 
 ---
 
-## Types of DI in Go
+## Constructor Injection (Recommended)
 
-### 1. Constructor Injection (Recommended)
-
-```go
-func NewUserService(
-    repo repository.UserRepository,
-    logger Logger,
-    metrics Metrics,
-) *UserService {
-    return &UserService{
-        repo:    repo,
-        logger:  logger,
-        metrics: metrics,
-    }
-}
-```
-
-### 2. Functional Options (For Optional Dependencies)
+Pass ALL dependencies via constructor. This is the **standard approach in Go**.
 
 ```go
+// internal/service/user.go
+package service
+
 type UserService struct {
     repo     repository.UserRepository
     logger   Logger
     metrics  Metrics
-    cache    Cache  // optional
+    eventBus *events.EventBus
 }
 
-type Option func(*UserService)
-
-func WithLogger(l Logger) Option {
-    return func(s *UserService) {
-        s.logger = l
+// NewUserService creates a user service with all required dependencies
+func NewUserService(
+    repo repository.UserRepository,
+    logger Logger,
+    metrics Metrics,
+    eb *events.EventBus,
+) *UserService {
+    return &UserService{
+        repo:     repo,
+        logger:   logger,
+        metrics:  metrics,
+        eventBus: eb,
     }
-}
-
-func New(repo repository.UserRepository, opts ...Option) *UserService {
-    svc := &UserService{
-        repo:    repo,
-        logger:  &defaultLogger{},
-        metrics: &noOpMetrics{},
-    }
-
-    for _, opt := range opts {
-        opt(svc)
-    }
-
-    return svc
-}
-
-// Usage:
-svc := service.New(repo, service.WithLogger(zap.New()))
-```
-
-### 3. Setter Injection (Rare)
-
-```go
-type Service struct {
-    logger Logger  // Can be set after construction
-}
-
-func (s *Service) SetLogger(l Logger) {
-    s.logger = l
 }
 ```
 
----
+### The Wiring in main.go
 
-## Wiring in main.go
+The `main.go` file is responsible for **creating and connecting all dependencies**:
 
 ```go
 // cmd/api/main.go
 package main
 
 import (
+    "database/sql"
     "log"
     "net/http"
+    "os"
 
-    "learning-go/internal/handler"
-    "learning-go/internal/middleware"
-    "learning-go/internal/repository"
-    "learning-go/internal/service"
+    "myapp/internal/events"
+    "myapp/internal/handler"
+    "myapp/internal/middleware"
+    "myapp/internal/repository"
+    "myapp/internal/service"
 )
 
 func main() {
-    // 1. Create infrastructure
-    logger := NewZapLogger()
-    metrics := NewPrometheusMetrics()
-
-    // 2. Create repositories
-    userRepo := repository.NewInMemory()
-
-    // 3. Create services (inject dependencies)
-    userSvc := service.New(userRepo, logger, metrics)
-
-    // 4. Create handlers (inject services)
-    userHandler := handler.New(userSvc)
-
-    // 5. Set up router with middleware
+    // ═══════════════════════════════════════════
+    // Layer 1: Infrastructure (external services)
+    // ═══════════════════════════════════════════
+    
+    logger := NewLogger()           // returns *zap.Logger
+    metrics := NewMetrics()         // returns *Metrics
+    db := connectDatabase()         // returns *sql.DB
+    eventBus := events.New()        // returns *events.EventBus
+    
+    // ═══════════════════════════════════════════
+    // Layer 2: Repositories (data access)
+    // ═══════════════════════════════════════════
+    
+    userRepo := repository.NewUserPostgres(db)
+    orderRepo := repository.NewOrderPostgres(db)
+    
+    // ═══════════════════════════════════════════
+    // Layer 3: Services (business logic)
+    // ═══════════════════════════════════════════
+    
+    userService := service.NewUserService(
+        userRepo,
+        logger,
+        metrics,
+        eventBus,
+    )
+    
+    orderService := service.NewOrderService(
+        orderRepo,
+        userRepo,       // OrderService needs to look up users
+        logger,
+        metrics,
+        eventBus,
+    )
+    
+    // ═══════════════════════════════════════════
+    // Layer 4: Handlers (HTTP)
+    // ═══════════════════════════════════════════
+    
+    userHandler := handler.NewUserHandler(userService)
+    orderHandler := handler.NewOrderHandler(orderService)
+    
+    // ═══════════════════════════════════════════
+    // Layer 5: Router + Middleware
+    // ═══════════════════════════════════════════
+    
     mux := http.NewServeMux()
     mux.HandleFunc("POST /users", userHandler.Create)
     mux.HandleFunc("GET /users/{id}", userHandler.Get)
-
-    // Wrap with middleware
-    wrapped := middleware.Logging(logger)(
-        middleware.Recovery(logger)(
-            middleware.Metrics(metrics)(mux),
-        ),
+    mux.HandleFunc("POST /orders", orderHandler.Create)
+    
+    // ═══════════════════════════════════════════
+    // Layer 6: Start server
+    // ═══════════════════════════════════════════
+    
+    server := middleware.Chain(
+        mux,
+        middleware.Logger(logger),
+        middleware.Recovery(logger),
+        middleware.Metrics(metrics),
     )
-
-    // 6. Start server
-    log.Fatal(http.ListenAndServe(":8080", wrapped))
+    
+    log.Fatal(http.ListenAndServe(":8080", server))
 }
 ```
 
 ---
 
-## DI Container (For Large Applications)
+## Functional Options Pattern
 
-For complex apps, use a container to manage wiring:
+For services with **optional dependencies**, use functional options:
+
+```go
+// internal/service/user.go
+package service
+
+type UserService struct {
+    repo    repository.UserRepository
+    logger  Logger
+    metrics Metrics
+    cache   Cache  // Optional
+}
+
+// Option is a function that configures UserService
+type Option func(*UserService)
+
+// WithLogger sets a custom logger
+func WithLogger(l Logger) Option {
+    return func(s *UserService) {
+        s.logger = l
+    }
+}
+
+// WithMetrics sets custom metrics
+func WithMetrics(m Metrics) Option {
+    return func(s *UserService) {
+        s.metrics = m
+    }
+}
+
+// WithCache sets a cache layer
+func WithCache(c Cache) Option {
+    return func(s *UserService) {
+        s.cache = c
+    }
+}
+
+// NewUserService creates a service with required + optional dependencies
+func NewUserService(repo repository.UserRepository, opts ...Option) *UserService {
+    // Default values
+    svc := &UserService{
+        repo:    repo,
+        logger:  &noopLogger{},
+        metrics: &noopMetrics{},
+    }
+    
+    // Apply options
+    for _, opt := range opts {
+        opt(svc)
+    }
+    
+    return svc
+}
+```
+
+### Usage
+
+```go
+// Minimal (required dependencies only)
+svc := service.NewUserService(repo)
+
+// With optional dependencies
+svc := service.NewUserService(repo,
+    service.WithLogger(zap.New()),
+    service.WithMetrics(prometheus.New()),
+    service.WithCache(redis.New()),
+)
+```
+
+---
+
+## DI Container (Large Applications)
+
+For apps with 10+ services, use a **container** to manage wiring:
 
 ```go
 // internal/di/container.go
 package di
 
+import (
+    "database/sql"
+    "myapp/internal/events"
+    "myapp/internal/repository"
+    "myapp/internal/service"
+)
+
+// Container manages all dependencies
 type Container struct {
-    userRepo    repository.UserRepository
-    orderRepo   repository.OrderRepository
-    userService *service.UserService
+    db        *sql.DB
+    eventBus  *events.EventBus
+    
+    // Repositories (lazy initialized)
+    userRepo  repository.UserRepository
+    orderRepo repository.OrderRepository
+    
+    // Services (lazy initialized)
+    userService  *service.UserService
     orderService *service.OrderService
 }
 
-func New() *Container {
-    return &Container{}
+// NewContainer creates a new container
+func NewContainer(db *sql.DB, eb *events.EventBus) *Container {
+    return &Container{
+        db:       db,
+        eventBus: eb,
+    }
 }
 
+// UserRepository returns the user repository (singleton)
 func (c *Container) UserRepository() repository.UserRepository {
     if c.userRepo == nil {
-        c.userRepo = repository.NewInMemory()  // Or from config
+        c.userRepo = repository.NewUserPostgres(c.db)
     }
     return c.userRepo
 }
 
+// OrderRepository returns the order repository (singleton)
+func (c *Container) OrderRepository() repository.OrderRepository {
+    if c.orderRepo == nil {
+        c.orderRepo = repository.NewOrderPostgres(c.db)
+    }
+    return c.orderRepo
+}
+
+// UserService returns the user service (singleton)
 func (c *Container) UserService() *service.UserService {
     if c.userService == nil {
-        c.userService = service.New(
+        c.userService = service.NewUserService(
             c.UserRepository(),
-            c.Logger(),
-            c.Metrics(),
+            c.eventBus,
         )
     }
     return c.userService
 }
 
-// ... similar for other services
+// OrderService returns the order service (singleton)
+func (c *Container) OrderService() *service.OrderService {
+    if c.orderService == nil {
+        c.orderService = service.NewOrderService(
+            c.OrderRepository(),
+            c.UserRepository(),  // Inject user repo too
+            c.eventBus,
+        )
+    }
+    return c.orderService
+}
 ```
 
-**Usage:**
+### Usage
 
 ```go
 func main() {
-    c := di.New()
-    h := handler.New(c.UserService())
+    db := connectDatabase()
+    eb := events.New()
+    
+    c := di.NewContainer(db, eb)
+    
+    mux := http.NewServeMux()
+    mux.HandleFunc("POST /users", c.UserHandler().Create)
+    mux.HandleFunc("GET /users/{id}", c.UserHandler().Get)
     // ...
 }
 ```
@@ -223,52 +406,130 @@ func main() {
 
 ## Testing with DI
 
+DI makes testing **fast and isolated**:
+
 ```go
 // internal/service/user_test.go
-package service
+package service_test
 
 import (
     "testing"
+    "myapp/internal/service"
 )
 
-func TestCreateUser(t *testing.T) {
-    // Create mock dependencies
-    mockRepo := &mockUserRepository{}
-    mockLogger := &mockLogger{}
+// Mock implementations
+type mockUserRepo struct {
+    users map[string]*model.User
+}
+
+func (m *mockUserRepo) Create(user *model.User) error {
+    m.users[user.ID] = user
+    return nil
+}
+
+func (m *mockUserRepo) GetByID(id string) (*model.User, error) {
+    user, ok := m.users[id]
+    if !ok {
+        return nil, repository.ErrNotFound
+    }
+    return user, nil
+}
+
+// ... other methods
+
+type mockLogger struct {
+    entries []string
+}
+
+func (m *mockLogger) Info(msg string) {
+    m.entries = append(m.entries, msg)
+}
+
+func (m *mockLogger) Error(msg string) {
+    m.entries = append(m.entries, msg)
+}
+
+// Tests
+func TestCreateUser_Success(t *testing.T) {
+    // Setup with mocks
+    mockRepo := &mockUserRepo{users: make(map[string]*model.User)}
+    mockLog := &mockLogger{}
     mockMetrics := &mockMetrics{}
-
-    // Inject into service
-    svc := New(mockRepo, mockLogger, mockMetrics)
-
-    // Test
+    mockBus := events.New()
+    
+    svc := service.NewUserService(mockRepo, mockLog, mockMetrics, mockBus)
+    
+    // Execute
     user, err := svc.CreateUser("Alice", "alice@example.com")
+    
+    // Assert
     if err != nil {
         t.Fatalf("unexpected error: %v", err)
     }
+    if user.Name != "Alice" {
+        t.Errorf("expected Alice, got %s", user.Name)
+    }
+    
+    // Verify side effects
+    if len(mockLog.entries) == 0 {
+        t.Error("expected logger to be called")
+    }
+}
 
-    // Verify mock was called
-    if !mockRepo.CreateCalled {
-        t.Error("expected Create to be called on repo")
+func TestCreateUser_DuplicateEmail(t *testing.T) {
+    mockRepo := &mockUserRepo{users: make(map[string]*model.User)}
+    mockLog := &mockLogger{}
+    mockMetrics := &mockMetrics{}
+    mockBus := events.New()
+    
+    svc := service.NewUserService(mockRepo, mockLog, mockMetrics, mockBus)
+    
+    // Create first user
+    _, err := svc.CreateUser("Alice", "alice@example.com")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // Try to create duplicate
+    _, err = svc.CreateUser("Bob", "alice@example.com")
+    if err == nil {
+        t.Fatal("expected error for duplicate email")
     }
 }
 ```
 
 ---
 
-## Visual: Dependency Flow
+## Dependency Graph
+
+Visualize your dependency structure:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        main.go                              │
+│                    Dependency Graph                          │
 │                                                              │
-│   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐ │
-│   │  Handler    │◀────│  Service    │◀────│  Repository │ │
-│   └─────────────┘     └─────────────┘     └─────────────┘ │
-│         │                   │                   │           │
-│         └───────────────────┴───────────────────┘           │
-│                             │                               │
-│                        main()                               │
-│                   (wires everything)                       │
+│                     ┌─────────┐                              │
+│                     │ main.go │                              │
+│                     └────┬────┘                              │
+│                          │                                   │
+│              ┌───────────┼───────────┐                       │
+│              ▼           ▼           ▼                       │
+│         ┌────────┐  ┌────────┐  ┌────────┐                 │
+│         │Handler │  │Handler │  │Handler │                 │
+│         └────┬───┘  └────┬───┘  └────┬───┘                 │
+│              │           │           │                       │
+│              ▼           ▼           ▼                       │
+│         ┌────────┐  ┌────────┐  ┌────────┐                 │
+│         │Service │  │Service │  │Service │                 │
+│         └────┬───┘  └────┬───┘  └────┬───┘                 │
+│              │           │           │                       │
+│              ▼           ▼           ▼                       │
+│         ┌────────┐  ┌────────┐  ┌────────┐                 │
+│         │  Repo  │  │  Repo  │  │  Repo  │                 │
+│         └────────┘  └────────┘  └────────┘                 │
+│                                                              │
+│  Arrows show "depends on" direction                         │
+│  main.go wires everything together                          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -276,26 +537,27 @@ func TestCreateUser(t *testing.T) {
 
 ## Quick Reference
 
-| Pattern | Use When |
-|---------|----------|
-| Constructor | Most cases, required dependencies |
-| Options pattern | Optional dependencies, configs |
-| Setter | Rare, late binding needed |
-| Container | Large apps with many deps |
+| Pattern | When | Pros | Cons |
+|---------|------|------|------|
+| Constructor | Always | Simple, explicit | Verbose with many deps |
+| Options | Optional deps | Flexible | More complex |
+| Setter | Rare | Late binding | Can forget to set |
+| Container | 10+ services | Organized | Extra abstraction |
 
 ---
 
 ## Common Pitfalls
 
-1. **No interfaces** - Use interfaces for testability
-2. **Global state** - Avoid singletons, prefer DI
-3. **Too many dependencies** - Consider if class does too much
-4. **Circular dependencies** - A depends on B, B depends on A
+1. **Concrete types in service** — Use interfaces for testability
+2. **Global state** — Avoid `var db = sql.Open(...)` in globals
+3. **Too many dependencies** — Service might be doing too much
+4. **Circular deps** — A→B→A means bad design
+5. **Not wiring in main** — Scattered `init()` functions
 
 ---
 
 ## Next Steps
 
-- [Clean Architecture](10-clean-architecture.md) - Enforce boundaries
-- [Pub-Sub Design](11-pub-sub-design.md) - Decouple with events
-- [Milestone Project](20-layered-http-service.md) - Put it all together
+- [Clean Architecture](05-clean-architecture.md) — Enforce layer boundaries
+- [Pub-Sub Design](06-pub-sub-design.md) — Decouple with events
+- [Milestone Project](../projects/20-layered-http-service.md) — Build it end-to-end
