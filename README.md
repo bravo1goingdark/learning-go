@@ -50,20 +50,27 @@ Work through these folders in order. Each one builds on the previous.
 | 08 | [Error Handling](04-error-handling/08-error-handling.md) | Error values, wrapping, sentinel errors, custom types |
 | 09 | [Defer In Depth](04-error-handling/09-defer-in-depth.md) | Defer order, resource cleanup, panic/recover |
 
+### [05-generics/](05-generics/) — Type-Safe Abstractions
+> Go 1.18+ generics. Read this before concurrency — several concurrency topics use generic syntax.
+
+| # | Topic | What You'll Learn |
+|---|-------|-------------------|
+| 10 | [Generics](05-generics/19-generics.md) | Type parameters, constraints, generic structs, performance |
+
 ### [05-concurrency/](05-concurrency/) — Master Concurrency
 > Go's killer feature. Learn goroutines, channels, and real-world patterns.
 
 | # | Topic | What You'll Learn |
 |---|-------|-------------------|
-| 10 | [Goroutines](05-concurrency/10-goroutines.md) | G-M-P scheduler, closure gotchas, goroutine leaks |
-| 11 | [Channels](05-concurrency/11-channels.md) | Buffered/unbuffered, directional types, closing rules |
-| 12 | [Select](05-concurrency/12-select.md) | Multiplexing, timeouts, non-blocking, nil channels |
-| 13 | [Context](05-concurrency/13-context.md) | Cancellation, deadlines, values, HTTP propagation |
-| 14 | [WaitGroup](05-concurrency/14-waitgroup.md) | Waiting for goroutines, fire-and-forget, graceful shutdown |
-| 15 | [Mutex vs Channels](05-concurrency/15-mutex-vs-channels.md) | When to use which, RWMutex, sync.Map, sync.Once |
-| 16 | [Worker Pools](05-concurrency/16-worker-pools.md) | Bounded concurrency, context-aware pools, generics |
-| 17 | [Pipelines](05-concurrency/17-pipelines.md) | Chained stages, generators, context-aware pipelines |
-| 18 | [Fan-In / Fan-Out](05-concurrency/18-fan-in-fan-out.md) | Distribute work, merge results, bounded fan-out |
+| 11 | [Goroutines](05-concurrency/10-goroutines.md) | G-M-P scheduler, closure gotchas, goroutine leaks |
+| 12 | [Channels](05-concurrency/11-channels.md) | Buffered/unbuffered, directional types, closing rules |
+| 13 | [Select](05-concurrency/12-select.md) | Multiplexing, timeouts, non-blocking, nil channels |
+| 14 | [Context](05-concurrency/13-context.md) | Cancellation, deadlines, values, HTTP propagation |
+| 15 | [WaitGroup](05-concurrency/14-waitgroup.md) | Waiting for goroutines, fire-and-forget, graceful shutdown |
+| 16 | [Mutex vs Channels](05-concurrency/15-mutex-vs-channels.md) | When to use which, RWMutex, sync.Map, sync.Once |
+| 17 | [Worker Pools](05-concurrency/16-worker-pools.md) | Bounded concurrency, context-aware pools, generics |
+| 18 | [Pipelines](05-concurrency/17-pipelines.md) | Chained stages, generators, context-aware pipelines |
+| 19 | [Fan-In / Fan-Out](05-concurrency/18-fan-in-fan-out.md) | Distribute work, merge results, bounded fan-out |
 
 ---
 
@@ -79,8 +86,8 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
-### [projects/19-concurrency-project.md](projects/19-concurrency-project.md) — Put Topics 10-18 Together
-> Build a concurrent worker pool with graceful shutdown. Uses concepts from topics 10-18 (Concurrency).
+### [projects/19-concurrency-project.md](projects/19-concurrency-project.md) — Put Topics 11-19 Together
+> Build a concurrent worker pool with graceful shutdown. Uses concepts from topics 11-19 (Concurrency).
 
 | Concepts Used |
 |---------------|
@@ -120,7 +127,7 @@ Work through these folders in order. Each one builds on the previous.
 ---
 
 ### [07-systems-project/](07-systems-project/) — Capstone: Mini Message Queue
-> Build an in-memory message broker from scratch. Uses everything from Topics 1-18 and all Software Patterns.
+> Build an in-memory message broker from scratch. Uses everything from Topics 1-19 and all Software Patterns.
 
 | # | File | What You'll Build |
 |---|------|-------------------|

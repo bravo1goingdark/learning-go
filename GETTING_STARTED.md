@@ -37,22 +37,28 @@ ERROR HANDLING
     
     ↓
     
+GENERICS (Go 1.18+)
+    └── 10: Generics          ← Type parameters, constraints
+         ⚠️ Read BEFORE concurrency — several concurrency topics use [T any] syntax
+    
+    ↓
+    
 ADVANCED: CONCURRENCY (Go's killer feature)
-    ├── 10: Goroutines       ← Lightweight threads
-    ├── 11: Channels         ← Communication between goroutines
-    ├── 12: Select           ← Multiplexing
-    ├── 13: Context          ← Cancellation & deadlines
-    ├── 14: WaitGroup        ← Waiting for goroutines
-    ├── 15: Mutex vs Channels ← When to use which
-    ├── 16: Worker Pools     ← Bounded concurrency
-    ├── 17: Pipelines        ← Data processing streams
-    └── 18: Fan-In/Fan-Out   ← Parallel processing
+    ├── 11: Goroutines       ← Lightweight threads
+    ├── 12: Channels         ← Communication between goroutines
+    ├── 13: Select           ← Multiplexing
+    ├── 14: Context          ← Cancellation & deadlines
+    ├── 15: WaitGroup        ← Waiting for goroutines
+    ├── 16: Mutex vs Channels ← When to use which
+    ├── 17: Worker Pools     ← Bounded concurrency
+    ├── 18: Pipelines        ← Data processing streams
+    └── 19: Fan-In/Fan-Out   ← Parallel processing
     
     ↓
     
 PUT IT TOGETHER
     ├── Project 1: CLI CSV Processor (Topics 1-9)
-    ├── Project 2: Worker Pool (Topics 10-18)
+    ├── Project 2: Worker Pool (Topics 11-19)
     └── Project 3: Layered HTTP Service (Software Patterns)
 
 SOFTWARE PATTERNS (Production-Ready Code)
@@ -230,6 +236,8 @@ study/
 ├── 04-error-handling/
 │   ├── 08-error-handling.md
 │   └── 09-defer-in-depth.md
+├── 05-generics/
+│   └── 19-generics.md
 ├── 05-concurrency/        ← Advanced topics
 │   ├── 10-goroutines.md
 │   ├── 11-channels.md
@@ -242,7 +250,7 @@ study/
 │   └── 18-fan-in-fan-out.md
 ├── projects/
 │   ├── 09-project-csv-processor.md   ← Project 1: Topics 1-9
-│   ├── 19-concurrency-project.md    ← Project 2: Topics 10-18
+│   ├── 19-concurrency-project.md    ← Project 2: Topics 11-19
 │   └── 20-layered-http-service.md   ← Project 3: Software Patterns
 ├── 06-software-patterns/
 │   ├── 01-project-structure.md

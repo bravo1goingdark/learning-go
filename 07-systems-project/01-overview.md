@@ -1,6 +1,6 @@
 # Week 4 — Systems Project: Mini Message Queue
 
-> **Goal:** Build an in-memory message broker from scratch using everything learned in Topics 1-18 and Software Patterns 01-08. No external dependencies — pure Go.
+> **Goal:** Build an in-memory message broker from scratch using everything learned in Topics 1-19 and Software Patterns 01-08. No external dependencies — pure Go.
 
 ---
 
@@ -241,6 +241,6 @@ Each code block includes a comment showing which topic/pattern it uses.
 ## What This IS
 
 - A working pub-sub broker in ~300 lines of Go
-- A demonstration of every concept from Topics 1-18
+- A demonstration of every concept from Topics 1-19
 - A production-style project structure
 - A foundation you can extend (add persistence, networking, etc.)

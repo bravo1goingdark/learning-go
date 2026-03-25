@@ -148,4 +148,4 @@ After completing topics 1-9, you should understand every part of this program:
    - Add more countries to the map
    - Create your own struct
 
-4. After learning concurrency (Topics 10-18), come back and convert this to use goroutines!
+4. After learning concurrency (Topics 11-19), come back and convert this to use goroutines!
