@@ -1,4 +1,4 @@
-# 11. Channels — Complete Deep Dive
+# 12. Channels — Complete Deep Dive
 
 > **Goal:** Master channels — unbuffered, buffered, directional types, and every production pattern. Channels are Go's way to communicate between goroutines.
 

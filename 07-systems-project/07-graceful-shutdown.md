@@ -2,7 +2,7 @@
 
 > **Decision:** When the process receives SIGINT/SIGTERM, we must drain in-flight messages before exiting. Losing messages on shutdown is unacceptable in production.
 
-**Reference:** `05-concurrency/13-context.md` + `05-concurrency/14-waitgroup.md`
+**Reference:** `06-concurrency/14-context.md` + `06-concurrency/15-waitgroup.md`
 
 ---
 

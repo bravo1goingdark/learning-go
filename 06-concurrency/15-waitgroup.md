@@ -1,4 +1,4 @@
-# 14. WaitGroup — Complete Deep Dive
+# 15. WaitGroup — Complete Deep Dive
 
 > **Goal:** Master `sync.WaitGroup` — wait for a collection of goroutines to finish. The simplest synchronization primitive in Go.
 

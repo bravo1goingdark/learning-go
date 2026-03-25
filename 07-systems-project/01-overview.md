@@ -140,7 +140,7 @@ func main() {
 
 **Why DI?** We can test the service with a mock broker. We can swap the in-memory broker for a Redis-backed one later without changing the service.
 
-### 4. Per-Subscriber Bounded Channels → `05-concurrency/16-worker-pools.md` + `06-software-patterns/08-backpressure-strategies.md`
+### 4. Per-Subscriber Bounded Channels → `06-concurrency/17-worker-pools.md` + `06-software-patterns/08-backpressure-strategies.md`
 
 Each subscriber gets a **buffered channel**. When the buffer is full, we apply backpressure.
 
@@ -162,7 +162,7 @@ Each subscriber gets a **buffered channel**. When the buffer is full, we apply b
      │                            │    or block publisher)         │
 ```
 
-### 5. Context Cancellation → `05-concurrency/13-context.md`
+### 5. Context Cancellation → `06-concurrency/14-context.md`
 
 Every operation accepts `context.Context`. When cancelled, the broker stops:
 - Accepting new publishes
@@ -183,7 +183,7 @@ Every operation accepts `context.Context`. When cancelled, the broker stops:
          SIGINT received → cancel() → all goroutines see ctx.Done()
 ```
 
-### 6. Graceful Shutdown → `05-concurrency/14-waitgroup.md`
+### 6. Graceful Shutdown → `06-concurrency/15-waitgroup.md`
 
 On shutdown: stop accepting new messages, drain in-flight messages to subscribers, then exit.
 
@@ -223,11 +223,11 @@ On shutdown: stop accepting new messages, drain in-flight messages to subscriber
 |---|------|---------------|
 | 01 | This file | Architecture, design decisions |
 | 02 | `02-message-model.md` | Structs, zero values, interfaces (Topics 5, 7) |
-| 03 | `03-subscriber.md` | Channels, goroutines, backpressure (Topics 10, 11, 16) |
-| 04 | `04-broker-core.md` | Maps, mutex, fan-out, select (Topics 4, 12, 15, 18) |
+| 03 | `03-subscriber.md` | Channels, goroutines, backpressure (Topics 11, 12, 17) |
+| 04 | `04-broker-core.md` | Maps, mutex, fan-out, select (Topics 4, 13, 16, 19) |
 | 05 | `05-service-layer.md` | Service pattern, validation (Pattern 03) |
 | 06 | `06-wiring.md` | DI, main.go wiring (Pattern 04) |
-| 07 | `07-graceful-shutdown.md` | Context, WaitGroup, signal handling (Topics 13, 14) |
+| 07 | `07-graceful-shutdown.md` | Context, WaitGroup, signal handling (Topics 14, 15) |
 | 08 | `08-resilience.md` | Dead letter queue, backpressure strategies (Pattern 07, 08) |
 | 09 | `09-demo.md` | Full walkthrough, test scenarios |
 

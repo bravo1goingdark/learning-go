@@ -1,4 +1,4 @@
-# 18. Fan-In / Fan-Out — Complete Deep Dive
+# 19. Fan-In / Fan-Out — Complete Deep Dive
 
 > **Goal:** Master fan-out and fan-in — distribute work across goroutines (fan-out) and collect results back (fan-in). The foundation of concurrent processing patterns.
 

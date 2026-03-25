@@ -1,4 +1,4 @@
-# 12. Select — Complete Deep Dive
+# 13. Select — Complete Deep Dive
 
 > **Goal:** Master `select` — Go's multiplexer for channels. Handle multiple channel operations, timeouts, and non-blocking patterns.
 

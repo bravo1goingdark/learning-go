@@ -1,4 +1,4 @@
-# 10. Goroutines — Complete Deep Dive
+# 11. Goroutines — Complete Deep Dive
 
 > **Goal:** Master goroutines from creation to production patterns. Understand the scheduler, stack growth, and common pitfalls.
 
@@ -55,7 +55,7 @@ func main() {
     go worker(1)
     go worker(2)
 
-    time.Sleep(time.Second) // Don't do this in production — use WaitGroup
+    time.Sleep(time.Second) // DON'T do this in production — main might exit before goroutines finish. Use sync.WaitGroup (Topic 15) instead.
 }
 ```
 

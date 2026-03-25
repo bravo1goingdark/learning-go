@@ -55,22 +55,22 @@ Work through these folders in order. Each one builds on the previous.
 
 | # | Topic | What You'll Learn |
 |---|-------|-------------------|
-| 10 | [Generics](05-generics/19-generics.md) | Type parameters, constraints, generic structs, performance |
+| 10 | [Generics](05-generics/10-generics.md) | Type parameters, constraints, generic structs, performance |
 
-### [05-concurrency/](05-concurrency/) — Master Concurrency
+### [06-concurrency/](06-concurrency/) — Master Concurrency
 > Go's killer feature. Learn goroutines, channels, and real-world patterns.
 
 | # | Topic | What You'll Learn |
 |---|-------|-------------------|
-| 11 | [Goroutines](05-concurrency/10-goroutines.md) | G-M-P scheduler, closure gotchas, goroutine leaks |
-| 12 | [Channels](05-concurrency/11-channels.md) | Buffered/unbuffered, directional types, closing rules |
-| 13 | [Select](05-concurrency/12-select.md) | Multiplexing, timeouts, non-blocking, nil channels |
-| 14 | [Context](05-concurrency/13-context.md) | Cancellation, deadlines, values, HTTP propagation |
-| 15 | [WaitGroup](05-concurrency/14-waitgroup.md) | Waiting for goroutines, fire-and-forget, graceful shutdown |
-| 16 | [Mutex vs Channels](05-concurrency/15-mutex-vs-channels.md) | When to use which, RWMutex, sync.Map, sync.Once |
-| 17 | [Worker Pools](05-concurrency/16-worker-pools.md) | Bounded concurrency, context-aware pools, generics |
-| 18 | [Pipelines](05-concurrency/17-pipelines.md) | Chained stages, generators, context-aware pipelines |
-| 19 | [Fan-In / Fan-Out](05-concurrency/18-fan-in-fan-out.md) | Distribute work, merge results, bounded fan-out |
+| 11 | [Goroutines](06-concurrency/11-goroutines.md) | G-M-P scheduler, closure gotchas, goroutine leaks |
+| 12 | [Channels](06-concurrency/12-channels.md) | Buffered/unbuffered, directional types, closing rules |
+| 13 | [Select](06-concurrency/13-select.md) | Multiplexing, timeouts, non-blocking, nil channels |
+| 14 | [Context](06-concurrency/14-context.md) | Cancellation, deadlines, values, HTTP propagation |
+| 15 | [WaitGroup](06-concurrency/15-waitgroup.md) | Waiting for goroutines, fire-and-forget, graceful shutdown |
+| 16 | [Mutex vs Channels](06-concurrency/16-mutex-vs-channels.md) | When to use which, RWMutex, sync.Map, sync.Once |
+| 17 | [Worker Pools](06-concurrency/17-worker-pools.md) | Bounded concurrency, context-aware pools, generics |
+| 18 | [Pipelines](06-concurrency/18-pipelines.md) | Chained stages, generators, context-aware pipelines |
+| 19 | [Fan-In / Fan-Out](06-concurrency/19-fan-in-fan-out.md) | Distribute work, merge results, bounded fan-out |
 
 ---
 

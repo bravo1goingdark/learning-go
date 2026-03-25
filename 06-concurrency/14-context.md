@@ -1,4 +1,4 @@
-# 13. Context — Complete Deep Dive
+# 14. Context — Complete Deep Dive
 
 > **Goal:** Master `context.Context` — cancellation, deadlines, values, and every production pattern. Context is how Go propagates cancellation across API boundaries.
 

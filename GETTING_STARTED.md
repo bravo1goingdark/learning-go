@@ -237,17 +237,17 @@ study/
 │   ├── 08-error-handling.md
 │   └── 09-defer-in-depth.md
 ├── 05-generics/
-│   └── 19-generics.md
-├── 05-concurrency/        ← Advanced topics
-│   ├── 10-goroutines.md
-│   ├── 11-channels.md
-│   ├── 12-select.md
-│   ├── 13-context.md
-│   ├── 14-waitgroup.md
-│   ├── 15-mutex-vs-channels.md
-│   ├── 16-worker-pools.md
-│   ├── 17-pipelines.md
-│   └── 18-fan-in-fan-out.md
+│   └── 10-generics.md
+├── 06-concurrency/        ← Advanced topics
+│   ├── 11-goroutines.md
+│   ├── 12-channels.md
+│   ├── 13-select.md
+│   ├── 14-context.md
+│   ├── 15-waitgroup.md
+│   ├── 16-mutex-vs-channels.md
+│   ├── 17-worker-pools.md
+│   ├── 18-pipelines.md
+│   └── 19-fan-in-fan-out.md
 ├── projects/
 │   ├── 09-project-csv-processor.md   ← Project 1: Topics 1-9
 │   ├── 19-concurrency-project.md    ← Project 2: Topics 11-19

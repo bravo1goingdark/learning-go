@@ -1,6 +1,6 @@
 # 19. Project: Concurrent Worker Pool with Graceful Shutdown
 
-> **Goal:** Build a production-ready concurrent worker pool that processes data efficiently with proper graceful shutdown handling. This project combines topics 10-18.
+> **Goal:** Build a production-ready concurrent worker pool that processes data efficiently with proper graceful shutdown handling. This project combines topics 11-19.
 
 ---
 
@@ -701,7 +701,7 @@ func run(ctx context.Context, inputFile string, workers int, timeout time.Durati
 	}
 
 	// Collect results in a separate goroutine
-	// Topic 10: Goroutine for concurrent result collection
+	// Topic 11: Goroutine for concurrent result collection
 	aggregator := NewResultAggregator()
 	go func() {
 		aggregator.AddFromChannel(pool.Results())

@@ -161,7 +161,7 @@ type FanOutError struct {
   └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Reference:** `05-concurrency/15-mutex-vs-channels.md`
+**Reference:** `06-concurrency/16-mutex-vs-channels.md`
 
 Publishing happens constantly. Subscribing happens occasionally. `RWMutex` allows concurrent publishes (multiple readers) while blocking only for subscriber changes (writer). If we used `Mutex`, every publish would serialize.
 

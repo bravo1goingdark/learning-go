@@ -583,6 +583,8 @@ func main() {
 
 ### Constructor Returning Pointer
 
+> **Note on `net/http`:** This example uses `http.Handler` (an interface for handling HTTP requests) and `net.Listen` (opens a TCP listener). HTTP server concepts are covered in the Software Patterns section. The key point here is that the constructor returns a pointer (`*Server`).
+
 ```go
 type Server struct {
     addr     string

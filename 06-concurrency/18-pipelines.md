@@ -1,4 +1,4 @@
-# 17. Pipelines — Complete Deep Dive
+# 18. Pipelines — Complete Deep Dive
 
 > **Goal:** Master Go pipelines — chain stages of goroutines connected by channels. Each stage transforms data and passes it downstream.
 

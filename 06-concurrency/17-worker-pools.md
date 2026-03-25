@@ -1,4 +1,4 @@
-# 16. Worker Pools — Complete Deep Dive
+# 17. Worker Pools — Complete Deep Dive
 
 > **Goal:** Master worker pools — bounded concurrency that processes jobs efficiently without spawning unlimited goroutines.
 

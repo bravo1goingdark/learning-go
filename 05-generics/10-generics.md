@@ -1,4 +1,4 @@
-# 19. Generics (Type Parameters) — Production-Grade Deep Dive
+# 10. Generics (Type Parameters) — Production-Grade Deep Dive
 
 > **Goal:** Master Go generics (1.18+) at a production level. Build type-safe, high-performance systems without runtime overhead.
 
