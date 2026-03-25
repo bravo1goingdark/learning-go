@@ -3,6 +3,7 @@
 > **Goal:** Master `sync.WaitGroup` — wait for a collection of goroutines to finish. The simplest synchronization primitive in Go.
 
 ---
+![WaitGroup](../assets/14.png)
 
 ## Table of Contents
 

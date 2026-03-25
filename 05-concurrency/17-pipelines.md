@@ -3,6 +3,7 @@
 > **Goal:** Master Go pipelines — chain stages of goroutines connected by channels. Each stage transforms data and passes it downstream.
 
 ---
+![Pipelines](../assets/17.png)
 
 ## Table of Contents
 

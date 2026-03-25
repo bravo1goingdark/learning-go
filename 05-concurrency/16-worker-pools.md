@@ -3,6 +3,7 @@
 > **Goal:** Master worker pools — bounded concurrency that processes jobs efficiently without spawning unlimited goroutines.
 
 ---
+![Worker Pools](../assets/16.png)
 
 ## Table of Contents
 

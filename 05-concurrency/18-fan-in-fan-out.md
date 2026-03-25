@@ -3,6 +3,7 @@
 > **Goal:** Master fan-out and fan-in — distribute work across goroutines (fan-out) and collect results back (fan-in). The foundation of concurrent processing patterns.
 
 ---
+![Fan-In Fan-Out](../assets/18.png)
 
 ## Table of Contents
 

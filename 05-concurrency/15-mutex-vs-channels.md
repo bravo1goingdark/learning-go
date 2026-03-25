@@ -3,6 +3,7 @@
 > **Goal:** Know when to use `sync.Mutex` and when to use channels. They solve different problems. The wrong choice leads to complex, buggy code.
 
 ---
+![Mutex vs Channels](../assets/15.png)
 
 ## Table of Contents
 
