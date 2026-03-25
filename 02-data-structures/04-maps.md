@@ -410,6 +410,8 @@ if visited[Point{1, 2}] {
 
 ### Slices as Keys (Workaround)
 
+> **Packages used below:** `encoding/hex` converts bytes to hex strings. `encoding/binary` writes integers as raw bytes in big-endian order (most significant byte first). `fmt.Sprintf("%v", slice)` is the simpler approach — it converts anything to its default string representation.
+
 ```go
 // Convert slice to string
 import "encoding/hex"
@@ -417,6 +419,8 @@ import "encoding/hex"
 func sliceKey(s []int) string {
     b := make([]byte, len(s)*8)
     for i, v := range s {
+        // binary.BigEndian.PutUint64 writes a uint64 as 8 bytes in big-endian order
+        // See: go doc encoding/binary.PutUint64
         binary.BigEndian.PutUint64(b[i*8:], uint64(v))
     }
     return hex.EncodeToString(b)
@@ -594,6 +598,8 @@ func (s *SafeMap) Len() int {
 
 ### Option 3: Sharded Map (High Concurrency)
 
+> **`fnv.New32a()`** creates a fast, non-cryptographic hash function (FNV-1a). It's used here to deterministically map string keys to shard indices. `import "hash/fnv"` is needed. See: `go doc hash/fnv`.
+
 ```go
 const shards = 32
 
@@ -649,6 +655,8 @@ This reduces lock contention by distributing keys across 32 independent shards.
 func wordCount(s string) map[string]int {
     counts := make(map[string]int)
     for _, word := range strings.Fields(s) {
+        // strings.Fields splits a string by whitespace: "hello world foo" → ["hello", "world", "foo"]
+        // See: go doc strings.Fields
         counts[word]++
     }
     return counts
@@ -976,10 +984,15 @@ sm.Delete(key)
 sm.Range(func(k, v any) bool { ... })
 
 // Utilities (Go 1.21+)
-maps.Clone(m)                      // Deep copy
-maps.Equal(m1, m2)                 // Compare
-maps.Keys(m)                       // Iterator of keys (Go 1.23)
-maps.Values(m)                     // Iterator of values (Go 1.23)
+// maps is a stdlib package: import "maps"
+maps.Clone(m)                      // Deep copy — returns a new map with same keys/values
+maps.Equal(m1, m2)                 // Compare — true if both maps have same keys and values
+
+// Utilities (Go 1.23+)
+// These return iterators (a new Go 1.23 feature for lazy sequences)
+maps.Keys(m)                       // Iterator of keys
+maps.Values(m)                     // Iterator of values
+// Use slices.Collect() to convert an iterator to a slice: slices.Collect(maps.Keys(m))
 ```
 
 ---

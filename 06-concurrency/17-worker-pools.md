@@ -929,6 +929,8 @@ func TestWorkerPool(t *testing.T) {
 
 ## 12. Monitoring Worker Pools
 
+> **`expvar`** is a stdlib package that publishes named variables (integers, floats, strings, maps) via HTTP at `/debug/vars` as JSON. It's useful for runtime monitoring — you can see live metrics by hitting that endpoint. See: `go doc expvar`.
+
 ```go
 import "expvar"
 

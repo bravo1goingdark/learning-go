@@ -535,6 +535,8 @@ func safe(ctx context.Context) {
 
 ### GOMAXPROCS
 
+> **`runtime`** provides access to Go's runtime system. `runtime.GOMAXPROCS(n)` sets the maximum number of OS threads that can execute Go code simultaneously (default = number of logical CPUs). `runtime.NumCPU()` returns the CPU count. `runtime.NumGoroutine()` returns the number of currently running goroutines. See: `go doc runtime.GOMAXPROCS`.
+
 ```go
 import "runtime"
 
@@ -890,6 +892,8 @@ func processWithBackpressure(ctx context.Context, jobs <-chan Job) <-chan Result
 ```
 
 ### ErrGroup for Structured Error Handling
+
+> **`errgroup`** (from `golang.org/x/sync/errgroup`) manages a group of goroutines. `g.Go(func() error)` starts a goroutine. `g.Wait()` blocks until all goroutines finish and returns the first non-nil error (or nil if all succeeded). It's the standard way to run multiple goroutines and collect errors. Install: `go get golang.org/x/sync`. See: `go doc golang.org/x/sync/errgroup`.
 
 ```go
 import "golang.org/x/sync/errgroup"

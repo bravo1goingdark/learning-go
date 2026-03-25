@@ -2,6 +2,11 @@
 
 > How to organize Go code for maintainability and scale.
 
+> **Prerequisites:** This section assumes you're comfortable with Go basics (Topics 1-9). The code examples use `net/http` (HTTP server), `encoding/json` (JSON marshal/unmarshal), and `context.Context` (request-scoped data). If any of these are unfamiliar:
+> - `net/http`: `go doc net/http.ListenAndServe` — starts an HTTP server
+> - `encoding/json`: `go doc encoding/json.Marshal` — converts Go values to JSON
+> - `context.Context`: `go doc context.Background` — creates a root context (covered in Topic 14)
+
 ---
 
 ## Why Structure Matters

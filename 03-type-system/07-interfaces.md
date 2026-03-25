@@ -620,6 +620,10 @@ type Ordered interface {
 
 ### How to Satisfy `io.Reader`
 
+> **`io.Copy(dst, src)`** copies from an `io.Reader` to an `io.Writer` until EOF or error. **`io.ReadAll(r)`** reads everything from a Reader into a `[]byte`. These are the workhorses of Go I/O. See: `go doc io.Copy`, `go doc io.ReadAll`.
+
+> **`bytes.NewBufferString("hello")`** creates a `*bytes.Buffer` pre-filled with "hello". A Buffer implements both `io.Reader` and `io.Writer` — it's great for testing. See: `go doc bytes.NewBufferString`.
+
 ```go
 type MyReader struct {
     data []byte
@@ -767,6 +771,8 @@ func TestService(t *testing.T) {
 ```
 
 ### Decorator Pattern
+
+> **`http.ResponseWriter`** is an interface for writing HTTP responses (status code, headers, body). **`http.Request`** represents an incoming HTTP request. **`slog.Logger`** is Go 1.21+'s structured logger — `logger.Info("msg", "key", value)` logs with structured key-value pairs. See: `go doc net/http.ResponseWriter`, `go doc log/slog.Logger`.
 
 ```go
 type Handler interface {

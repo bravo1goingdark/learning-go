@@ -1,6 +1,19 @@
 # Quick Reference: First Go Program
 
-After reading the first two files, you should be able to understand this program:
+After reading the first two files, you should be able to understand this program.
+
+> **Before you run this:** Save the code below as `review.go`, then run it with:
+> ```bash
+> go run review.go
+> ```
+> `go run` compiles and runs the program in one step. For production, use `go build` instead (covered in Topic 1).
+
+### Key Concepts Before Reading the Code
+
+- **`package main`** — Every Go file starts with a `package` declaration. `package main` means "this is an executable program" (it has a `main()` function). Other packages (like `fmt`, `strings`) are libraries you import.
+- **`import`** — Brings in code from the standard library or other modules. `fmt` provides formatted I/O (`Println`, `Printf`). `strings` provides string manipulation functions.
+- **`func main()`** — The entry point. When you run the program, Go calls `main()` first.
+- **`func` keyword** — Defines a function. Syntax: `func name(params) returnType { body }`.
 
 ```go
 package main

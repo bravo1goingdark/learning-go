@@ -633,6 +633,8 @@ var tmpl = Must(template.New("main").Parse(templateStr))
 
 > **Note on `context.Context`:** The `ctx` parameter below is Go's mechanism for carrying request-scoped data, deadlines, and cancellation signals. It's covered in detail in Topic 14. For now, understand that production functions accept `ctx` as their first parameter so callers can cancel long-running operations.
 
+> **`slog`** is Go 1.21+'s structured logging package. `slog.ErrorContext(ctx, "msg", "key", val)` logs at ERROR level with structured key-value pairs and respects context deadlines. See: `go doc log/slog`.
+
 ```go
 func (s *Service) CreateUser(ctx context.Context, req CreateUserReq) (*User, error) {
     if err := req.Validate(); err != nil {
@@ -1082,6 +1084,8 @@ func retry(ctx context.Context, maxRetries int, fn func() error) error {
 }
 
 func isRetryable(err error) bool {
+    // net.Error is an interface for network errors with Timeout() and Temporary() methods.
+    // See: go doc net.Error
     var netErr net.Error
     if errors.As(err, &netErr) {
         return netErr.Timeout() || netErr.Temporary()

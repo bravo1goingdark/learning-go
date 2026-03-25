@@ -630,6 +630,8 @@ func main() {
 
 ### Atomic Pointer (Go 1.19+)
 
+> **`sync/atomic`** provides low-level atomic operations for lock-free concurrency. `atomic.Pointer[T]` is a generic type that lets you atomically load and store a pointer — without a mutex. This is useful for read-heavy configurations that are updated rarely. See: `go doc sync/atomic.Pointer`.
+
 ```go
 import "sync/atomic"
 
@@ -786,6 +788,8 @@ func NewUser(name string) *User {
 }
 
 // GOOD: Pool allocation for high-frequency objects
+// sync.Pool reuses objects to reduce GC pressure. Get() returns a cached object
+// (or creates one via New), Put() returns it to the pool. See: go doc sync.Pool.
 var userPool = sync.Pool{
     New: func() interface{} {
         return &User{}

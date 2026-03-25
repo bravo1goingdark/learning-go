@@ -88,6 +88,8 @@ func main() {
 
 ### Real-World Example
 
+> **Packages used below:** `os.Open` opens a file for reading. `gzip.NewReader(f)` wraps a reader to decompress gzip data on the fly. `io.ReadAll(r)` reads everything from a reader into `[]byte`. `os.Create` creates a new file. See: `go doc os.Open`, `go doc compress/gzip.NewReader`, `go doc io.ReadAll`.
+
 ```go
 func processFile(path string) error {
     f, err := os.Open(path)
@@ -721,6 +723,8 @@ func (c *Counter) Increment() int {
 
 ### Pattern 3: Transaction Commit/Rollback
 
+> **`database/sql`** is Go's standard SQL interface. `db.Begin()` starts a transaction. `tx.Exec()` runs SQL within the transaction. `tx.Commit()` applies changes. `tx.Rollback()` undoes them. Always pair Begin with Commit/Rollback — defer ensures Rollback runs if Commit never happens. See: `go doc database/sql.DB.Begin`.
+
 ```go
 func Transfer(db *sql.DB, fromID, toID string, amount float64) error {
     tx, err := db.Begin()
@@ -755,6 +759,8 @@ func Transfer(db *sql.DB, fromID, toID string, amount float64) error {
 ```
 
 ### Pattern 4: HTTP Body Close
+
+> **`http.Get(url)`** makes an HTTP GET request and returns a `*http.Response`. The response body is an `io.ReadCloser` — you MUST close it (via `defer resp.Body.Close()`) to release the underlying TCP connection back to the pool. Forgetting to close it causes connection leaks. See: `go doc net/http.Response`.
 
 ```go
 func fetch(url string) ([]byte, error) {
@@ -821,6 +827,8 @@ func (s *Service) CreateOrder(ctx context.Context, req CreateOrderReq) (order *O
 ```
 
 ### Pattern 7: Panic Recovery in HTTP Handler
+
+> **`http.Handler`** is an interface with a single method `ServeHTTP(ResponseWriter, *Request)`. **`http.HandlerFunc`** is a type adapter that lets you use a plain function as a Handler. **`debug.Stack()`** returns the current goroutine's call stack as bytes — useful for logging panics. See: `go doc net/http.Handler`, `go doc runtime/debug.Stack`.
 
 ```go
 func RecoveryMiddleware(next http.Handler) http.Handler {

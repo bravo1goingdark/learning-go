@@ -1046,6 +1046,12 @@ go doc -all sync.Mutex          # Full docs
 go doc -src fmt.Printf          # Source code
 ```
 
+> **How to look up unfamiliar stdlib functions:** Throughout this repo you'll encounter functions like `strings.Fields`, `bytes.NewBufferString`, `json.Marshal`, `io.ReadAll`, etc. Don't memorize them. Instead:
+> 1. Run `go doc <package>.<function>` (e.g., `go doc strings.Fields`)
+> 2. Or browse online: https://pkg.go.dev/std
+> 3. Or use your editor's hover feature (VS Code shows docs on hover)
+> This skill — looking things up — is more valuable than memorizing every function.
+
 ---
 
 ## 14. Production Build Patterns

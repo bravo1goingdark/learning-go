@@ -568,6 +568,10 @@ func (s *UserService) Create(user User) error {
 
 Struct tags are metadata attached to struct fields. They're read at runtime via reflection.
 
+> **`encoding/json`** is Go's JSON marshaling library. `json.Marshal(struct)` converts a Go struct to `[]byte` JSON. `json.Unmarshal(data, &struct)` parses JSON into a Go struct. The `json:"fieldName"` struct tag controls the output field name. `json:"-"` means "never include this field." See: `go doc encoding/json.Marshal`.
+
+> **`reflect`** is Go's reflection package — it lets you inspect types, struct fields, and struct tags at runtime. Libraries like `encoding/json` and validators use `reflect` under the hood. See: `go doc reflect.TypeOf`.
+
 ### Syntax
 
 ```go
