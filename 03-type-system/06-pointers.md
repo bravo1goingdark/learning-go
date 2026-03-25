@@ -260,6 +260,8 @@ u2 := &User{Name: "Alice", Age: 30}
 // u2.Age == 30
 ```
 
+**Why prefer `&T{}`:** The `&T{}` form is more idiomatic and practical because it combines allocation with initialization in one step. With `new(T)`, you must immediately set each field individually, which is verbose and error-prone (easy to forget a field). The struct literal syntax makes it immediately clear what values the struct contains. Use `new(T)` only when you genuinely need a pointer to a zero-value struct without any initialization—rare in practice.
+
 **Production rule:** Use `&T{}` for structs. Use `new(T)` only for primitive types where you need a pointer to zero value.
 
 ---
@@ -502,6 +504,8 @@ func process() {
 
 ### 1. Nil Pointer Dereference
 
+**Why this panics:** Nil pointers don't point to any valid memory. Dereferencing them would read or write to an undefined memory location, which is undefined behavior. Go chooses to panic immediately rather than allowing undefined behavior that could lead to security vulnerabilities or silent data corruption.
+
 ```go
 var p *int
 fmt.Println(*p)  // PANIC: runtime error: nil pointer dereference
@@ -513,6 +517,8 @@ if p != nil {
 ```
 
 ### 2. Pointer to Loop Variable (Pre-Go 1.22)
+
+**Why this happens:** In pre-1.22 Go, the loop variable `u` is reused across iterations. Taking its address gives you the address of that single variable, which holds the last iteration's value by the time you use the pointers. Go 1.22 changed this behavior so each iteration gets its own variable, eliminating this common bug.
 
 ```go
 // Pre-Go 1.22: BUG — all pointers point to same variable
@@ -532,6 +538,8 @@ for _, u := range userList {
 ```
 
 ### 3. Pointer in Goroutine
+
+**Why this happens:** Goroutines are scheduled independently and may not run immediately. By the time they actually execute, the loop has finished and the variable holds its final value. The closure captures the variable by reference, not by value at the time of goroutine creation.
 
 ```go
 // BUG — pointer captured before goroutine starts
@@ -563,6 +571,8 @@ fmt.Println(*p1 == *p2) // true — same values
 ```
 
 ### 5. Returning Pointer to Local Slice Element
+
+**Why this is dangerous:** Slices have a backing array. When you take the address of a slice element, you're getting a pointer to that backing array. Subsequent operations like `append` that exceed capacity cause a new allocation, leaving the old backing array eligible for garbage collection—but your pointer still references the old (now freed) memory.
 
 ```go
 func getFirst(s []int) *int {

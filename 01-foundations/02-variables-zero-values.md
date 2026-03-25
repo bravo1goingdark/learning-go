@@ -68,6 +68,8 @@ var y int64 = 1000000000000000000 // Always works
 
 ## 2. Variable Declaration Forms
 
+**When to use which form:** The choice depends on scope, initialization needs, and readability. At package level, you must use `var` since `:=` isn't allowed. Within functions, prefer `:=` for local variables since it's more concise and the type is usually obvious from context. Use explicit `var` when you want zero value initialization without specifying a type, or when the variable might be reassigned later (making `:=` inappropriate). Use `var` with explicit type when the type isn't obvious from the right-hand side or when you want to make the type explicit for clarity.
+
 ### Form 1: `var` with Type (Package Level)
 
 ```go
@@ -806,6 +808,8 @@ func main() {
 
 ### Functional Options Pattern
 
+**When to use this pattern:** Use functional options when a struct has multiple optional fields that may be omitted, and you want a clear API without requiring users to set dozens of parameters or remember pointer/nil conventions. It's particularly valuable when: (1) most fields have sensible defaults, (2) you expect the struct to grow more optional fields over time (backward compatible), or (3) you want named, self-documenting configuration. For simple cases with only 1-2 optional fields, plain function parameters or setters are simpler.
+
 > **Prerequisites:** This pattern uses functions as values, variadic parameters (`...`), and closures — concepts not yet covered in detail. Here's the quick version:
 > - `type Option func(*Server)` defines `Option` as a function type that takes a `*Server`.
 > - `func WithHost(h string) Option { return func(s *Server) { s.host = h } }` returns a closure — an anonymous function that "remembers" the `host` value.
@@ -857,6 +861,8 @@ srv := NewServer(
 
 ### Sentinel Values
 
+**When to use vs custom error types:** Sentinel errors (predefined error values like `ErrNotFound`) work well when you need to compare errors exactly using `==`. However, they have a limitation: you can't attach additional context without wrapping, and adding new sentinel values requires importing the package. Custom error types (structs implementing the `error` interface) are better when you need to carry payload data or when the error category is open-ended. For most production code, wrapping errors with `fmt.Errorf("%w", err)` is preferred over sentinel comparisons.
+
 ```go
 var (
     ErrNotFound    = errors.New("not found")
@@ -873,6 +879,8 @@ var (
 
 ### 1. Integer Overflow
 
+**Why this happens:** Go's integer types are fixed-size and overflow wraps silently because checking for overflow on every arithmetic operation would impose a significant performance cost. The language chooses performance and simplicity over safety for numeric operations.
+
 ```go
 var x int8 = 127
 x++          // x = -128 — wraps around, no error!
@@ -881,6 +889,8 @@ x++          // x = -128 — wraps around, no error!
 **Fix:** Use larger types, or check bounds explicitly.
 
 ### 2. Float Comparison
+
+**Why this happens:** Floating-point numbers are stored in binary, and some decimal values (like 0.1, 0.2, 0.3) cannot be represented exactly in binary. The small representation error accumulates during arithmetic, making seemingly equal values slightly different. This is a fundamental property of floating-point arithmetic across all programming languages, not a Go bug.
 
 ```go
 a := 0.1 + 0.2
@@ -895,6 +905,8 @@ if math.Abs(a-b) < epsilon {
 ```
 
 ### 3. String is Immutable
+
+**Why this exists:** String immutability provides several benefits: (1) strings can be safely shared between goroutines without synchronization, (2) string keys in maps are safe from modification, (3) memory can be optimized by reusing underlying byte arrays, and (4) it prevents a class of bugs where modifying a string unexpectedly affects other code holding a reference to it.
 
 ```go
 s := "hello"

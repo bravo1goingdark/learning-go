@@ -623,6 +623,12 @@ func cleanup() {
 
 ## 8. Defer Performance
 
+### Why Defer Has Overhead
+
+**How defer works internally:** When a `defer` statement executes, Go must (1) evaluate the arguments and store them, (2) create a deferred function call record with its arguments, (3) push this record onto a stack, and (4) set up stack bookkeeping. When the containing function returns, Go must (1) pop the deferred calls from the stack in reverse order, (2) restore saved registers, (3) execute each deferred function with the stored arguments, and (4) handle any panics. This bookkeeping overhead is why defer is slower than explicit cleanup calls.
+
+Go 1.22 improved this by using a more efficient metadata structure that reduces the per-defer overhead significantly, but the fundamental mechanism still requires some work.
+
 ### Cost Per Defer (Go 1.22+)
 
 Go 1.22 significantly improved defer performance. Before that, defer had measurable overhead.
