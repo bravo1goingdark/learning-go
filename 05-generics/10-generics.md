@@ -510,4 +510,796 @@ func (c *Cache[K, V]) Len() int {
 }
 
 // Thread-safe usage
-cache := NewCache[string, User]()
+cache := NewCache[string, int]()
+cache.Set("key", 42)
+v, ok := cache.Get("key") // v=42, ok=true
+```
+
+---
+
+## 8. Generic Methods
+
+Go supports generic methods on structs and types, enabling type-safe operations on container types.
+
+### Basic Generic Methods
+
+```go
+type Container[T any] struct {
+    value T
+}
+
+// Generic method — type parameter on the method itself
+func (c Container[T]) Transform[U any](fn func(T) U) U {
+    return fn(c.value)
+}
+
+// Usage
+c := Container[int]{value: 42}
+result := c.Transform(func(n int) string {
+    return fmt.Sprintf("value is %d", n)
+}) // result = "value is 42", U inferred as string
+```
+
+### Generic Methods on Non-Generic Types
+
+```go
+type Logger struct{}
+
+// The type parameter is on the method, not the struct
+func (Logger) Log[T any](val T) {
+    fmt.Printf("[LOG] %v\n", val)
+}
+
+log := Logger{}
+log.Log(42)           // T = int
+log.Log("hello")      // T = string
+log.Log([]int{1, 2}) // T = []int
+```
+
+### Chaining with Generic Methods
+
+```go
+type Result[T any] struct {
+    val T
+    err error
+}
+
+func (r Result[T]) Map[U any](fn func(T) U) Result[U] {
+    if r.err != nil {
+        return Result[U]{err: r.err}
+    }
+    return Result[U]{val: fn(r.val)}
+}
+
+func (r Result[T]) FlatMap[U any](fn func(T) (U, error)) Result[U] {
+    if r.err != nil {
+        return Result[U]{err: r.err}
+    }
+    val, err := fn(r.val)
+    return Result[U]{val: val, err: err}
+}
+
+// Chaining
+result := Result[int]{val: 10}.
+    Map(func(n int) int { return n * 2 }).
+    Map(func(n int) string { return fmt.Sprintf("%d", n) })
+// result.val = "20"
+```
+
+---
+
+## 9. Generic Interfaces
+
+Interfaces can have type parameters, enabling generic contracts for collections and algorithms.
+
+### Basic Generic Interface
+
+```go
+type Repository[T any] interface {
+    Save(entity T) error
+    FindByID(id string) (T, error)
+    Delete(id string) error
+}
+
+// Implement for User
+type UserRepo struct{ /* ... */ }
+func (r *UserRepo) Save(u User) error { /* ... */ }
+func (r *UserRepo) FindByID(id string) (User, error) { /* ... */ }
+func (r *UserRepo) Delete(id string) error { /* ... */ }
+```
+
+### Generic Interface with Multiple Type Parameters
+
+```go
+type Mapper[K comparable, V any] interface {
+    Get(key K) (V, bool)
+    Set(key K, value V)
+    Delete(key K)
+    Keys() []K
+}
+
+// Can be implemented by map, cache, distributed store, etc.
+type MapMapper[K comparable, V any] struct {
+    data map[K]V
+}
+```
+
+### Constraint Interfaces as Type Parameters
+
+```go
+// An interface that itself takes type parameters
+type Sortable[T any] interface {
+    Len() int
+    Less(i, j int) bool
+    Swap(i, j int)
+}
+
+func Sort[T any, S Sortable[T]](s S) {
+    for i := 0; i < s.Len(); i++ {
+        for j := i + 1; j < s.Len(); j++ {
+            if s.Less(j, i) {
+                s.Swap(i, j)
+            }
+        }
+    }
+}
+```
+
+---
+
+## 10. Comparable Constraint Deep Dive
+
+The `comparable` constraint is more nuanced than it appears. Understanding it prevents subtle bugs.
+
+### What `comparable` Actually Means
+
+`comparable` includes all types that support `==` and `!=`. This is a specific subset of all Go types.
+
+```
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║                     WHAT IS "comparable"?                               ║
+  ╠══════════════════════════════════════════════════════════════════════════╣
+  ║                                                                          ║
+  ║  ╔════════════════════════════════════╗   ╔════════════════════════════╗║
+  ║  ║      COMPARABLE (supports ==)     ║   ║    NOT COMPARABLE          ║║
+  ║  ╠════════════════════════════════════╣   ╠════════════════════════════╣║
+  ║  ║  • int, int8, int16, int32, int64 ║   ║  • slices ([]int, []str)   ║║
+  ║  ║  • uint, uint8-64, uintptr        ║   ║  • maps (map[K]V)         ║║
+  ║  ║  • float32, float64               ║   ║  • functions               ║║
+  ║  ║  • bool                           ║   ║  • structs with            ║║
+  ║  ║  • string                        ║   ║    slice/map/func fields   ║║
+  ║  ║  • pointers (to comp. types)     ║   ║                            ║║
+  ║  ║  • structs (all fields comp.)    ║   ║                            ║║
+  ║  ║  • arrays (elems comparable)     ║   ║                            ║║
+  ║  ║  • interfaces (dynamic type)     ║   ║                            ║║
+  ║  ╚════════════════════════════════════╝   ╚════════════════════════════╝║
+  ║                                                                          ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+**Reading this diagram:**
+
+- **Left column (COMPARABLE):** These types can be used with `==` and `!=`, and can be map keys. This includes all basic types (int, string, float), pointers, and structs where every field is comparable.
+- **Right column (NOT COMPARABLE):** These types cannot be compared with `==`. Slices, maps, and functions are inherently non-comparable. Structs become non-comparable if they contain any non-comparable field (like a slice or map).
+- **Why this matters:** If you write `func Unique[T comparable](s []T)`, T must be from the left column. Trying to use a slice as T will give a compile error.
+
+### Struct Comparability
+
+A struct is comparable only if **all** its fields are comparable:
+
+```go
+// Comparable — all fields are basic types
+type User struct {
+    ID   int
+    Name string
+}
+
+// NOT comparable — contains a slice
+type Config struct {
+    Name  string
+    Tags  []string  // slice makes the whole struct non-comparable
+}
+
+// Usage with maps
+users := map[User]string{} // OK
+configs := map[Config]string{} // Compile error if Config has non-comparable fields
+```
+
+### Using `comparable` for Map Keys
+
+```go
+// Generic frequency counter
+func Frequency[T comparable](items []T) map[T]int {
+    counts := make(map[T]int)
+    for _, item := range items {
+        counts[item]++
+    }
+    return counts
+}
+
+_ = Frequency([]int{1, 2, 2, 3})         // map[1:1 2:2 3:1]
+_ = Frequency([]string{"a", "b", "a"})   // map[a:2 b:1]
+```
+
+### Combining `comparable` with Methods
+
+```go
+type Entity interface {
+    comparable
+    ID() string
+}
+
+func FindByIDs[T Entity](items []T, ids []string) []T {
+    idSet := make(map[string]struct{})
+    for _, id := range ids {
+        idSet[id] = struct{}{}
+    }
+
+    var result []T
+    for _, item := range items {
+        if _, ok := idSet[item.ID()]; ok {
+            result = append(result, item)
+        }
+    }
+    return result
+}
+```
+
+---
+
+## 11. Type Inference
+
+Go's type inference reduces verbosity by letting the compiler figure out type arguments.
+
+### Basic Inference
+
+```go
+func Identity[T any](v T) T { return v }
+
+// Explicit type argument (verbose)
+result := Identity[int](42)
+
+// Inferred — compiler knows T = int from the argument
+result := Identity(42)
+```
+
+### Inference from Function Arguments
+
+```go
+func Map[T, U any](s []T, fn func(T) U) []U {
+    result := make([]U, len(s))
+    for i, v := range s {
+        result[i] = fn(v)
+    }
+    return result
+}
+
+// T inferred from []int, U inferred from return type of func
+result := Map([]int{1, 2, 3}, func(n int) string {
+    return strconv.Itoa(n)
+}) // result is []string
+```
+
+### When Inference Fails
+
+```go
+// No arguments to infer from — must specify type argument
+var zero int = Zero[int]() // Must be explicit
+
+func Zero[T any]() T {
+    var z T
+    return z
+}
+```
+
+### Inference with Composite Types
+
+```go
+func Process[K comparable, V any](m map[K]V) []K {
+    keys := make([]K, 0, len(m))
+    for k := range m {
+        keys = append(keys, k)
+    }
+    return keys
+}
+
+// K = string, V = int — inferred from map argument
+keys := Process(map[string]int{"a": 1, "b": 2})
+```
+
+### Unification-Based Inference
+
+Go uses constraint unification — it matches types across all uses of a type parameter:
+
+```go
+func Combine[T any](a, b []T) []T {
+    return append(a, b...)
+}
+
+// All three uses of T must unify to the same type
+result := Combine([]int{1, 2}, []int{3, 4}) // T = int
+```
+
+---
+
+## 12. Common Production Patterns
+
+### Functional Options Pattern with Generics
+
+```go
+type Option[T any] func(*T)
+
+func WithTimeout[T any](d time.Duration) Option[T] {
+    return func(cfg *T) {
+        // Type-safe but cfg fields depend on concrete T
+    }
+}
+
+func NewServer(opts ...Option[ServerConfig]) *Server {
+    cfg := defaultConfig()
+    for _, opt := range opts {
+        opt(&cfg)
+    }
+    return &Server{config: cfg}
+}
+```
+
+### Generic Result Type
+
+```go
+type Result[T any] struct {
+    val T
+    err error
+}
+
+func OK[T any](val T) Result[T] {
+    return Result[T]{val: val}
+}
+
+func Err[T any](err error) Result[T] {
+    return Result[T]{err: err}
+}
+
+func (r Result[T]) Value() (T, error) {
+    return r.val, r.err
+}
+
+func (r Result[T]) Map[U any](fn func(T) U) Result[U] {
+    if r.err != nil {
+        return Err[U](r.err)
+    }
+    return OK(fn(r.val))
+}
+```
+
+### Generic Pool
+
+```go
+type Pool[T any] struct {
+    mu    sync.Mutex
+    items []T
+    alloc func() T
+    reset func(T) T
+}
+
+func NewPool[T any](alloc func() T, reset func(T) T) *Pool[T] {
+    return &Pool[T]{alloc: alloc, reset: reset}
+}
+
+func (p *Pool[T]) Get() T {
+    p.mu.Lock()
+    defer p.mu.Unlock()
+
+    if len(p.items) == 0 {
+        return p.alloc()
+    }
+    item := p.items[len(p.items)-1]
+    p.items = p.items[:len(p.items)-1]
+    return p.reset(item)
+}
+
+func (p *Pool[T]) Put(item T) {
+    p.mu.Lock()
+    defer p.mu.Unlock()
+    p.items = append(p.items, item)
+}
+```
+
+### Generic Retry
+
+```go
+func Retry[T any](attempts int, delay time.Duration, fn func() (T, error)) (T, error) {
+    var lastErr error
+    for i := 0; i < attempts; i++ {
+        val, err := fn()
+        if err == nil {
+            return val, nil
+        }
+        lastErr = err
+        if i < attempts-1 {
+            time.Sleep(delay)
+        }
+    }
+    var zero T
+    return zero, fmt.Errorf("after %d attempts: %w", attempts, lastErr)
+}
+```
+
+---
+
+## 13. Generics vs Interfaces Performance
+
+### The Tradeoff
+
+```
+  ╔═══════════════════════════════════════════════════════════════════════════════════╗
+  ║               INTERFACE (Dynamic Dispatch)     vs    GENERICS (Static Dispatch) ║
+  ╠═══════════════════════════════════════════════════════════════════════════════════╣
+  ║                                                                                   ║
+  ║      ┌──────────────────┐                    ┌──────────────────┐                ║
+  ║      │      CALLER       │                    │      CALLER       │                ║
+  ║      └────────┬─────────┘                    └────────┬─────────┘                ║
+  ║               │                                       │                          ║
+  ║               ▼                                       ▼                          ║
+  ║      ┌──────────────────┐                    ┌──────────────────┐                ║
+  ║      │   interface{}    │                    │   concrete T     │                ║
+  ║      │    (fat ptr)     │                    │    (direct)      │                ║
+  ║      │  type + value    │                    │                  │                ║
+  ║      └────────┬─────────┘                    └────────┬─────────┘                ║
+  ║               │                                       │                          ║
+  ║               ▼                                       ▼                          ║
+  ║      ┌──────────────────┐                    ┌──────────────────┐                ║
+  ║      │  vtable lookup   │                    │  inlined direct  │                ║
+  ║      │ type assertion   │                    │     call         │                ║
+  ║      │ method dispatch  │                    │                  │                ║
+  ║      └────────┬─────────┘                    └────────┬─────────┘                ║
+  ║               │                                       │                          ║
+  ║      ┌────────▼─────────┐                    ┌────────▼─────────┐                ║
+  ║      │ Runtime overhead │                    │  Zero overhead  │                ║
+  ║      │ (indirection)    │                    │ (same as typed) │                ║
+  ║      └──────────────────┘                    └──────────────────┘                ║
+  ║                                                                                   ║
+  ╚═══════════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Reading this diagram:**
+
+- **Left side (Interface):** Uses dynamic dispatch. At runtime, the interface holds both the type and value (fat pointer). When you call a method, it looks up the method in a vtable and dispatches. This adds overhead — there's an indirection for every call.
+- **Right side (Generics):** Uses static dispatch. The compiler generates specialized code for each type. There's no runtime lookup — it's a direct function call, often inlined. Zero overhead compared to writing the function manually for each type.
+- **Tradeoff:** Interfaces are flexible (any type can implement them) but slower. Generics are fast but less flexible (must know types at compile time).
+
+| Scenario | Use Interfaces | Use Generics |
+|----------|---------------|-------------|
+| Known set of implementations | ✓ | |
+| Type-safe containers | | ✓ |
+| Plugin architecture | ✓ | |
+| Algorithms (sort, search) | | ✓ |
+| Method polymorphism | ✓ | |
+| Performance-critical loops | | ✓ |
+| Dependency injection | ✓ | |
+| Data structure internals | | ✓ |
+
+---
+
+## 14. Internals: How Go Implements Generics
+
+### GC Shape Stenciling (Go 1.18+)
+
+Go uses **GC shape stenciling** — a hybrid between full monomorphization and dynamic dispatch.
+
+```
+  ╔═══════════════════════════════════════════════════════════════════════════════╗
+  ║                 PURE MONOMORPHISM (C++)      vs    GC SHAPE STENCILING (Go)   ║
+  ╠═══════════════════════════════════════════════════════════════════════════════╣
+  ║                                                                           ║
+  ║  ┌──────────────────────────────────────┐   ┌──────────────────────────────────┐ ║
+  ║  │  Generated Code (one copy per type)  │   │  Generated Code (shared shapes)  │ ║
+  ║  ├──────────────────────────────────────┤   ├──────────────────────────────────┤ ║
+  ║  │                                      │   │                                  │ ║
+  ║  │  func Sum_int(nums []int) int       │   │  func Sum·int·(nums []int) int  │ ║
+  ║  │      // full code for int           │   │      // shared code, + dict      │ ║
+  ║  │                                      │   │                                  │ ║
+  ║  │  func Sum_float64(nums []float64)   │   │  func Sum·float64·(...)         │ ║
+  ║  │      // full code for float64      │   │      // same code, diff dict     │ ║
+  ║  │                                      │   │                                  │ ║
+  ║  │  func Sum_string(nums []string)     │   │  func Sum·string·(...)          │ ║
+  ║  │      // full code for string       │   │      // same code, diff dict     │ ║
+  ║  │                                      │   │                                  │ ║
+  ║  └──────────────────────────────────────┘   └──────────────────────────────────┘ ║
+  ║                                                                           ║
+  ║  Binary size: LARGE (N copies)          Binary size: SMALL (1 per shape)    ║
+  ║                                                                           ║
+  ╚═══════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Reading this diagram:**
+
+- **Left (Pure Monomorphization - C++ style):** For each type you use, the compiler generates a completely separate copy of the function. `Sum_int()`, `Sum_float64()`, `Sum_string()` — each has full code. Result: large binary, but fastest possible.
+- **Right (GC Shape Stenciling - Go style):** Go groups types by their "shape" (memory layout). Types with the same shape share one code path. The compiler passes a small "dictionary" telling the code how to handle the specific type. Result: smaller binary, slightly more runtime work but often optimized away.
+- **Shape examples:** All pointers have the same shape. All ints have the same shape. Strings all have the same shape (ptr + len).
+
+At runtime, Go passes a "dictionary" of type-specific operations:
+
+```
+  ╔═══════════════════════════════════════════════════════════════════════════════╗
+  ║                         DICTIONARY PASSING AT RUNTIME                        ║
+  ╠═══════════════════════════════════════════════════════════════════════════════╣
+  ║                                                                           ║
+  ║  Your Code:                          Compiler Generates:                   ║
+  ║  ┌────────────────────────────────┐   ┌──────────────────────────────────┐    ║
+  ║  │ func Sum[T Numeric](nums []T) │   │ func Sum_int(nums []int) int  │    ║
+  ║  │     total += n                 │   │     total += n   ← direct    │    ║
+  ║  │     return total               │   │     return total             │    ║
+  ║  │ }                              │   │ }                             │    ║
+  ║  └────────────────────────────────┘   └──────────────────────────────────┘    ║
+  ║                                                                           ║
+  ║  At call site, Go passes a "dictionary" containing:                        ║
+  ║  ┌─────────────────────────────────────────────────────────────────────────┐ ║
+  ║  │ • How to add two T values (int add, float add, etc.)                  │ ║
+  ║  │ • How to compare T values (<, >, ==)                                  │ ║
+  ║  │ • The size of T (for slice indexing)                                  │ ║
+  ║  └─────────────────────────────────────────────────────────────────────────┘ ║
+  ║                                                                           ║
+  ║  For hot paths: compiler inlines and eliminates dictionary overhead        ║
+  ║                                                                           ║
+  ╚═══════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Reading this diagram:**
+
+- **Your Code (top left):** You write one generic function `Sum[T Numeric]`. You don't know what T will be — int, float64, or something else.
+- **Compiler Generates (top right):** The compiler creates a specialized version for each type you actually use. For `Sum([]int{...})`, it creates `Sum_int()`.
+- **Dictionary (middle):** The dictionary is a small hidden parameter passed at runtime. It contains pointers to type-specific operations: how to add, how to compare, the size, etc.
+- **Hot vs Cold (bottom):** If a generic function is called in a tight loop (hot path), the compiler inlines it and eliminates dictionary lookups entirely. For rarely-called code (cold path), the dictionary adds tiny overhead but saves binary size.
+
+- **Hot path**: Compiler fully specializes → zero overhead
+- **Cold path**: Shared code with dictionary → slight overhead
+- **Result**: Generics are as fast as hand-written code for most workloads
+
+---
+
+## 15. Testing Generic Code
+
+### Table-Driven Tests for Generic Functions
+
+```go
+func TestUnique[T comparable](t *testing.T) {
+    tests := []struct {
+        name     string
+        input    []T
+        expected []T
+    }{
+        {"empty", []T{}, []T{}},
+        {"no duplicates", []T{T(1), T(2)}, []T{T(1), T(2)}},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got := Unique(tt.input)
+            if !reflect.DeepEqual(got, tt.expected) {
+                t.Errorf("got %v, want %v", got, tt.expected)
+            }
+        })
+    }
+}
+
+func TestUniqueInt(t *testing.T)  { TestUnique[int](t) }
+func TestUniqueString(t *testing.T) { TestUnique[string](t) }
+```
+
+### Testing Constraint Satisfaction at Compile Time
+
+```go
+// Verify at compile time that types satisfy your constraint
+var _ Numeric = int(0)
+var _ Numeric = float64(0)
+// var _ Numeric = "string" // Compile error — string is not Numeric
+```
+
+---
+
+## 16. Common Pitfalls
+
+### Pitfall 1: Over-Using `any`
+
+```go
+// BAD — no type safety
+func Process[T any](items []T) []T { return items }
+
+// GOOD — constrain to what you actually need
+func Process[T cmp.Ordered](items []T) []T { /* can compare */ return items }
+```
+
+### Pitfall 2: Not Understanding `~`
+
+```go
+type MyInt int
+
+func Process1[T int](v T) T { return v }    // MyInt fails
+func Process2[T ~int](v T) T { return v }    // MyInt works
+
+_ = Process1(MyInt(42)) // ERROR
+_ = Process2(MyInt(42)) // OK
+```
+
+### Pitfall 3: No Constraint on Operators
+
+```go
+// ERROR: can't use + on type T
+func Add[T any](a, b T) T { return a + b }
+
+// FIX: constrain T to types that support +
+func Add[T int | float64 | string](a, b T) T { return a + b }
+```
+
+### Pitfall 4: Generic Methods in Interfaces (Not Allowed)
+
+```go
+// This DOESN'T work:
+type Container interface {
+    Transform[T any](fn func(T) T) T // ERROR: methods can't have type params
+}
+
+// Workaround: make the interface itself generic
+type Container[T any] interface {
+    Transform(fn func(T) T) T
+}
+```
+
+### Pitfall 5: Nil Pointer with Generic Types
+
+```go
+func First[T any](s []T) T {
+    if len(s) == 0 {
+        var zero T
+        return zero // Returns nil for pointer types!
+    }
+    return s[0]
+}
+
+var users []*User
+u := First(users) // u is nil, not an empty User!
+```
+
+---
+
+## 17. Production Guidelines
+
+### 1. Prefer Generics for Data Structures
+
+```go
+// Good: type-safe data structure
+type Queue[T any] struct { /* ... */ }
+type Stack[T any] struct { /* ... */ }
+type Cache[K comparable, V any] struct { /* ... */ }
+```
+
+### 2. Constrain T as Tightly as Possible
+
+```go
+// BAD: too permissive
+func Max[T any](a, b T) T { /* can't compare */ }
+
+// GOOD: tight constraint
+func Max[T cmp.Ordered](a, b T) T {
+    if a > b { return a }
+    return b
+}
+```
+
+### 3. Use Generics for Algorithms, Interfaces for Behavior
+
+```go
+// Generics for algorithms
+func Filter[T any](items []T, pred func(T) bool) []T { /* ... */ }
+func Map[T, U any](items []T, fn func(T) U) []U { /* ... */ }
+
+// Interfaces for behavior
+type Storage interface {
+    Save(key string, data []byte) error
+    Load(key string) ([]byte, error)
+}
+```
+
+### 4. Document Your Constraints
+
+```go
+// Numeric accepts all signed/unsigned ints and floats.
+// Custom types with underlying numeric types are also supported via ~.
+type Numeric interface {
+    ~int | ~int8 | ~int16 | ~int32 | ~int64 |
+    ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
+    ~float32 | ~float64
+}
+```
+
+### 5. Test with Multiple Types
+
+```go
+// Test with at least:
+// - A basic type (int, string)
+// - A pointer type (*User)
+// - A custom type (type MyInt int)
+```
+
+### 6. Don't Generic-ify Everything
+
+```go
+// BAD: generic for no reason
+func Print[T any](val T) { fmt.Println(val) }
+
+// GOOD: just use any
+func Print(val any) { fmt.Println(val) }
+
+// Generics pay off when:
+// 1. You need type safety across multiple types
+// 2. You need to preserve type information through operations
+// 3. You're building reusable data structures or algorithms
+```
+
+### Summary Decision Tree
+
+```
+  ╔═══════════════════════════════════════════════════════════════════════════════╗
+  ║                      DECISION TREE: GENERICS vs INTERFACES                   ║
+  ╚═══════════════════════════════════════════════════════════════════════════════╝
+
+      Need to write code that works with multiple types?
+                          │
+                          ▼
+              ┌───────────────────────────┐
+              │  Are you defining        │
+              │  BEHAVIOR (contracts)?   │
+              └────────────┬────────────┘
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+             Yes                        No
+              │                         │
+              ▼                         ▼
+      ┌───────────────┐        ┌─────────────────────────┐
+      │   USE         │        │  Are you building a   │
+      │  INTERFACES   │        │  DATA STRUCTURE?       │
+      └───────────────┘        └───────────┬─────────────┘
+                                           │
+                              ┌────────────┴────────────┐
+                              │                         │
+                             Yes                        No
+                              │                         │
+                              ▼                         ▼
+                      ┌───────────────┐      ┌─────────────────────────┐
+                      │    USE        │      │  Need TYPE SAFETY?     │
+                      │  GENERICS     │      │  (compile-time checks) │
+                      │  (type-safe)  │      └───────────┬─────────────┘
+                      └───────────────┘                  │
+                                           ┌────────────┴────────────┐
+                                           │                         │
+                                          Yes                        No
+                                           │                         │
+                                           ▼                         ▼
+                                   ┌───────────────┐     ┌───────────────────┐
+                                   │    USE        │     │   USE INTERFACES │
+                                   │  GENERICS     │     │   (flexibility)  │
+                                   │  (statically  │     │   or plain any   │
+                                   │   type-safe)  │     └───────────────────┘
+                                   └───────────────┘
+
+  ╔═══════════════════════════════════════════════════════════════════════════════╗
+  ║  EXAMPLES:                                                                    ║
+  ║  ┌─────────────────────────────────────────────────────────────────────────┐ ║
+  ║  │ GENERICS:         │  INTERFACES:                                       │ ║
+  ║  │  • type Stack[T]  │  • type Writer interface { Write([]byte) }        │ ║
+  ║  │  • type Cache[K,V]│  • type Repository interface { Save(), Get() }    │ ║
+  ║  │  • func Map[T,U]  │  • Plugin systems, dependency injection            │ ║
+  ║  │  • func Filter[T] │                                                   │ ║
+  ║  └─────────────────────────────────────────────────────────────────────────┘ ║
+   ╚═══════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Reading this diagram:**
+
+- **Start at the top:** Ask yourself — what am I building?
+- **Defining BEHAVIOR (interfaces):** If you're defining contracts that different implementations must satisfy, use interfaces. Examples: `Writer`, `Reader`, `Repository` — these define what operations exist, not how data is stored.
+- **DATA STRUCTURE (generics):** If you're building containers that hold values, use generics. Examples: `Stack[T]`, `Cache[K,V]`, `Queue[T]` — type-safe containers.
+- **Need TYPE SAFETY (generics):** If you want compile-time guarantees that wrong types won't compile, use generics. Examples: `Map[T,U]`, `Filter[T]` — algorithms that preserve type information.
+- **Don't need type safety (interfaces/any):** If flexibility is more important than type safety, use interfaces or plain `any`. Examples: Logging, serialization, plugin systems.
