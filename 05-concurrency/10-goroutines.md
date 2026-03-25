@@ -189,6 +189,21 @@ func main() {
 
 ## 5. Closure Gotchas
 
+### Closures Primer
+
+A **closure** is an anonymous function that captures variables from its surrounding scope. In Go, closures capture variables **by reference** — they hold a pointer to the outer variable, not a copy.
+
+```go
+x := 10
+fn := func() {
+    fmt.Println(x) // fn "closes over" x — reads the actual x, not a snapshot
+}
+x = 20
+fn() // prints 20, not 10
+```
+
+This is powerful but dangerous with goroutines, because the captured variable may change before the goroutine runs.
+
 ### The Classic Bug
 
 ```go

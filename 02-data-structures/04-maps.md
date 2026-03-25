@@ -496,6 +496,8 @@ func NewService() *Service {
 
 ## 8. Concurrency
 
+> **Prerequisite:** This section uses `sync.Mutex`, `sync.RWMutex`, and goroutines — all covered in detail in the Concurrency section (Topics 11-16). If you haven't read those yet, skim this section now and revisit after learning concurrency. The key concept: maps are NOT safe for concurrent read/write. You need a lock.
+
 ### Maps Are NOT Concurrent-Safe
 
 ```go
@@ -1128,6 +1130,7 @@ func countFrequency(items []string) map[string]int {
 }
 
 // With atomic for concurrent access
+// sync/atomic provides low-level atomic operations — covered in Topic 16 (Mutex vs Channels).
 import "sync/atomic"
 
 type AtomicCounter struct {

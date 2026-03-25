@@ -629,6 +629,8 @@ var tmpl = Must(template.New("main").Parse(templateStr))
 
 ### Pattern 1: Wrap with Context
 
+> **Note on `context.Context`:** The `ctx` parameter below is Go's mechanism for carrying request-scoped data, deadlines, and cancellation signals. It's covered in detail in Topic 14. For now, understand that production functions accept `ctx` as their first parameter so callers can cancel long-running operations.
+
 ```go
 func (s *Service) CreateUser(ctx context.Context, req CreateUserReq) (*User, error) {
     if err := req.Validate(); err != nil {

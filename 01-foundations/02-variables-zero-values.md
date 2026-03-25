@@ -806,6 +806,12 @@ func main() {
 
 ### Functional Options Pattern
 
+> **Prerequisites:** This pattern uses functions as values, variadic parameters (`...`), and closures — concepts not yet covered in detail. Here's the quick version:
+> - `type Option func(*Server)` defines `Option` as a function type that takes a `*Server`.
+> - `func WithHost(h string) Option { return func(s *Server) { s.host = h } }` returns a closure — an anonymous function that "remembers" the `host` value.
+> - `NewServer(opts ...Option)` accepts a variable number of `Option` functions.
+> - Full coverage of functions and closures in the concurrency section (Topic 11).
+
 ```go
 type Server struct {
     host    string
