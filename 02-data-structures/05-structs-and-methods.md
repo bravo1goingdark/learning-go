@@ -342,6 +342,15 @@ func (u User) Email() string      { return u.email }
 
 ## 5. Method Sets & Interface Satisfaction
 
+### What Is a Method Set?
+
+A **method set** is the list of methods a type "owns." Think of it as the type's public API:
+
+- A value of type `T` can only call methods declared with receiver `T`.
+- A pointer `*T` can call methods with receiver `T` *or* `*T`, because you can always take the address of a value.
+
+This distinction only matters for **interface satisfaction** — the compiler checks whether a type's method set includes every method the interface requires.
+
 ### The Method Set Rules
 
 | Type | Method Set Contains |

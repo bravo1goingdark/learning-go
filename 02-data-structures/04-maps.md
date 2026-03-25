@@ -334,6 +334,8 @@ A map is backed by a hash table with buckets:
 
 ### Visual: Map Growth (Rehashing)
 
+> **Rehashing** is what happens when a map runs out of bucket space. Go creates a new array with twice as many buckets and redistributes every existing key into the new buckets using its hash. This is O(n) but happens infrequently, so the *amortized* cost per insertion is still O(1). During growth, Go migrates buckets incrementally (not all at once) to avoid long pauses.
+
 ```
   BEFORE GROWTH (B=2, 4 buckets, load ~6.75):
   ┌──────────────────────────────────────────────────────────┐

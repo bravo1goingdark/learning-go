@@ -138,7 +138,7 @@ result := First([]int{1, 2, 3})
 // func First_int(s []int) int { ... }
 ```
 
-This is called **monomorphization** — compile-time code generation for each type combination.
+This is called **monomorphization** — compile-time code generation for each type combination. In practice, this means the compiler creates a separate, specialized version of the function for each concrete type you use. `First([]int{...})` and `First([]string{...})` become two distinct functions in the binary, each optimized for its type. The result: zero runtime overhead compared to writing the function by hand for each type.
 
 ---
 

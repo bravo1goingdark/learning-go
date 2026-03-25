@@ -2,6 +2,10 @@
 
 > **Goal:** Understand arrays as the foundation, slices as the fat pointer on top, and every production gotcha that exists.
 
+> **Terminology:**
+> - **Backing array** — the underlying fixed-size array that a slice points to. When you `append` beyond capacity, Go allocates a new, larger backing array and copies data into it.
+> - **Fat pointer** — a pointer that carries extra metadata. A Go slice is a "fat pointer" (24 bytes on 64-bit systems): it's a pointer to the backing array *plus* a length and a capacity. A regular pointer is just 8 bytes.
+
 ![Arrays and Slices](../assets/03.png)
 
 ---
