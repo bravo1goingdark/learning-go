@@ -470,6 +470,8 @@ func process(ch1, ch2 <-chan int, done chan<- struct{}) {
 
 ## 8. Channel Internals
 
+> **Connection to Topic 3 (Slices):** Both slices and buffered channels use a **ring buffer** internally. A slice's backing array is accessed via index; a channel's `buf` uses `sendx` and `recvx` indices that wrap around when they reach `dataqsiz`. Understanding one helps you understand the other — the key difference is that channels add locking and goroutine queues on top.
+
 ### hchan struct (simplified)
 
 ```go

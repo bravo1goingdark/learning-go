@@ -2,6 +2,8 @@
 
 > **Goal:** Master goroutines from creation to production patterns. Understand the scheduler, stack growth, and common pitfalls.
 
+> **Bridge from Topics 1-10:** Everything you've built so far has been sequential — one operation at a time. A `for` loop processes items one by one. A function call blocks until it returns. Concurrency changes this: you can start multiple operations at the same time and coordinate their results. Go makes this safe and efficient with goroutines and channels. This section starts that journey.
+
 ---
 ![Goroutines](../assets/10.png)
 ## Table of Contents

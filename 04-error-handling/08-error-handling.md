@@ -32,6 +32,8 @@ type error interface {
 
 That's it. One method. Any type with `Error() string` is an error.
 
+**Connection to Topic 7 (Interfaces):** The `error` type is simply a single-method interface — the same interface pattern from the previous section. Any struct with an `Error() string` method automatically satisfies `error`. This is why custom error types work without inheriting from a base class.
+
 ### Why Errors Are Values (Not Exceptions)
 
 Most languages use try/catch exceptions. Go deliberately rejected this model:

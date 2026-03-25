@@ -43,6 +43,8 @@ type Closer interface {
 }
 ```
 
+> **What are `io.Reader` and `io.Writer`?** These are Go's core I/O abstractions. An `io.Reader` is anything you can read bytes from (files, network connections, HTTP response bodies, byte buffers). An `io.Writer` is anything you can write bytes to (files, HTTP response writers, byte buffers). The `[]byte` parameter is the buffer — you pass in a slice, and the Reader fills it with data (or the Writer takes data from it). This design means the *caller* controls memory allocation, not the reader/writer.
+
 ### Implementation
 
 ```go
@@ -201,10 +203,9 @@ fmt.Println(r == nil)  // false — type pointer is set
 ```go
 var r io.Reader
 fmt.Println(unsafe.Sizeof(r))  // 16 (two 8-byte pointers on 64-bit)
-
-var a any
-fmt.Println(unsafe.Sizeof(a))  // 16
 ```
+
+**Connection to Topic 6 (Pointers):** An interface value is two pointers — a type pointer and a data pointer. The data pointer is the same pointer concept from Topic 6. When you assign `*bytes.Buffer` to an `io.Reader`, the data pointer points to the `Buffer` on the heap. This is why assigning a pointer to an interface causes escape analysis to move it to the heap.
 
 ---
 
