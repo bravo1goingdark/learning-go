@@ -671,6 +671,8 @@ func groupByCity(users []User) map[string][]User {
 
 ### Set (Using `map[T]struct{}`)
 
+> **Generics Primer:** The Set and Cache patterns below use Go generics `[T comparable]`. If this syntax is unfamiliar, `comparable` means "any type that supports `==`". See [Topic 10: Generics](../05-generics/19-generics.md) for the full explanation.
+
 ```go
 type Set[T comparable] map[T]struct{}
 

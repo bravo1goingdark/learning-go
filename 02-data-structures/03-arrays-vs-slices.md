@@ -487,6 +487,8 @@ fmt.Println(dst)  // [999, 2, 3]
 
 ### Copy Patterns
 
+> The `[T any]` syntax below is Go generics — `T` is a type parameter meaning "works with any type." Full explanation in [Topic 10: Generics](../05-generics/19-generics.md).
+
 ```go
 // Clone a slice
 func clone[T any](s []T) []T {
@@ -853,6 +855,11 @@ func main() {
 
 ## 12. Common Patterns
 
+> **Generics Primer:** The functions below use Go generics syntax like `[T any]` and `[T comparable]`. If this is unfamiliar, here's the quick version:
+> - `[T any]` means "this function works with any type `T`" — `T` is a placeholder the compiler fills in when you call the function.
+> - `[T comparable]` means "any type `T` that supports `==` and `!=`" (ints, strings, structs of comparable fields — but not slices or maps).
+> - Full explanation in [Topic 10: Generics](../05-generics/19-generics.md).
+
 ### Filter
 
 ```go
@@ -1183,6 +1190,8 @@ func (r *RingBuffer) Pop() (int, bool) {
 ```
 
 ### Stack Implementation
+
+> These data structures use Go generics (`[T any]`). If unfamiliar, see [Topic 10: Generics](../05-generics/19-generics.md).
 
 ```go
 type Stack[T any] struct {

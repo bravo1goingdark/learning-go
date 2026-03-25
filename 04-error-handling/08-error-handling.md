@@ -593,6 +593,8 @@ func main() {
 
 ### `template.Must` Pattern
 
+> The `[T any]` below is Go generics syntax. `T` is a type parameter — the compiler fills it in based on usage. Full explanation in [Topic 10: Generics](../05-generics/19-generics.md).
+
 ```go
 // Must wraps a function that returns (T, error) and panics on error
 func Must[T any](val T, err error) T {
