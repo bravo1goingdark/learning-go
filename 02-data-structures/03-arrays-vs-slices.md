@@ -531,6 +531,8 @@ fmt.Println(emptySlice == nil)  // false
 
 ### JSON Serialization
 
+> **JSON in Go:** `encoding/json` converts Go values to/from JSON. `json.Marshal(val)` returns `([]byte, error)` — the JSON representation. Struct tags like `` `json:"items"` `` control the output field name. A nil slice serializes as `null`, an empty slice as `[]`.
+
 ```go
 type Response struct {
     Items []string `json:"items"`

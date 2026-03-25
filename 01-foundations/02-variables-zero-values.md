@@ -82,9 +82,15 @@ var data []byte          // Zero value: nil
 
 func main() {
     // These are valid here
-    fmt.Println(name, age, active, score, data)
+    fmt.Println(name, age, active, score, data) // fmt.Println prints values to stdout
 }
 ```
+
+> **Quick reference — `fmt` package:** `fmt` is Go's standard formatted I/O package. The most-used functions:
+> - `fmt.Println(a, b)` — print values separated by spaces, add newline
+> - `fmt.Printf("name: %s, age: %d\n", name, age)` — formatted print (`%s`=string, `%d`=int, `%v`=default, `%+v` with field names)
+> - `fmt.Sprintf(...)` — like Printf but returns a string instead of printing
+> - `fmt.Errorf("msg: %w", err)` — create a formatted error (covered in error handling)
 
 ### Form 2: `var` with Initializer
 
@@ -423,8 +429,8 @@ const (
 
 ```go
 const (
-    SizeOfInt    = unsafe.Sizeof(int(0))
-    // ^ evaluated at compile time because unsafe.Sizeof is a compile-time function
+    SizeOfInt    = unsafe.Sizeof(int(0))  // unsafe.Sizeof returns the size in bytes (compile-time constant)
+    // unsafe is Go's escape hatch from the type system — use sparingly.
 )
 ```
 
@@ -602,6 +608,8 @@ func main() {
 
 ### Range Without Index/Value
 
+> **`range` quick reference:** `for i, v := range items` iterates over a slice/map/channel, giving you the index (`i`) and value (`v`) each time. Use `_` to discard whichever you don't need. Works on slices (index+value), maps (key+value), strings (rune offset+char), and channels (value only).
+
 ```go
 // Only need value
 for _, v := range items {
@@ -651,6 +659,8 @@ s3 := string(runes)
 // Int to string — CAREFUL!
 s4 := string(65)          // "A" — interprets as Unicode code point!
 s5 := strconv.Itoa(65)    // "65" — what you usually want
+// strconv.Itoa converts an integer to its decimal string ("65" not "A").
+// The reverse is strconv.Atoi("65") → (65, nil).
 ```
 
 ### Interface Conversions
@@ -776,7 +786,7 @@ type Config struct {
     Host     string
     Port     int
     Debug    bool
-    Timeout  time.Duration
+    Timeout  time.Duration  // time.Duration represents a time span (e.g., 30*time.Second = 30s)
 }
 
 func DefaultConfig() Config {
@@ -784,7 +794,7 @@ func DefaultConfig() Config {
         Host:    "localhost",
         Port:    8080,
         Debug:   false,
-        Timeout: 30 * time.Second,
+        Timeout: 30 * time.Second, // multiply a number by time.Second/Minute/Hour to create a Duration
     }
 }
 
