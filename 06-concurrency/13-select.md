@@ -20,6 +20,8 @@
 
 ## 1. Select Basics
 
+Without `select`, receiving from multiple channels requires sequential blocking — you'd block on `ch1`, then check `ch2`. With `select`, you wait on all channels simultaneously and respond to whichever is ready first. This is Go's multiplexer for channels.
+
 `select` lets a goroutine wait on **multiple channel operations** simultaneously.
 
 ```go
@@ -90,6 +92,8 @@ case v := <-ch2:
 ---
 
 ## 3. Default Case (Non-Blocking)
+
+Sometimes you want to try a channel operation but continue with other work if it's not ready. Without `default`, `select` blocks indefinitely. Adding `default` makes it a "try and move on" operation — essential for polling, rate limiting, and avoiding deadlocks when multiple channels might not have data yet.
 
 Adding `default` makes `select` return immediately if no channel is ready.
 

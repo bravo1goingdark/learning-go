@@ -1,6 +1,8 @@
 # 16. Mutex vs Channels — Complete Deep Dive
 
 > **Goal:** Know when to use `sync.Mutex` and when to use channels. They solve different problems. The wrong choice leads to complex, buggy code.
+>
+> **How this connects:** You now have two ways to coordinate goroutines: (1) share memory with mutex locks, or (2) communicate via channels. This topic teaches you when each is the right choice. **Consequences of wrong choice:** Using a channel to protect a shared counter adds goroutine overhead and complexity with no benefit. Using a mutex to coordinate a pipeline requires manual signaling that channels handle naturally.
 
 ---
 ![Mutex vs Channels](../assets/15.png)

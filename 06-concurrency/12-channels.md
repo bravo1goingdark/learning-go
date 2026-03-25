@@ -21,6 +21,8 @@
 
 ## 1. Channel Basics
 
+Goroutines can share memory, but unprotected shared memory causes data races. Channels provide a safer alternative: instead of sharing memory and locking it, you **communicate** values between goroutines. This follows Go's philosophy: *"Do not communicate by sharing memory; instead, share memory by communicating."*
+
 A channel is a **typed conduit** for sending and receiving values between goroutines.
 
 ```go
@@ -111,6 +113,8 @@ func main() {
 ---
 
 ## 3. Buffered Channels
+
+**When to choose buffered vs unbuffered:** Use unbuffered when you need synchronization — a handshake where sender and receiver must meet (e.g., signaling completion). Use buffered when the producer and consumer run at different speeds, or when you want to decouple timing. The buffer size = how many items can be produced before the consumer must catch up. If the consumer is slower than the producer and the buffer fills, the producer blocks.
 
 Buffered channels allow sends **without blocking** until the buffer is full.
 

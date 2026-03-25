@@ -1,6 +1,8 @@
 # 19. Fan-In / Fan-Out — Complete Deep Dive
 
 > **Goal:** Master fan-out and fan-in — distribute work across goroutines (fan-out) and collect results back (fan-in). The foundation of concurrent processing patterns.
+>
+> **How this fits together:** Fan-out is the distribution part of a worker pool. Fan-in is the collection part. A pipeline is a series of fan-out/fan-in stages chained together. These are not separate patterns — they are the building blocks that worker pools (Topic 17) and pipelines (Topic 18) are composed from.
 
 ---
 ![Fan-In Fan-Out](../assets/18.png)
@@ -424,6 +426,8 @@ func processAll(ctx context.Context, items []Item) []error {
 ---
 
 ## 7. Bounded Fan-Out
+
+Without bounds, spawning a goroutine per item creates N goroutines for N items. With 100,000 items, that's ~200MB of stack memory, massive scheduler contention, and potential OOM. Bounded fan-out limits concurrent goroutines to a fixed number (e.g., 10-100), keeping resource usage predictable regardless of input size.
 
 Limit concurrent goroutines to prevent resource exhaustion.
 

@@ -141,6 +141,8 @@ func validate(name string) error {
 
 ## 3. Error Checking Patterns
 
+Go's error handling has one rule: every function that can fail returns `error` as its last return value. The caller then has exactly four choices: (1) **handle it** immediately, (2) **wrap and propagate** it up the call stack, (3) **retry**, or (4) **explicitly ignore** it with `_`. This section shows each pattern.
+
 ### Basic Check
 
 ```go
@@ -287,7 +289,7 @@ func doMultiple() error {
 
 ## 5. Sentinel Errors
 
-Pre-defined errors used for comparison.
+Pre-defined errors used for comparison. Without sentinels, callers would compare error messages as strings (`err.Error() == "not found"`) — fragile and breaks when wording changes. Sentinels provide stable, comparable error values. `errors.Is(err, ErrNotFound)` works even when the error has been wrapped with `fmt.Errorf(...%w...)`, walking the entire error chain.
 
 ```go
 var (
@@ -852,7 +854,11 @@ func findUser(id string) (*User, error) {
     }
     return user, nil
 }
+```
 
+**Why this is wrong:** When `findUser` logs and returns, the caller also logs (because they see an error). Now the same error appears twice in your logs. In production with log aggregation (Datadog, ELK), this doubles your noise and makes it hard to trace the actual error path. The fix: each function either logs OR returns — never both.
+
+```go
 // RIGHT — return with context, let caller decide to log
 func findUser(id string) (*User, error) {
     user, err := db.Find(id)

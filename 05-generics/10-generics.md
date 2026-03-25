@@ -144,6 +144,8 @@ This is called **monomorphization** — compile-time code generation for each ty
 
 ## 3. Type Constraints
 
+A constraint is a compile-time contract. It tells the compiler: "T can be any type, as long as it supports X." Without constraints, the compiler can't allow operations like `+` or `==` on T because it doesn't know if T supports them — what if T is a struct? Constraints bridge this gap by specifying what operations T must support.
+
 Constraints restrict which types can be used with a type parameter. They're defined as interfaces.
 
 ### Why Constraints Matter
@@ -329,6 +331,8 @@ _ = Display(Score(100))
 ---
 
 ## 6. Type Sets and the ~ Operator
+
+**The problem the tilde solves:** You define `type UserID int64`. You want a generic function that works with `int64` and `UserID`. Without `~`, the constraint `int64` rejects `UserID` because Go treats them as different types. The `~` prefix says "accept any type whose *underlying* type is int64," which includes `UserID`. This is essential when your codebase uses custom types for domain concepts (UserID, OrderID, Price — all `int64` underneath).
 
 The `~` prefix means "this type and any type with the same underlying type".
 

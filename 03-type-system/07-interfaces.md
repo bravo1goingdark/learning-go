@@ -146,6 +146,8 @@ func copyData(dst *os.File, src *os.File) error {
 
 ## 3. Interface Internals
 
+Understanding the internal structure answers three important questions that trip up production Go code: (1) Why can an interface hold `nil` but not be `nil` itself? (2) Why are interface comparisons sometimes surprising? (3) Why does assigning a value to an interface cause a heap allocation? The two-word structure below explains all three.
+
 An interface variable is a **two-word** structure:
 
 ```
@@ -646,6 +648,8 @@ func (r *MyReader) Read(p []byte) (n int, err error) {
 ---
 
 ## 10. Design Principles
+
+Go interfaces are implicit — any type with the right methods satisfies an interface automatically. This is powerful but requires discipline. Without clear principles, you end up with either too many interfaces (over-abstraction, impossible to mock) or too few (tight coupling, untestable code). These four principles guide you to the right balance.
 
 ### Principle 1: Accept Interfaces, Return Structs
 

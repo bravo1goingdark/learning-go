@@ -1,6 +1,8 @@
 # 18. Pipelines — Complete Deep Dive
 
 > **Goal:** Master Go pipelines — chain stages of goroutines connected by channels. Each stage transforms data and passes it downstream.
+>
+> **Pipelines vs Worker Pools:** Worker pools distribute identical jobs to interchangeable workers (parallel processing). Pipelines chain sequential stages where each stage transforms data (stream processing). Use worker pools when all jobs are the same. Use pipelines when data flows through transformation stages (e.g., read → parse → validate → transform → write).
 
 ---
 ![Pipelines](../assets/17.png)

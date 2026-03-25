@@ -1,6 +1,8 @@
 # 15. WaitGroup — Complete Deep Dive
 
 > **Goal:** Master `sync.WaitGroup` — wait for a collection of goroutines to finish. The simplest synchronization primitive in Go.
+>
+> **How this connects:** Topics 11-14 taught you to create goroutines (11), communicate via channels (12), multiplex with select (13), and cancel with context (14). But how do you wait for multiple goroutines to finish? You could use channels, but that's verbose. `sync.WaitGroup` is the simpler tool for this exact job: "launch N goroutines, wait for all N to complete."
 
 ---
 ![WaitGroup](../assets/14.png)

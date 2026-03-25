@@ -209,6 +209,8 @@ u := NewUser("Alice", "alice@example.com",
 
 ## 3. Methods
 
+Go has no classes. A method is simply a function with a **receiver** — an extra parameter that comes before the function name. The receiver is Go's equivalent of `self` or `this`, but it is explicitly typed and explicitly named. Any named type (not just structs) can have methods — you can add methods to `type Celsius float64`, `type UserID string`, etc.
+
 ### Method Syntax
 
 ```go
@@ -430,7 +432,7 @@ func main() {
 
 ## 6. Embedding (Composition)
 
-Go has no inheritance. Instead, use **embedding** for composition.
+Go has no inheritance. Instead, use **embedding** for composition. Go rejected inheritance because it creates tight coupling — when class B extends class A, changing A can break B. With embedding, `Dog` embeds `Animal` — Dog *has* an Animal, not *is* an Animal. You compose behavior without fragile base-class problems.
 
 ### Basic Embedding
 
@@ -950,6 +952,8 @@ type Service struct {
     logger Logger  // must use s.logger.Log()
 }
 ```
+
+**Why it matters:** If you embed `Logger`, all its methods are promoted — any code calling `service.Log()` works. If you use a field `logger`, callers must use `service.logger.Log()`. Changing from embedding to field breaks all callers silently. Choose embedding when you want the embedded type's methods to appear as part of your type's public API. Choose a field when the dependency is an internal implementation detail.
 
 ### 3. Method on Wrong Type
 

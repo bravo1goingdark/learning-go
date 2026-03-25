@@ -164,6 +164,8 @@ for key, value := range m {
 
 ### Order is Random
 
+Go intentionally randomizes map iteration to prevent programs from depending on order. If your code depends on map order, it is already broken — the randomization just makes the bug obvious during development rather than silently corrupting production data.
+
 ```go
 m := map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
 
@@ -503,6 +505,8 @@ func NewService() *Service {
 > **Prerequisite:** This section uses `sync.Mutex`, `sync.RWMutex`, and goroutines — all covered in detail in the Concurrency section (Topics 11-16). If you haven't read those yet, skim this section now and revisit after learning concurrency. The key concept: maps are NOT safe for concurrent read/write. You need a lock.
 
 ### Maps Are NOT Concurrent-Safe
+
+Maps use internal hash table state that is not atomic. When one goroutine reads a bucket while another rehashes it, the Go runtime detects this and **panics** with `concurrent map read and map write`. This is a hard crash — not just a data race. It always panics, even without `-race`.
 
 ```go
 // DATA RACE — will panic with -race flag
@@ -1011,6 +1015,8 @@ func preallocateMap(n int) map[string]int {
 ```
 
 ### Cache Pattern
+
+A simple `map` + `sync.RWMutex` cache works when you don't need eviction — data fits in memory and you control the key set. Add LRU eviction when: (1) your working set is larger than memory, (2) you want hot data to stay cached, or (3) you need a maximum cache size. The LRU adds `O(1)` overhead per access for the linked list.
 
 ```go
 type Cache struct {

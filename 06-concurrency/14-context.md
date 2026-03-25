@@ -21,6 +21,8 @@
 
 ## 1. What Is Context
 
+**The problem context solves:** A web handler calls `getUser()`, which calls `db.Query()`. The client disconnects. How does `db.Query()` know to stop? Without context, there's no way to propagate cancellation across function boundaries and goroutines. `context.Context` solves this by threading a cancellation signal through every function call.
+
 `context.Context` carries **cancellation signals**, **deadlines**, and **request-scoped values** across API boundaries and between goroutines.
 
 ```go
@@ -221,6 +223,8 @@ if rid, ok := val.(string); ok {
 1. **Use unexported custom type** as key — prevents collisions
 2. **Store only request-scoped data** — trace IDs, auth tokens
 3. **Never store optional function params** — pass them explicitly
+
+**When to use context values vs parameters:** Use parameters for data the function needs to do its job (user ID for a database query). Use context values for cross-cutting concerns that every function in the call chain might need (trace ID for logging, auth token for downstream calls). If a function only uses the value internally, pass it as a parameter — context values are for data that flows through the entire request.
 
 ```go
 // GOOD: custom unexported type

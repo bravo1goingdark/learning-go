@@ -227,6 +227,8 @@ for i := 0; i < 1000000; i++ {
 
 ## 4. Slicing Operations
 
+**Before seeing the syntax, understand the core concept:** Slicing does NOT copy data. It creates a new slice header pointing into the same backing array. This is efficient (no allocation) but dangerous — modifying a sub-slice can silently modify the original. This is the #1 source of slice bugs in production Go.
+
 ### Basic Slicing
 
 ```go
@@ -528,6 +530,8 @@ func insertAt[T any](s []T, i int, v T) []T {
 ---
 
 ## 9. Nil Slice vs Empty Slice
+
+For most operations, nil and empty slices behave identically — `len()`, `cap()`, `range`, and `append` all work the same. The distinction matters in exactly one place: **serialization**. If your API returns `null` when you meant `[]`, clients may break. Understanding this difference prevents subtle API bugs.
 
 ```go
 var nilSlice []int         // nil — len=0, cap=0
@@ -993,6 +997,8 @@ func deleteUnordered[T any](s []T, i int) []T {
 
 ## 13. Performance Considerations
 
+Slices are the most-used data structure in Go. In hot paths — processing thousands of items per request, handling high-throughput data pipelines — slice performance directly impacts latency. These patterns are standard practice, not premature optimization.
+
 ### Pre-allocate When Size is Known
 
 ```go
@@ -1166,6 +1172,11 @@ func equal(a, b []int) bool {
 ---
 
 ## 14. Production Patterns
+
+**Choose your data structure based on access pattern:**
+- **Ring Buffer** — fixed-size sliding window (last N events, rate limiting, log rotation)
+- **Stack** (LIFO) — processing nested structures (parsers, DFS, undo history)
+- **Queue** (FIFO) — processing items in order (job queues, BFS, message buffers)
 
 ### Ring Buffer (Circular Buffer)
 

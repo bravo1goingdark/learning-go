@@ -52,6 +52,8 @@ go env
 | `GOARCH` | Target architecture | host arch |
 | `GOOS` | Target OS | host OS |
 
+**Priority for day-to-day development:** You only need to remember `GOPATH`, `GOBIN`, and `GOROOT`. The proxy/checksum variables (`GOPROXY`, `GONOSUMDB`, `GONOPROXY`) matter when you work behind corporate firewalls or use private modules. `GOFLAGS` is useful for CI where you want `-mod=readonly` applied globally. The rest you can ignore until a specific need arises.
+
 ### PATH Setup
 
 ```bash

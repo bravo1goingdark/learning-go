@@ -480,6 +480,8 @@ for _, v := range values {
 
 A goroutine leak happens when a goroutine **never exits** — it stays alive forever, consuming memory.
 
+**Why this matters in production:** Each goroutine consumes at least 2KB of stack memory. A leak of 10,000 goroutines = 20MB minimum, growing with stack depth. Worse, leaked goroutines hold references to variables, preventing garbage collection. In production, goroutine leaks manifest as slowly growing memory until the process OOM-kills. Use `runtime.NumGoroutine()` to detect them — if the count keeps growing, you have a leak.
+
 ### Common Causes
 
 ```go

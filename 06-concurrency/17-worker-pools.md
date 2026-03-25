@@ -1,6 +1,8 @@
 # 17. Worker Pools — Complete Deep Dive
 
 > **Goal:** Master worker pools — bounded concurrency that processes jobs efficiently without spawning unlimited goroutines.
+>
+> **How this connects:** You've learned goroutines (11), channels (12), select (13), context (14), WaitGroup (15), and mutex (16). Worker pools combine all of these: goroutines as workers, channels as job queues, context for cancellation, and WaitGroup for completion tracking. This is the first "composite pattern" — a real building block you'll use in production.
 
 ---
 ![Worker Pools](../assets/16.png)
