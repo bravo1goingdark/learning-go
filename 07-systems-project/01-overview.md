@@ -32,9 +32,31 @@ A **topic-based pub-sub message broker** that runs in-process. Publishers send m
 
 ---
 
-## Design Decisions
+## Prerequisites
 
-Every decision maps to a concept we've learned.
+Before starting this project, ensure you've completed:
+
+**Core Topics (1-10):**
+- [ ] Variables, types, zero values (Topic 2)
+- [ ] Slices, maps, structs (Topics 3-5)
+- [ ] Pointers and interfaces (Topics 6-7)
+- [ ] Error handling and defer (Topics 8-9)
+- [ ] Generics (Topic 10)
+
+**Concurrency (Topics 11-19):**
+- [ ] Goroutines and channels (Topics 11-12)
+- [ ] Select and context (Topics 13-14)
+- [ ] Mutex and sync primitives (Topic 16)
+- [ ] Worker pools and fan-out (Topics 17-19)
+
+**Software Patterns (01-08):**
+- [ ] Project structure and dependency injection (Patterns 01, 04)
+- [ ] Repository and service layer (Patterns 02, 03)
+- [ ] Pub-sub and backpressure (Patterns 06, 08)
+
+---
+
+## Design Decisions
 
 ### 1. Project Structure → `06-software-patterns/01-project-structure.md`
 
@@ -59,7 +81,7 @@ Every decision maps to a concept we've learned.
   └── go.mod
 ```
 
-**Why `internal/`?** This broker is application code — not a public library. Nobody outside this project should import it. (Topic 01: internal vs pkg)
+**Why `internal/`?** Go's `internal` directory convention is a compile-time visibility rule: packages inside `internal/` can only be imported by code in the parent directory tree. So `mini-mq/internal/broker` can be imported by `mini-mq/cmd/server/main.go` (same module), but *not* by code in another module. This is Go's way of enforcing encapsulation — the broker is an implementation detail, not a public API. Use `pkg/` for code you *want* external consumers to import.
 
 ### 2. Layered Architecture → `06-software-patterns/05-clean-architecture.md`
 

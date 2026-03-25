@@ -592,6 +592,7 @@ import (
     "log"
     "net/http"
 
+    "learning-go/internal/events"
     "learning-go/internal/events/handlers"
     "learning-go/internal/handler"
     "learning-go/internal/middleware"
@@ -616,6 +617,8 @@ func main() {
     userHandler := handler.New(userSvc)
 
     // Router
+    // NOTE: The "METHOD /path" syntax (e.g., "POST /users") requires Go 1.22+.
+    // For Go 1.21 and earlier, use a third-party router like gorilla/mux or chi.
     mux := http.NewServeMux()
     mux.HandleFunc("POST /users", userHandler.Create)
     mux.HandleFunc("GET /users", userHandler.List)

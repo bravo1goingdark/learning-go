@@ -2,6 +2,15 @@
 
 > **Decision:** When a subscriber can't process a message, we don't drop it silently. We send it to a Dead Letter Queue (DLQ) for later inspection or retry.
 
+### What Is a Dead Letter Queue?
+
+A Dead Letter Queue (DLQ) is a safety net. In a pub-sub system, messages flow from publisher → broker → subscriber. If a subscriber's handler fails (crash, timeout, bad data), the message would be lost without a DLQ. Instead, failed messages go to a separate queue where you can:
+- **Inspect** them to understand what went wrong
+- **Retry** them after fixing the underlying issue
+- **Alert** on them to detect systemic problems
+
+DLQs are standard in production message systems (RabbitMQ, AWS SQS, Kafka all have them). They separate "message delivery" from "message processing" — the broker guarantees delivery to the subscriber, and the DLQ captures processing failures.
+
 **Reference:** `06-software-patterns/07-retry-circuit-breaker.md` + `06-software-patterns/08-backpressure-strategies.md`
 
 ---

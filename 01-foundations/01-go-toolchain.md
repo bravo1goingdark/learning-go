@@ -830,12 +830,16 @@ build-all:
 
 ```go
 import (
+    "log"
     "os"
     "runtime/pprof"
 )
 
 func main() {
-    f, _ := os.Create("cpu.prof")
+    f, err := os.Create("cpu.prof")
+    if err != nil {
+        log.Fatal(err)
+    }
     defer f.Close()
     pprof.StartCPUProfile(f)
     defer pprof.StopCPUProfile()

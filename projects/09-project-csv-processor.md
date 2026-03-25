@@ -287,8 +287,11 @@ type Formatter interface { // Topic 7: Interface
 
 // --- Table Formatter ---
 
+// tabwriter.Writer aligns output into columns by padding tab-separated text.
+// NewWriter(output, minwidth, tabwidth, padding, padchar, flags):
+//   0, 0, 2, ' ', 0 → auto-width tabs, 2-space padding, space fill
 type TableFormatter struct {
-	Writer *tabwriter.Writer // Topic 6: Pointer to external writer
+    Writer *tabwriter.Writer // Topic 6: Pointer to external writer
 }
 
 func NewTableFormatter() *TableFormatter {
