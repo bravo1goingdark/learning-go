@@ -135,11 +135,21 @@ func copyData(dst *os.File, src *os.File) error {
 An interface variable is a **two-word** structure:
 
 ```
-+---------------------------+
-| Type pointer              | ──→ type descriptor (runtime type info)
-+---------------------------+
-| Data pointer              | ──→ actual value
-+---------------------------+
+  ┌──────────────────────────────────────────────────────────────┐
+  │              INTERFACE VARIABLE (16 bytes)                    │
+  ├────────────────────────┬─────────────────────────────────────┤
+  │   Type pointer (8B)    │       Data pointer (8B)             │
+  │   unsafe.Pointer       │       unsafe.Pointer                │
+  └───────────┬────────────┴──────────────────┬──────────────────┘
+              │                               │
+              ▼                               ▼
+  ┌───────────────────────┐       ┌───────────────────────┐
+  │   type descriptor     │       │    actual value       │
+  │   (runtime type info) │       │    (heap allocated    │
+  │   - methods           │       │     if needed)        │
+  │   - size              │       │                       │
+  │   - name              │       │                       │
+  └───────────────────────┘       └───────────────────────┘
 ```
 
 ### The `eface` and `iface`

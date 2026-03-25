@@ -3,7 +3,7 @@
 > **Goal:** Master `context.Context` — cancellation, deadlines, values, and every production pattern. Context is how Go propagates cancellation across API boundaries.
 
 ---
-
+![Context](../assets/13.png)
 ## Table of Contents
 
 1. [What Is Context](#1-what-is-context)
@@ -92,19 +92,36 @@ cancel() // Triggers ctx.Done() for all goroutines using ctx
 ### Cancellation Propagates Down
 
 ```
-                    Background()
-                         │
-                   ┌─────┴─────┐
-                   │ WithCancel │  ← parent
-                   └─────┬─────┘
-                   ┌─────┴─────┐
-                   │ WithCancel │  ← child
-                   └─────┬─────┘
-                   ┌─────┴─────┐
-                   │ WithCancel │  ← grandchild
-                   └───────────┘
+                         ┌──────────────────┐
+                         │   Background()   │
+                         └────────┬─────────┘
+                                  │
+                         ┌────────▼─────────┐
+                         │   WithCancel     │  ◄── parent
+                         │   ctx_parent     │
+                         └────────┬─────────┘
+                                  │
+                    ┌─────────────┼─────────────┐
+                    │                           │
+           ┌────────▼─────────┐        ┌────────▼─────────┐
+           │   WithCancel     │        │   WithCancel     │
+           │   ctx_child_A    │        │   ctx_child_B    │
+           └────────┬─────────┘        └────────┬─────────┘
+                    │                           │
+           ┌────────▼─────────┐        ┌────────▼─────────┐
+           │   WithCancel     │        │   WithTimeout    │
+           │   ctx_grandchild │        │   ctx_grandchild │
+           └──────────────────┘        └──────────────────┘
 
-cancel() on parent → child cancelled → grandchild cancelled
+   ┌──────────────────────────────────────────────────────────────┐
+   │  cancel() on parent                                          │
+   │      │                                                       │
+   │      ▼                                                       │
+   │  ctx_child_A.Done() closed  ──►  ctx_grandchild.Done() closed│
+   │  ctx_child_B.Done() closed  ──►  ctx_grandchild.Done() closed│
+   │                                                               │
+   │  CANCELLATION CASCADES DOWNWARD — never upward               │
+   └──────────────────────────────────────────────────────────────┘
 ```
 
 ```go

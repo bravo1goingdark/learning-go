@@ -9,25 +9,29 @@
 Backpressure is the mechanism of **signaling upstream components to slow down** when downstream components can't keep up.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    The Problem                               │
-│                                                              │
-│  Fast Producer (1000/sec)     Slow Consumer (10/sec)        │
-│         │                          ▲                        │
-│         │     ┌────────────┐       │                        │
-│         └────▶│   Queue    │───────┘                        │
-│               │            │                                │
-│               │ Growing... │                                │
-│               │ Growing... │                                │
-│               │  OOM! 💥   │                                │
-│               └────────────┘                                │
-│                                                              │
-│  Without backpressure:                                       │
-│  - Queue grows unbounded                                    │
-│  - Memory exhaustion                                        │
-│  - Latency spikes (old messages stuck)                     │
-│  - Process crash (OOM killer)                              │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                          THE PROBLEM                                      │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   Fast Producer            ┌──────────────────┐         Slow Consumer    │
+  │   (1000 items/sec)         │                  │         (10 items/sec)   │
+  │        │                   │   UNBOUNDED      │              ▲           │
+  │        │                   │   QUEUE          │              │           │
+  │        └──────────────────►│                  │──────────────┘           │
+  │                            │   Growing...     │                          │
+  │                            │   Growing...     │                          │
+  │                            │   💥 OOM!        │                          │
+  │                            └──────────────────┘                          │
+  │                                                                           │
+  │   Without backpressure:                                                  │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  ✗ Queue grows unbounded                                         │  │
+  │   │  ✗ Memory exhaustion (OOM killer)                                │  │
+  │   │  ✗ Latency spikes (old messages stuck in queue)                  │  │
+  │   │  ✗ Process crash                                                 │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -50,16 +54,25 @@ Backpressure is the mechanism of **signaling upstream components to slow down** 
 Use a channel with a fixed buffer size. When full, the producer blocks or rejects.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                  Bounded Channel                            │
-│                                                              │
-│   make(chan Job, 100)  ← Buffer size = 100                 │
-│                                                              │
-│   [ 1 ][ 2 ][ 3 ]...[ 100 ]                                │
-│      ▲                          ▲                           │
-│   Producer blocks           Consumer pulls                  │
-│   when full                 when available                  │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                      BOUNDED CHANNEL                                      │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   make(chan Job, 100)   ◄── Buffer size = 100                            │
+  │                                                                           │
+  │                                                                           │
+  │   Producer                                          Consumer              │
+  │       │                                                ▲                  │
+  │       │    ┌────┬────┬────┬────┬────┬────┬────┐       │                  │
+  │       └───►│ 1  │ 2  │ 3  │... │    │    │99  │───────┘                  │
+  │            └────┴────┴────┴────┴────┴────┴────┘                          │
+  │             ◄── filled ──►    ◄── empty ──►                              │
+  │                                                                           │
+  │   • Producer BLOCKS when buffer is full (natural backpressure)          │
+  │   • Consumer pulls items, freeing space                                  │
+  │   • Bounded memory — max 100 items in flight                            │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ```go

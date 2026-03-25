@@ -9,43 +9,49 @@
 Dependency Injection (DI) means **passing dependencies to a component** instead of the component creating them internally.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  WITHOUT DI (Hard Dependencies)                            │
-│                                                              │
-│  type UserService struct {                                  │
-│      repo *PostgresUserRepo  // Concrete type               │
-│  }                                                          │
-│                                                              │
-│  func New() *UserService {                                  │
-│      return &UserService{                                   │
-│          repo: &PostgresUserRepo{...},  // Created inside! │
-│      }                                                      │
-│  }                                                          │
-│                                                              │
-│  Problems:                                                   │
-│  ✗ Can't test without real database                         │
-│  ✗ Can't swap to different DB                               │
-│  ✗ Hard dependencies everywhere                             │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                     WITHOUT DI (Hard Dependencies)                        │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   type UserService struct {                                               │
+  │       repo *PostgresUserRepo   ◄── Concrete type (hard dependency)       │
+  │   }                                                                       │
+  │                                                                           │
+  │   func New() *UserService {                                               │
+  │       return &UserService{                                                │
+  │           repo: &PostgresUserRepo{...},  ◄── Created INSIDE!             │
+  │       }                                                                   │
+  │   }                                                                       │
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  ✗ Can't test without real database                              │  │
+  │   │  ✗ Can't swap to different DB                                    │  │
+  │   │  ✗ Hard dependencies everywhere                                  │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────┐
-│  WITH DI (Injected Dependencies)                           │
-│                                                              │
-│  type UserService struct {                                  │
-│      repo UserRepository  // Interface (not concrete)       │
-│  }                                                          │
-│                                                              │
-│  func New(repo UserRepository) *UserService {               │
-│      return &UserService{                                   │
-│          repo: repo,  // Passed in from outside!           │
-│      }                                                      │
-│  }                                                          │
-│                                                              │
-│  Benefits:                                                   │
-│  ✓ Easy to test with mocks                                  │
-│  ✓ Can swap implementations freely                          │
-│  ✓ Clear dependency graph                                   │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                      WITH DI (Injected Dependencies)                      │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   type UserService struct {                                               │
+  │       repo UserRepository   ◄── Interface (not concrete)                 │
+  │   }                                                                       │
+  │                                                                           │
+  │   func New(repo UserRepository) *UserService {                           │
+  │       return &UserService{                                                │
+  │           repo: repo,  ◄── Passed in from OUTSIDE!                       │
+  │       }                                                                   │
+  │   }                                                                       │
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  ✓ Easy to test with mocks                                       │  │
+  │   │  ✓ Can swap implementations freely                               │  │
+  │   │  ✓ Clear dependency graph                                        │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -505,32 +511,37 @@ func TestCreateUser_DuplicateEmail(t *testing.T) {
 Visualize your dependency structure:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Dependency Graph                          │
-│                                                              │
-│                     ┌─────────┐                              │
-│                     │ main.go │                              │
-│                     └────┬────┘                              │
-│                          │                                   │
-│              ┌───────────┼───────────┐                       │
-│              ▼           ▼           ▼                       │
-│         ┌────────┐  ┌────────┐  ┌────────┐                 │
-│         │Handler │  │Handler │  │Handler │                 │
-│         └────┬───┘  └────┬───┘  └────┬───┘                 │
-│              │           │           │                       │
-│              ▼           ▼           ▼                       │
-│         ┌────────┐  ┌────────┐  ┌────────┐                 │
-│         │Service │  │Service │  │Service │                 │
-│         └────┬───┘  └────┬───┘  └────┬───┘                 │
-│              │           │           │                       │
-│              ▼           ▼           ▼                       │
-│         ┌────────┐  ┌────────┐  ┌────────┐                 │
-│         │  Repo  │  │  Repo  │  │  Repo  │                 │
-│         └────────┘  └────────┘  └────────┘                 │
-│                                                              │
-│  Arrows show "depends on" direction                         │
-│  main.go wires everything together                          │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                         DEPENDENCY GRAPH                                  │
+  │                    (arrows show "depends on" direction)                   │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │                        ┌──────────────┐                                   │
+  │                        │   main.go    │                                   │
+  │                        │  (wiring)    │                                   │
+  │                        └──────┬───────┘                                   │
+  │                               │                                            │
+  │              ┌────────────────┼────────────────┐                          │
+  │              ▼                ▼                ▼                          │
+  │       ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                    │
+  │       │  UserHandler│ │ OrderHandler│ │ AuthHandler │                    │
+  │       └──────┬──────┘ └──────┬──────┘ └──────┬──────┘                    │
+  │              │                │                │                          │
+  │              ▼                ▼                ▼                          │
+  │       ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                    │
+  │       │ UserService │ │OrderService │ │AuthService  │                    │
+  │       └──────┬──────┘ └──────┬──────┘ └──────┬──────┘                    │
+  │              │                │                │                          │
+  │              ▼                ▼                ▼                          │
+  │       ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                    │
+  │       │ UserRepo    │ │ OrderRepo   │ │ SessionRepo │                    │
+  │       │ (interface) │ │ (interface) │ │ (interface) │                    │
+  │       └─────────────┘ └─────────────┘ └─────────────┘                    │
+  │                                                                           │
+  │   main.go wires everything together — that's the ONLY place that        │
+  │   knows about concrete implementations.                                   │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

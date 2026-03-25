@@ -9,41 +9,54 @@
 The service layer is the **heart of your application** — it contains all business logic and orchestrates data operations.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       HTTP Request                           │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Handler Layer (Protocol)                                    │
-│  ✓ Parse request (JSON/protobuf → Go struct)                │
-│  ✓ Validate request FORMAT (missing fields, bad types)     │
-│  ✓ Call service method                                      │
-│  ✓ Map service errors → HTTP status codes                  │
-│  ✓ Encode response (Go struct → JSON)                      │
-│  ✗ Does NOT contain business logic                          │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Service Layer (Domain)           ◄── BUSINESS LOGIC HERE   │
-│  ✓ Validate business rules (does this make sense?)         │
-│  ✓ Enforce constraints (user can do this?)                 │
-│  ✓ Calculate derived values (totals, scores)               │
-│  ✓ Orchestrate multiple repositories                       │
-│  ✓ Publish domain events                                    │
-│  ✓ Apply business rules                                     │
-│  ✗ Does NOT know about HTTP, JSON, or databases            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Repository Layer (Persistence)                              │
-│  ✓ Execute SQL queries                                      │
-│  ✓ Read/write to database                                   │
-│  ✓ Return domain models                                     │
-│  ✗ Does NOT contain business logic                          │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                          THREE-LAYER ARCHITECTURE                         │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │                         HTTP REQUEST                               │  │
+  │   └───────────────────────────────────┬───────────────────────────────┘  │
+  │                                       │                                    │
+  │                                       ▼                                    │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  HANDLER LAYER (Protocol)                                         │  │
+  │   │                                                                    │  │
+  │   │   ✓ Parse request  (JSON/protobuf → Go struct)                   │  │
+  │   │   ✓ Validate FORMAT (missing fields, bad types)                  │  │
+  │   │   ✓ Call service method                                           │  │
+  │   │   ✓ Map errors → HTTP status codes                               │  │
+  │   │   ✓ Encode response (Go struct → JSON)                           │  │
+  │   │   ✗ Does NOT contain business logic                               │  │
+  │   └───────────────────────────────────┬───────────────────────────────┘  │
+  │                                       │                                    │
+  │                                       ▼                                    │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  SERVICE LAYER (Domain)             ◄── BUSINESS LOGIC LIVES HERE │  │
+  │   │                                                                    │  │
+  │   │   ✓ Validate business rules (does this operation make sense?)    │  │
+  │   │   ✓ Enforce constraints (is user allowed to do this?)            │  │
+  │   │   ✓ Calculate derived values (totals, scores, status)            │  │
+  │   │   ✓ Orchestrate multiple repositories                            │  │
+  │   │   ✓ Publish domain events                                         │  │
+  │   │   ✗ Does NOT know about HTTP, JSON, or databases                 │  │
+  │   └───────────────────────────────────┬───────────────────────────────┘  │
+  │                                       │                                    │
+  │                                       ▼                                    │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  REPOSITORY LAYER (Persistence)                                   │  │
+  │   │                                                                    │  │
+  │   │   ✓ Execute SQL queries                                           │  │
+  │   │   ✓ Read/write to database                                        │  │
+  │   │   ✓ Return domain models                                          │  │
+  │   │   ✗ Does NOT contain business logic                               │  │
+  │   └───────────────────────────────────┬───────────────────────────────┘  │
+  │                                       │                                    │
+  │                                       ▼                                    │
+  │                              ┌──────────────┐                             │
+  │                              │   DATABASE   │                             │
+  │                              └──────────────┘                             │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

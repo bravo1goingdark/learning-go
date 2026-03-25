@@ -3,7 +3,7 @@
 > **Goal:** Master `select` — Go's multiplexer for channels. Handle multiple channel operations, timeouts, and non-blocking patterns.
 
 ---
-
+![Select Keyword](../assets/12.png)
 ## Table of Contents
 
 1. [Select Basics](#1-select-basics)

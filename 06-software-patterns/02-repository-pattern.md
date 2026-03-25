@@ -11,19 +11,29 @@ A repository is an **abstraction layer** between your business logic and your da
 Think of it as a **collection-like interface** to your database:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Service thinks it's working with a simple collection:     │
-│                                                              │
-│    user, err := repo.GetByID("user-123")                   │
-│    users, err := repo.List()                                │
-│    err := repo.Create(user)                                 │
-│                                                              │
-│  But behind the scenes:                                     │
-│    - SQL queries                                             │
-│    - Connection pooling                                      │
-│    - Transaction management                                  │
-│    - Caching                                                 │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                        REPOSITORY CONCEPT                                 │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   Service Layer sees a SIMPLE interface:                                  │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │   user, err := repo.GetByID("user-123")                          │  │
+  │   │   users, err := repo.List()                                      │  │
+  │   │   err := repo.Create(user)                                       │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  │   But behind the scenes, the repository handles:                         │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │  │
+  │   │   │    SQL       │  │  Connection  │  │ Transaction  │           │  │
+  │   │   │   Queries    │  │   Pooling    │  │  Management  │           │  │
+  │   │   └──────────────┘  └──────────────┘  └──────────────┘           │  │
+  │   │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │  │
+  │   │   │   Caching    │  │   Retries    │  │  Logging     │           │  │
+  │   │   └──────────────┘  └──────────────┘  └──────────────┘           │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -56,42 +66,49 @@ func (s *UserService) GetUser(id string) (*User, error) {
 ## The Solution: Interface + Implementation
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Service Layer                          │
-│                                                              │
-│  func (s *UserService) GetUser(id string) (*User, error) { │
-│      return s.repo.GetByID(id)  // Just a method call!     │
-│  }                                                          │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           │ uses interface
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Repository Interface                        │
-│                                                              │
-│  type UserRepository interface {                            │
-│      Create(user *User) error                               │
-│      GetByID(id string) (*User, error)                      │
-│      Update(user *User) error                               │
-│      Delete(id string) error                                │
-│      List(filter Filter) ([]*User, error)                   │
-│      ListByEmail(email string) ([]*User, error)             │
-│      Count() (int, error)                                    │
-│  }                                                           │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           │ implemented by
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Concrete Implementations                        │
-│                                                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │ PostgreSQL  │  │  In-Memory  │  │    Mock     │        │
-│  │  (prod)     │  │  (testing)  │  │  (testing)  │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│                                                              │
-│  All implement the same interface                           │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                     SERVICE → INTERFACE → IMPLEMENTATIONS                  │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  SERVICE LAYER                                                   │  │
+  │   │                                                                    │  │
+  │   │   func (s *UserService) GetUser(id string) (*User, error) {      │  │
+  │   │       return s.repo.GetByID(id)  // Just a method call!          │  │
+  │   │   }                                                               │  │
+  │   └──────────────────────────────────┬────────────────────────────────┘  │
+  │                                      │                                    │
+  │                                      │  uses interface (not concrete)    │
+  │                                      ▼                                    │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  REPOSITORY INTERFACE                                             │  │
+  │   │                                                                    │  │
+  │   │   type UserRepository interface {                                 │  │
+  │   │       Create(user *User) error                                    │  │
+  │   │       GetByID(id string) (*User, error)                           │  │
+  │   │       Update(user *User) error                                    │  │
+  │   │       Delete(id string) error                                     │  │
+  │   │       List(filter Filter) ([]*User, error)                        │  │
+  │   │       Count() (int, error)                                        │  │
+  │   │   }                                                               │  │
+  │   └──────────────────────────────────┬────────────────────────────────┘  │
+  │                                      │                                    │
+  │                                      │  implemented by                    │
+  │                                      ▼                                    │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  CONCRETE IMPLEMENTATIONS                                         │  │
+  │   │                                                                    │  │
+  │   │   ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │  │
+  │   │   │   PostgreSQL    │  │   In-Memory     │  │      Mock       │  │  │
+  │   │   │                 │  │                 │  │                 │  │  │
+  │   │   │  Production     │  │  Testing /      │  │  Unit tests     │  │  │
+  │   │   │  (real DB)      │  │  Development    │  │  (assertions)   │  │  │
+  │   │   └─────────────────┘  └─────────────────┘  └─────────────────┘  │  │
+  │   │                                                                    │  │
+  │   │   All implement the same interface — swap without code changes   │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

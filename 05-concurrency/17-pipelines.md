@@ -27,21 +27,32 @@ A pipeline is a series of stages connected by channels. Each stage is a goroutin
 3. **Sends** results to a downstream channel
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        PIPELINE FLOW                                 │
-│                                                                      │
-│   Stage 1        Stage 2        Stage 3        Stage 4            │
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐          │
-│  │ gen()   │    │ double() │    │ filter()│    │  sink   │          │
-│  │  ▼      │    │   ▼      │    │   ▼     │    │    ▼    │          │
-│  │  │      │    │   │      │    │   │     │    │    │    │          │
-│  │  ▼      │    │   ▼      │    │   ▼     │    │    ▼    │          │
-│  │channel1 │───►│channel2  │───►│channel3 │───►│ output  │          │
-│  └─────────┘    └─────────┘    └─────────┘    └─────────┘          │
-│                                                                      │
-│   Goroutine    Goroutine    Goroutine    Goroutine                 │
-│   (produces)   (processes)  (processes)  (consumes)               │
-└─────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                          PIPELINE FLOW                                    │
+  │                                                                          │
+  │   ┌───────────────┐    ┌───────────────┐    ┌───────────────┐           │
+  │   │    STAGE 1    │    │    STAGE 2    │    │    STAGE 3    │           │
+  │   │               │    │               │    │               │           │
+  │   │   gen()       │    │  double()     │    │  filter()     │           │
+  │   │               │    │               │    │               │           │
+  │   │  produces     │    │  multiplies   │    │  keeps evens  │           │
+  │   │  values       │    │  by 2         │    │  only         │           │
+  │   │               │    │               │    │               │           │
+  │   │  goroutine    │    │  goroutine    │    │  goroutine    │           │
+  │   └───────┬───────┘    └───────┬───────┘    └───────┬───────┘           │
+  │           │                    │                    │                    │
+  │           ▼                    ▼                    ▼                    │
+  │      ┌─────────┐          ┌─────────┐          ┌─────────┐             │
+  │      │channel1 │─────────►│channel2 │─────────►│channel3 │──► output  │
+  │      │         │          │         │          │         │             │
+  │      │ [1][2]  │          │ [2][4]  │          │ [2][4]  │             │
+  │      │ [3][4]  │          │ [6][8]  │          │ [6][8]  │             │
+  │      └─────────┘          └─────────┘          └─────────┘             │
+  │                                                                          │
+  │   Each channel connects two stages. Data flows LEFT → RIGHT.            │
+  │   Each stage runs in its own goroutine.                                  │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Visual: Data Flow Through Pipeline

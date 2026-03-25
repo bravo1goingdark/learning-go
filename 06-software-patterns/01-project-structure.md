@@ -27,24 +27,24 @@ Good structure:
 Go has a **built-in access control mechanism** — the `internal` package.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Your Project                            │
-│                                                              │
-│  ┌─────────────────┐    ┌─────────────────┐                 │
-│  │   internal/     │    │      pkg/       │                 │
-│  │                 │    │                 │                 │
-│  │  Can ONLY be    │    │  Public API,    │                 │
-│  │  imported by    │    │  importable by  │                 │
-│  │  your project   │    │  ANY project    │                 │
-│  │                 │    │                 │                 │
-│  │  USE THIS FOR:  │    │  USE THIS FOR:  │                 │
-│  │  - Handlers     │    │  - Libraries    │                 │
-│  │  - Services     │    │  - Shared utils │                 │
-│  │  - Repos        │    │  - Clients      │                 │
-│  └─────────────────┘    └─────────────────┘                 │
-│                                                              │
-│  Most projects: 95% internal, 5% pkg                        │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                            YOUR PROJECT                                   │
+  ├────────────────────────────────┬─────────────────────────────────────────┤
+  │         internal/              │              pkg/                       │
+  │                                │                                         │
+  │   Can ONLY be imported by      │   Public API, importable by            │
+  │   your project                 │   ANY project                          │
+  │                                │                                         │
+  │   ┌─────────────────────────┐  │   ┌─────────────────────────┐          │
+  │   │  • Handlers             │  │   │  • Libraries            │          │
+  │   │  • Services             │  │   │  • Shared utils         │          │
+  │   │  • Repositories         │  │   │  • Client SDKs          │          │
+  │   │  • Models               │  │   │                         │          │
+  │   │  • Middleware            │  │   │                         │          │
+  │   └─────────────────────────┘  │   └─────────────────────────┘          │
+  │                                │                                         │
+  │   ◄── 95% of your code ──►    │   ◄── 5% of your code ──►              │
+  └────────────────────────────────┴─────────────────────────────────────────┘
 ```
 
 **When to use `pkg`:**
@@ -107,18 +107,31 @@ myapp/
 ### Why `cmd/` is Separate
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│   WHY NOT JUST ONE main.go?                                 │
-│                                                              │
-│   A real service often has multiple executables:            │
-│                                                              │
-│   cmd/api/main.go      → HTTP API server                    │
-│   cmd/worker/main.go   → Background job processor           │
-│   cmd/migrate/main.go  → Database migration tool            │
-│   cmd/seed/main.go     → Data seeding script                │
-│                                                              │
-│   All share internal/ code but have different entry points  │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                  WHY NOT JUST ONE main.go?                                │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   A real service often has MULTIPLE executables:                         │
+  │                                                                           │
+  │   ┌──────────────────────┐    ┌──────────────────────────────────────┐   │
+  │   │  cmd/api/main.go     │───►│  HTTP API server                    │   │
+  │   ├──────────────────────┤    ├──────────────────────────────────────┤   │
+  │   │  cmd/worker/main.go  │───►│  Background job processor           │   │
+  │   ├──────────────────────┤    ├──────────────────────────────────────┤   │
+  │   │  cmd/migrate/main.go │───►│  Database migration tool            │   │
+  │   ├──────────────────────┤    ├──────────────────────────────────────┤   │
+  │   │  cmd/seed/main.go    │───►│  Data seeding script                │   │
+  │   └──────────────────────┘    └──────────────────────────────────────┘   │
+  │                                                                           │
+  │          │                          │                                     │
+  │          └──────────┬───────────────┘                                     │
+  │                     ▼                                                     │
+  │          ┌──────────────────────┐                                         │
+  │          │    internal/         │  ◄── ALL executables share this code   │
+  │          │  (shared packages)   │                                         │
+  │          └──────────────────────┘                                         │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -146,43 +159,52 @@ internal/
 ### What Each Layer Does
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    HTTP Request                              │
-│                         │                                    │
-│                         ▼                                    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  HANDLER (http package)                               │  │
-│  │  - Decode JSON/protobuf to Go struct                  │  │
-│  │  - Validate request format (not business rules)       │  │
-│  │  - Call service method                                │  │
-│  │  - Encode response to JSON/protobuf                   │  │
-│  │  - Set HTTP status codes                              │  │
-│  │  - DO NOT: business logic, database queries           │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                         │                                    │
-│                         ▼                                    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  SERVICE (business logic)                             │  │
-│  │  - Validate business rules                            │  │
-│  │  - Create domain models                               │  │
-│  │  - Call repository methods                            │  │
-│  │  - Orchestrate multiple repositories                  │  │
-│  │  - Publish events                                     │  │
-│  │  - DO NOT: HTTP, database queries, HTTP status codes  │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                         │                                    │
-│                         ▼                                    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  REPOSITORY (data access)                             │  │
-│  │  - Execute SQL queries                                │  │
-│  │  - Read/write to database                             │  │
-│  │  - Return domain models                               │  │
-│  │  - DO NOT: business logic, HTTP handling              │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                         │                                    │
-│                         ▼                                    │
-│                    Database                                   │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                         HTTP REQUEST FLOW                                 │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  LAYER 1: HANDLER (protocol)                                      │  │
+  │   │  ┌─────────────────────────────────────────────────────────────┐  │  │
+  │   │  │  ✓ Decode JSON/protobuf → Go struct                         │  │  │
+  │   │  │  ✓ Validate request FORMAT (missing fields, bad types)      │  │  │
+  │   │  │  ✓ Call service method                                       │  │  │
+  │   │  │  ✓ Encode response → JSON/protobuf                          │  │  │
+  │   │  │  ✓ Set HTTP status codes                                     │  │  │
+  │   │  │  ✗ DO NOT: business logic, database queries                 │  │  │
+  │   │  └─────────────────────────────────────────────────────────────┘  │  │
+  │   └──────────────────────────────────┬────────────────────────────────┘  │
+  │                                      │                                    │
+  │                                      ▼                                    │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  LAYER 2: SERVICE (domain / business logic)                       │  │
+  │   │  ┌─────────────────────────────────────────────────────────────┐  │  │
+  │   │  │  ✓ Validate business rules (does this make sense?)          │  │  │
+  │   │  │  ✓ Enforce constraints (user can do this?)                  │  │  │
+  │   │  │  ✓ Calculate derived values (totals, scores)                │  │  │
+  │   │  │  ✓ Orchestrate multiple repositories                        │  │  │
+  │   │  │  ✓ Publish domain events                                     │  │  │
+  │   │  │  ✗ DO NOT: HTTP, database queries, HTTP status codes        │  │  │
+  │   │  └─────────────────────────────────────────────────────────────┘  │  │
+  │   └──────────────────────────────────┬────────────────────────────────┘  │
+  │                                      │                                    │
+  │                                      ▼                                    │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  LAYER 3: REPOSITORY (data access / persistence)                  │  │
+  │   │  ┌─────────────────────────────────────────────────────────────┐  │  │
+  │   │  │  ✓ Execute SQL queries                                       │  │  │
+  │   │  │  ✓ Read/write to database                                    │  │  │
+  │   │  │  ✓ Return domain models                                      │  │  │
+  │   │  │  ✗ DO NOT: business logic, HTTP handling                     │  │  │
+  │   │  └─────────────────────────────────────────────────────────────┘  │  │
+  │   └──────────────────────────────────┬────────────────────────────────┘  │
+  │                                      │                                    │
+  │                                      ▼                                    │
+  │                              ┌──────────────┐                             │
+  │                              │   DATABASE   │                             │
+  │                              └──────────────┘                             │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Example: Each Layer

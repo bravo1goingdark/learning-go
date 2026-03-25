@@ -41,19 +41,35 @@ func (s *UserService) CreateUser(user *User) error {
 ## The Solution: Pub-Sub (Event Bus)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Event Bus                               │
-│                                                              │
-│   Publisher ──▶ Event "user.created"                        │
-│                      │                                       │
-│                      ├──▶ Logger Handler                    │
-│                      ├──▶ Email Handler                     │
-│                      ├──▶ Metrics Handler                   │
-│                      └──▶ Cache Handler                     │
-│                                                              │
-│   Publisher doesn't know WHO listens.                      │
-│   Handlers can be added/removed without changing publisher │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                          EVENT BUS (Pub-Sub)                              │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │                                                                           │
+  │   ┌──────────────┐                                                       │
+  │   │  Publisher    │                                                       │
+  │   │  (UserService)│                                                       │
+  │   └──────┬───────┘                                                       │
+  │          │                                                                │
+  │          │  Publish("user.created", event)                               │
+  │          ▼                                                                │
+  │   ╔════════════════════════════════════════════════════════════════╗     │
+  │   ║                        EVENT BUS                                ║     │
+  │   ╚══════════╤══════════════╤══════════════╤══════════════╤════════╝     │
+  │              │              │              │              │               │
+  │              ▼              ▼              ▼              ▼               │
+  │       ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐      │
+  │       │  Logger    │ │   Email    │ │  Metrics   │ │   Cache    │      │
+  │       │  Handler   │ │  Handler   │ │  Handler   │ │  Handler   │      │
+  │       │            │ │            │ │            │ │            │      │
+  │       │ logs event │ │ sends      │ │ records    │ │ invalidates│      │
+  │       │ to stdout  │ │ welcome    │ │ counters   │ │ user cache │      │
+  │       └────────────┘ └────────────┘ └────────────┘ └────────────┘      │
+  │                                                                           │
+  │   Publisher does NOT know WHO listens.                                    │
+  │   Handlers can be added/removed without touching publisher.              │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Benefits:**

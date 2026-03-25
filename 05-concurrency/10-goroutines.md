@@ -3,7 +3,7 @@
 > **Goal:** Master goroutines from creation to production patterns. Understand the scheduler, stack growth, and common pitfalls.
 
 ---
-
+![Goroutines](../assets/10.png)
 ## Table of Contents
 
 1. [What Is a Goroutine](#1-what-is-a-goroutine)
@@ -91,31 +91,51 @@ func main() {
 ### G-M-P Model
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  Go Scheduler                    │
-│                                                  │
-│  G = Goroutine    M = OS Thread    P = Processor │
-│                                                  │
-│  ┌─────┐   ┌─────┐   ┌─────┐                    │
-│  │ G1  │   │ G2  │   │ G3  │   ← Goroutines     │
-│  └──┬──┘   └──┬──┘   └──┬──┘                    │
-│     │         │         │                        │
-│  ┌──▼─────────▼─────────▼──┐                    │
-│  │     Local Run Queue      │   ← Per P          │
-│  └───────────┬──────────────┘                    │
-│              │                                   │
-│  ┌───────────▼──────────────┐                    │
-│  │         P (Processor)    │                    │
-│  └───────────┬──────────────┘                    │
-│              │                                   │
-│  ┌───────────▼──────────────┐                    │
-│  │         M (OS Thread)    │                    │
-│  └──────────────────────────┘                    │
-│                                                  │
-│  ┌──────────────────────────┐                    │
-│  │    Global Run Queue      │                    │
-│  └──────────────────────────┘                    │
-└─────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                        GO SCHEDULER (G-M-P Model)                        │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                          │
+  │   G = Goroutine (unit of work)                                          │
+  │   M = Machine  (OS thread that executes)                                │
+  │   P = Processor (logical processor, manages run queue)                  │
+  │                                                                          │
+  │                                                                          │
+  │   ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐                    │
+  │   │  G1  │  │  G2  │  │  G3  │  │  G4  │  │  G5  │   ... G-n          │
+  │   └──┬───┘  └──┬───┘  └──┬───┘  └──┬───┘  └──┬───┘                    │
+  │      │         │         │         │         │                          │
+  │      └─────────┼─────────┘         └─────────┼─────────┐               │
+  │                │                             │         │               │
+  │                ▼                             ▼         │               │
+  │   ┌──────────────────────┐  ┌──────────────────────┐  │               │
+  │   │   LOCAL RUN QUEUE    │  │   LOCAL RUN QUEUE    │  │               │
+  │   │   [G1] [G2] [G3]    │  │   [G4] [G5]         │  │               │
+  │   └──────────┬───────────┘  └──────────┬───────────┘  │               │
+  │              │                          │              │               │
+  │   ┌──────────▼──────────┐  ┌──────────▼──────────┐   │               │
+  │   │        P1           │  │        P2           │   │               │
+  │   │   (Processor 1)     │  │   (Processor 2)     │   │               │
+  │   └──────────┬──────────┘  └──────────┬──────────┘   │               │
+  │              │                          │              │               │
+  │   ┌──────────▼──────────┐  ┌──────────▼──────────┐   │               │
+  │   │        M1           │  │        M2           │   │               │
+  │   │    (OS Thread)      │  │    (OS Thread)      │   │               │
+  │   └─────────────────────┘  └─────────────────────┘   │               │
+  │                                                       │               │
+  │   ┌─────────────────────────────────────────────────┐ │               │
+  │   │              GLOBAL RUN QUEUE                    │◄┘               │
+  │   │   [G6] [G7] [G8] [G9] ...                      │                 │
+  │   └─────────────────────────────────────────────────┘                 │
+  │                                                                          │
+  │   ┌──────────────────────────────────────────────────────────────────┐  │
+  │   │  RULES:                                                          │  │
+  │   │  • Each P has a LOCAL run queue (lock-free access)              │  │
+  │   │  • WORK STEALING: idle P steals half of another P's queue      │  │
+  │   │  • HANDOFF: if M blocks (syscall), P moves to another M        │  │
+  │   │  • PREEMPTION: Go 1.14+ async preemption via signals           │  │
+  │   └──────────────────────────────────────────────────────────────────┘  │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 | Component | Role |
@@ -136,31 +156,33 @@ func main() {
 ## 4. Goroutine Lifecycle
 
 ```
-                ┌──────────┐
-                │  Created  │
-                └─────┬─────┘
-                      │ go func()
-                      ▼
-                ┌──────────┐
-                │ Runnable  │ ← In run queue, waiting for P
-                └─────┬─────┘
-                      │ P picks it up
-                      ▼
-                ┌──────────┐
-                │ Running   │ ← Executing on an M
-                └──┬───┬───┘
-                   │   │
-          blocked  │   │ done / return
-                   ▼   ▼
-            ┌──────────┐
-            │  Waiting  │    ┌──────────┐
-            │ (blocked) │    │  Dead     │
-            └─────┬─────┘    └──────────┘
-                  │ unblocked
-                  ▼
-            ┌──────────┐
-            │ Runnable  │
-            └──────────┘
+                            ┌──────────────┐
+                            │   Created    │
+                            └──────┬───────┘
+                                   │  go func()
+                                   ▼
+                            ┌──────────────┐
+                            │   Runnable   │  ◄── In run queue, waiting for P
+                            └──────┬───────┘
+                                   │  P picks it up
+                                   ▼
+                            ┌──────────────┐
+                            │   Running    │  ◄── Executing on an M
+                            └───┬──────┬───┘
+                                │      │
+                   blocked      │      │  done / return
+                   (ch, I/O)    │      │
+                                ▼      ▼
+                    ┌──────────────┐  ┌──────────────┐
+                    │   Waiting    │  │     Dead     │
+                    │  (blocked)   │  │  (finished)  │
+                    └──────┬───────┘  └──────────────┘
+                           │
+                           │  unblocked (data ready, ch recv)
+                           ▼
+                    ┌──────────────┐
+                    │   Runnable   │  ◄── Back in run queue
+                    └──────────────┘
 ```
 
 ---

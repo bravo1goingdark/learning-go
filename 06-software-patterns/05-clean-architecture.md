@@ -9,27 +9,35 @@
 **Dependencies point inward.** Inner layers never import outer layers.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                              │
-│   ┌─────────────────────────────────────────────────────┐  │
-│   │  Infrastructure (DB, APIs, Frameworks)              │  │
-│   │                                                      │  │
-│   │   ┌─────────────────────────────────────────────┐  │  │
-│   │   │  Presentation (HTTP, CLI, gRPC)             │  │  │
-│   │   │                                              │  │  │
-│   │   │   ┌─────────────────────────────────────┐  │  │  │
-│   │   │   │  Application (Use Cases)            │  │  │  │
-│   │   │   │                                      │  │  │  │
-│   │   │   │   ┌─────────────────────────────┐  │  │  │  │
-│   │   │   │   │  Domain (Entities, Rules)   │  │  │  │  │
-│   │   │   │   │  NEVER depends on outer     │  │  │  │  │
-│   │   │   │   │  layers                      │  │  │  │  │
-│   │   │   │   └─────────────────────────────┘  │  │  │  │
-│   │   │   └─────────────────────────────────────┘  │  │  │
-│   │   └─────────────────────────────────────────────┘  │  │
-│   └─────────────────────────────────────────────────────┘  │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                      CLEAN ARCHITECTURE LAYERS                            │
+  │                  (dependencies point INWARD only)                         │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  INFRASTRUCTURE (outermost)                                       │  │
+  │   │  DBs, Message Queues, External APIs, Frameworks                   │  │
+  │   │                                                                    │  │
+  │   │   ┌─────────────────────────────────────────────────────────────┐ │  │
+  │   │   │  PRESENTATION                                               │ │  │
+  │   │   │  HTTP Handlers, CLI, gRPC endpoints                         │ │  │
+  │   │   │                                                              │ │  │
+  │   │   │   ┌───────────────────────────────────────────────────────┐ │ │  │
+  │   │   │   │  APPLICATION (Use Cases)                              │ │ │  │
+  │   │   │   │  Business workflows, orchestration                    │ │ │  │
+  │   │   │   │                                                        │ │ │  │
+  │   │   │   │   ┌───────────────────────────────────────────────┐   │ │ │  │
+  │   │   │   │   │  DOMAIN (innermost)                            │   │ │ │  │
+  │   │   │   │   │  Entities, Value Objects, Business Rules       │   │ │ │  │
+  │   │   │   │   │                                                │   │ │ │  │
+  │   │   │   │   │   NEVER depends on outer layers                │   │ │ │  │
+  │   │   │   │   │   Pure business logic — no imports             │   │ │ │  │
+  │   │   │   │   └───────────────────────────────────────────────┘   │ │ │  │
+  │   │   │   └───────────────────────────────────────────────────────┘ │ │  │
+  │   │   └─────────────────────────────────────────────────────────────┘ │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -337,35 +345,39 @@ func main() {
 The golden rule: **inner layers don't know about outer layers.**
 
 ```
-                    ┌─────────────────────┐
-                    │  Presentation       │
-                    │   (HTTP Handler)    │
-                    └──────────┬──────────┘
-                               │ imports
-                               ▼
-                    ┌─────────────────────┐
-                    │  Application        │
-                    │    (Use Cases)      │
-                    └──────────┬──────────┘
-                               │ imports
-                               ▼
-                    ┌─────────────────────┐
-                    │      Domain         │
-                    │   (Entities, Rules) │
-                    └─────────────────────┘
-                               ▲
-                               │ implements
-                    ┌──────────┴──────────┐
-                    │  Infrastructure     │
-                    │   (Repository)      │
-                    └─────────────────────┘
-```
+                  ┌─────────────────────────────┐
+                  │      Presentation            │
+                  │      (HTTP Handler)          │
+                  └──────────────┬──────────────┘
+                                 │
+                                 │  imports
+                                 ▼
+                  ┌─────────────────────────────┐
+                  │      Application             │
+                  │      (Use Cases)             │
+                  └──────────────┬──────────────┘
+                                 │
+                                 │  imports
+                                 ▼
+                  ┌─────────────────────────────┐
+                  │        Domain               │
+                  │   (Entities, Rules)         │
+                  └──────────────▲──────────────┘
+                                 │
+                                 │  implements
+                  ┌──────────────┴──────────────┐
+                  │      Infrastructure          │
+                  │   (Repository impl)          │
+                  └─────────────────────────────┘
 
-**What this means:**
-- Domain **NEVER** imports Application, Infrastructure, or Presentation
-- Application **NEVER** imports Infrastructure or Presentation
-- Infrastructure **implements** Application ports (interfaces)
-- Presentation **calls** Application use cases
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  RULE:                                                                   │
+  │  • Domain NEVER imports Application, Infrastructure, or Presentation    │
+  │  • Application NEVER imports Infrastructure or Presentation             │
+  │  • Infrastructure IMPLEMENTS Application ports (interfaces)             │
+  │  • Presentation CALLS Application use cases                             │
+  └──────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -374,29 +386,42 @@ The golden rule: **inner layers don't know about outer layers.**
 Clean Architecture is also known as **Hexagonal Architecture** or **Ports and Adapters**:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       Application                            │
-│                                                              │
-│                      ┌─────────────┐                        │
-│                      │   Domain    │                        │
-│                      │   Logic     │                        │
-│                      └─────────────┘                        │
-│                            │                                 │
-│    ┌──────────────────────┼──────────────────────┐         │
-│    │                      │                       │         │
-│    │ Ports (Interfaces)   │   Ports (Interfaces) │         │
-│    │                      │                       │         │
-└────┼──────────────────────┼──────────────────────┼─────────┘
-         │                                              │
-         │                                              │
-    ┌────┴────┐                                    ┌────┴────┐
-    │ Adapter │                                    │ Adapter │
-    │ (HTTP)  │                                    │ (DB)    │
-    └─────────┘                                    └─────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                 PORTS AND ADAPTERS (Hexagonal Architecture)               │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   ┌────────────┐                                     ┌────────────┐      │
+  │   │  Adapter   │                                     │  Adapter   │      │
+  │   │  (HTTP)    │                                     │  (DB)      │      │
+  │   │            │                                     │            │      │
+  │   │ REST/gRPC  │                                     │ Postgres/  │      │
+  │   │ handlers   │                                     │ Redis/MQ   │      │
+  │   └─────┬──────┘                                     └──────┬─────┘      │
+  │         │                                                   │            │
+  │         │ implements                                  implements          │
+  │         │                                                   │            │
+  │   ┌─────▼─────────────────────────────────────────────────▼─────┐      │
+  │   │                                                              │      │
+  │   │   PORT (Interface)         PORT (Interface)                 │      │
+  │   │   ┌──────────────┐        ┌──────────────┐                  │      │
+  │   │   │ UserHandler  │        │ UserRepository│                 │      │
+  │   │   │  interface   │        │  interface    │                 │      │
+  │   │   └──────────────┘        └──────────────┘                  │      │
+  │   │                                                              │      │
+  │   │              ┌───────────────────────┐                       │      │
+  │   │              │                       │                       │      │
+  │   │              │   DOMAIN LOGIC        │                       │      │
+  │   │              │   (Application Core)  │                       │      │
+  │   │              │                       │                       │      │
+  │   │              └───────────────────────┘                       │      │
+  │   │                                                              │      │
+  │   └──────────────────────────────────────────────────────────────┘      │
+  │                                                                           │
+  │   PORTS = Interfaces defined by your application                         │
+  │   ADAPTERS = Implementations that plug into the ports                    │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
-
-**Ports:** Interfaces defined by your application
-**Adapters:** Implementations of those interfaces
 
 ---
 

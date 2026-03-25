@@ -9,19 +9,27 @@
 Network calls fail. Services go down. Databases become unavailable.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Common Failure Scenarios                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  • Database connection timeout                             │
-│  • External API returns 500                                │
-│  • Network hiccup (packet loss)                            │
-│  • Service restarted, not ready yet                        │
-│  • Rate limited (429 Too Many Requests)                    │
-│                                                              │
-│  These are TRANSIENT — they fix themselves                 │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                     COMMON FAILURE SCENARIOS                              │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+  │   │   Database   │  │  External    │  │   Network    │                  │
+  │   │  connection  │  │  API returns │  │   hiccup     │                  │
+  │   │  timeout     │  │  500 error   │  │  (packet     │                  │
+  │   │              │  │              │  │   loss)      │                  │
+  │   └──────────────┘  └──────────────┘  └──────────────┘                  │
+  │                                                                           │
+  │   ┌──────────────┐  ┌──────────────┐                                    │
+  │   │  Service     │  │  Rate        │                                    │
+  │   │  restarted,  │  │  limited     │                                    │
+  │   │  not ready   │  │  (429 Too    │                                    │
+  │   │              │  │  Many Reqs)  │                                    │
+  │   └──────────────┘  └──────────────┘                                    │
+  │                                                                           │
+  │   All TRANSIENT failures — they fix themselves with time                 │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Naive solution:** Just retry immediately!
@@ -29,20 +37,30 @@ Network calls fail. Services go down. Databases become unavailable.
 **Problem:** Retrying immediately can make things WORSE:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Retry Storm                               │
-│                                                              │
-│  Client 1 ──✗──▶ Service (overloaded)                      │
-│  Client 2 ──✗──▶ Service (overloaded)                      │
-│  Client 3 ──✗──▶ Service (overloaded)                      │
-│       │                                                     │
-│  All clients retry immediately at the same time:           │
-│  Client 1 ──✗──▶ Service (even more overloaded!)           │
-│  Client 2 ──✗──▶ Service (CRASH!)                          │
-│  Client 3 ──✗──▶ Service (DEAD)                            │
-│                                                              │
-│  Cascading failure!                                         │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                          RETRY STORM                                      │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   INITIAL REQUESTS:                                                      │
+  │                                                                           │
+  │   Client 1 ──────✗──────►  Service (overloaded)                          │
+  │   Client 2 ──────✗──────►  Service (overloaded)                          │
+  │   Client 3 ──────✗──────►  Service (overloaded)                          │
+  │                                                                           │
+  │           │  All clients retry IMMEDIATELY at the same time:             │
+  │           ▼                                                               │
+  │                                                                           │
+  │   IMMEDIATE RETRIES (no backoff):                                        │
+  │                                                                           │
+  │   Client 1 ──────✗──────►  Service (even MORE overloaded!)              │
+  │   Client 2 ──────✗──────►  Service (CRASH!)                              │
+  │   Client 3 ──────✗──────►  Service (DEAD)                                │
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  ⚠  CASCADING FAILURE — retries make the problem WORSE           │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -274,33 +292,43 @@ result, err := resilience.Retry(func() (*http.Response, error) {
 A circuit breaker **stops calling a failing service** to prevent cascade failures.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                  Circuit Breaker States                      │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  CLOSED (Normal Operation)                                  │
-│  ─────────────────────────                                  │
-│  • Requests pass through                                    │
-│  • Failures are counted                                     │
-│  • After N failures → OPEN                                  │
-│                                                              │
-│        ▼ (too many failures)                                │
-│                                                              │
-│  OPEN (Circuit Tripped)                                     │
-│  ─────────────────────                                      │
-│  • Requests FAIL FAST (don't call service)                 │
-│  • After timeout → HALF-OPEN                                │
-│  • Protects downstream service from overload               │
-│                                                              │
-│        ▼ (timeout expires)                                  │
-│                                                              │
-│  HALF-OPEN (Testing Recovery)                               │
-│  ────────────────────────────                               │
-│  • Allow ONE request through to test                       │
-│  • If succeeds → CLOSED                                    │
-│  • If fails → OPEN                                          │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                      CIRCUIT BREAKER STATE MACHINE                        │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │                                                                           │
+  │                     ┌─────────────────────────┐                           │
+  │                     │       CLOSED            │                           │
+  │                     │    (Normal Operation)   │                           │
+  │                     │                         │                           │
+  │                     │  • Requests pass through│                           │
+  │                     │  • Failures counted     │                           │
+  │                     └───────────┬─────────────┘                           │
+  │                                 │                                         │
+  │                     failures > N│                                         │
+  │                                 ▼                                         │
+  │                     ┌─────────────────────────┐                           │
+  │                     │        OPEN             │                           │
+  │                     │   (Circuit Tripped)     │                           │
+  │                     │                         │                           │
+  │                     │  • FAIL FAST            │                           │
+  │                     │  • Don't call service   │                           │
+  │                     │  • Protects downstream  │                           │
+  │                     └───────────┬─────────────┘                           │
+  │                                 │                                         │
+  │                     timeout     │                                         │
+  │                     expires     │                                         │
+  │                                 ▼                                         │
+  │                     ┌─────────────────────────┐                           │
+  │                     │      HALF-OPEN          │                           │
+  │                     │  (Testing Recovery)     │                           │
+  │                     │                         │                           │
+  │                     │  • Allow ONE request    │  ─── success ──► CLOSED  │
+  │                     │  • Test if service      │                           │
+  │                     │    recovered            │  ─── failure ──► OPEN    │
+  │                     └─────────────────────────┘                           │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -491,15 +519,29 @@ func callExternalAPI() error {
 Use both patterns together for maximum resilience:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 Combined Resilience                          │
-│                                                              │
-│  Request ──▶ Circuit Breaker ──▶ Retry ──▶ Service         │
-│                  │                  │                        │
-│                  │ (if open)        │ (if fail)              │
-│                  ▼                  ▼                        │
-│              Fail fast         Retry with backoff           │
-└─────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                    COMBINED RESILIENCE PATTERN                            │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │                                                                           │
+  │   ┌──────────┐     ┌───────────────────┐     ┌───────────┐     ┌──────┐ │
+  │   │          │     │  Circuit Breaker  │     │   Retry   │     │      │ │
+  │   │ Request  │────►│                   │────►│  (with    │────►│Service│ │
+  │   │          │     │  • CLOSED: pass   │     │  backoff) │     │      │ │
+  │   └──────────┘     │  • OPEN: fail fast│     │  • attempt 1│   └──────┘ │
+  │                    │  • HALF-OPEN: test│     │  • attempt 2│             │
+  │                    └────────┬──────────┘     │  • attempt 3│             │
+  │                             │                └──────┬──────┘             │
+  │                             │                       │                    │
+  │                    circuit OPEN            all retries fail              │
+  │                             │                       │                    │
+  │                             ▼                       ▼                    │
+  │                    ┌──────────────────┐    ┌──────────────────┐          │
+  │                    │    FAIL FAST     │    │   Return error   │          │
+  │                    │  (no call made)  │    │  to caller       │          │
+  │                    └──────────────────┘    └──────────────────┘          │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ```go

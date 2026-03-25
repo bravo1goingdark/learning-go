@@ -3,7 +3,7 @@
 > **Goal:** Master defer from fundamentals to production-level patterns. Understand exactly what happens, when, and why.
 
 ---
-
+![Defer Keyword](../assets/09.png)
 ## Table of Contents
 
 1. [What Defer Does](#1-what-defer-does)

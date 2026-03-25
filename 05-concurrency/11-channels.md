@@ -3,7 +3,7 @@
 > **Goal:** Master channels — unbuffered, buffered, directional types, and every production pattern. Channels are Go's way to communicate between goroutines.
 
 ---
-
+![Channels](../assets/11.png)
 ## Table of Contents
 
 1. [Channel Basics](#1-channel-basics)
@@ -55,12 +55,25 @@ Unbuffered channels provide **synchronous** communication. Every send blocks unt
 ### Synchronization
 
 ```
-Sender                          Receiver
-  │                               │
-  │──── send (blocks) ────►       │
-  │                               │◄── receive (unblocks sender)
-  │                               │
-  │  (both continue)              │
+  UNBUFFERED CHANNEL SYNCHRONIZATION:
+
+  ┌──────────┐                                ┌──────────┐
+  │  Sender   │                                │ Receiver  │
+  └─────┬────┘                                └─────┬────┘
+        │                                            │
+        │  ch <- "hello"                             │
+        │  ┌────────────────────┐                    │
+        │  │     BLOCKED        │  ◄── waiting       │
+        │  │  for receiver      │      for recv      │
+        │  └─────────┬──────────┘                    │
+        │            │                               │
+        │            │     msg := <-ch               │
+        │            │     ┌────────────────────┐    │
+        │            └────►│     RECEIVED       │    │
+        │                  │  (unblocks sender) │    │
+        │                  └────────────────────┘    │
+        │                                            │
+        ▼  ◄── both goroutines continue ──►          ▼
 ```
 
 ```go
@@ -153,32 +166,38 @@ func producer(ch chan<- int) {
 ### Channel Internal Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     CHANNEL STRUCTURE                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  hchan struct:                                                  │
-│  ┌─────────────┬─────────────┬─────────────┐                    │
-│  │ qcount      │ dataqsiz    │ closed      │  ← counters/flags   │
-│  │ (items in Q)│ (capacity)  │ (is closed) │                    │
-│  └─────────────┴─────────────┴─────────────┘                    │
-│  ┌─────────────┬─────────────┬─────────────┐                    │
-│  │ sendx       │ recvx      │ lock       │                    │
-│  │ (send idx)  │ (recv idx)  │ (mutex)    │                    │
-│  └─────────────┴─────────────┴─────────────┘                    │
-│                                                                  │
-│  buf (ring buffer):                                            │
-│  ┌───┬───┬───┬───┬───┐                                         │
-│  │ ◄─│   │   │ ► │   │  ← sendx moves →, recvx moves →       │
-│  └───┴───┴───┴───┴───┘                                         │
-│    ▲               ▲                                           │
-│    │               │                                            │
-│  recvx          sendx                                          │
-│                                                                  │
-│  sendq (blocked senders):  ◄── Queue of waiting goroutines   │
-│  recvq (blocked receivers): ◄── Queue of waiting goroutines   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                      CHANNEL INTERNAL STRUCTURE (hchan)                   │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │                                                                           │
+  │   hchan struct:                                                          │
+  │   ┌──────────────┬──────────────┬──────────────┐                         │
+  │   │   qcount     │  dataqsiz    │   closed     │  ◄── counters/flags    │
+  │   │ (items in Q) │  (capacity)  │ (is closed?) │                         │
+  │   ├──────────────┼──────────────┼──────────────┤                         │
+  │   │   sendx      │   recvx     │    lock      │                         │
+  │   │ (send index) │ (recv index) │   (mutex)    │                         │
+  │   └──────────────┴──────┬───────┴──────────────┘                         │
+  │                         │                                                 │
+  │                         ▼                                                 │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  buf  ──  RING BUFFER (circular queue)                            │  │
+  │   │                                                                    │  │
+  │   │    recvx                        sendx                             │  │
+  │   │      ▼                            ▼                                │  │
+  │   │   ┌──────┬──────┬──────┬──────┬──────┐                            │  │
+  │   │   │  30  │  40  │      │  10  │  20  │                            │  │
+  │   │   └──────┴──────┴──────┴──────┴──────┘                            │  │
+  │   │    [idx0] [idx1] [idx2] [idx3] [idx4]                              │  │
+  │   │    ◄─── unread ───►  ◄── empty ──►                                │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  │   ┌───────────────────────────────────────────────────────────────────┐  │
+  │   │  sendq ── blocked senders queue    recvq ── blocked receivers Q  │  │
+  │   │  [G-wait1] [G-wait2] ...           [G-waitA] [G-waitB] ...      │  │
+  │   └───────────────────────────────────────────────────────────────────┘  │
+  │                                                                           │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Visual: Buffered Channel Operations
@@ -220,27 +239,30 @@ ch <- 4            →  BLOCKS! Buffer full
 ### Visual: Unbuffered vs Buffered
 
 ```
-UNBUFFERED (capacity = 0):
+  UNBUFFERED (capacity = 0):
 
-    Sender                          Receiver
-       │                               │
-       ├─► send ──► [blocked] ──────────►│
-       │         (waiting for receive)  │
-       │                               │
-       │         ◄─── receive ─────────┤
-       │               (unblocks send) │
-       ▼                               ▼
+  ┌──────────┐                                ┌──────────┐
+  │  Sender   │                                │ Receiver  │
+  └─────┬────┘                                └─────┬────┘
+        │                                            │
+        │  send ──► ┌────────────────┐               │
+        │           │    BLOCKED     │──────────►    │
+        │           │ (no buffer!)   │    receive    │
+        │           └────────────────┘               │
+        │                                            │
+        ▼  ◄── handshake complete, both continue ►   ▼
 
 
-BUFFERED (capacity = 3):
+  BUFFERED (capacity = 3):
 
-    Sender                          Receiver
-       │                               │
-       ├─► send ──► [ buffer: 3 ] ─────┼─► receive
-       │         (if buffer not full)  │
-       │                               │
-       │         (blocks if full)      │
-       ▼                               ▼
+  ┌──────────┐    ┌────────────────────────┐    ┌──────────┐
+  │  Sender   │    │      BUFFER (cap=3)    │    │ Receiver  │
+  └─────┬────┘    │  ┌──────┬──────┬──────┐│    └─────┬────┘
+        │         │  │  1   │  2   │  3   ││          │
+        │  send ──┼─►└──────┴──────┴──────┘┼──► recv  │
+        │         │  (blocks if full)      │          │
+        │         └────────────────────────┘          │
+        ▼                                             ▼
 ```
 
 ### Visual: Channel Close States
