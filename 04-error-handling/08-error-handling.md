@@ -32,6 +32,20 @@ type error interface {
 
 That's it. One method. Any type with `Error() string` is an error.
 
+### Why Errors Are Values (Not Exceptions)
+
+Most languages use try/catch exceptions. Go deliberately rejected this model:
+
+1. **Visible error paths.** With `if err != nil`, every possible failure is visible in the code. In code review, you can see exactly where errors are handled (or not). With exceptions, errors jump over code invisibly — a function five levels up the stack can crash because of something deep inside.
+
+2. **No hidden control flow.** Exceptions create invisible `goto` statements. Every function call could secretly jump to a catch block somewhere. Go's approach means the control flow is always explicit.
+
+3. **Forced consideration.** The compiler won't let you ignore an error return value (without `_`). You must consciously decide: handle it, wrap it, or explicitly discard it. With exceptions, forgetting a try/catch is easy and silent.
+
+4. **Simpler function signatures.** A function's signature `(int, error)` tells you exactly what can go wrong. No `throws` clause needed, no surprise exceptions from dependencies.
+
+The tradeoff: more verbose code. Go accepts this because the explicitness pays off in production — fewer surprise crashes, easier debugging, clearer code review.
+
 ### The Simplest Error
 
 ```go

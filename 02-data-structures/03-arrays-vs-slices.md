@@ -82,6 +82,15 @@ func main() {
 
 **In production Go, 99% of the time you use slices.**
 
+### Why Slices Exist
+
+Arrays have two limitations that make them impractical for most code:
+
+1. **Fixed size** — `[5]int` and `[6]int` are different types. You can't write a function that accepts "any int array."
+2. **Copy semantics** — Passing an array to a function copies the entire array. For a 1MB array, that's a 1MB copy every call.
+
+Slices solve both problems. A slice is a small (24-byte) header that *points to* a backing array. Passing a slice to a function copies only the header — the underlying data is shared. And slices can grow dynamically via `append`. This is why Go programs almost always use slices.
+
 ### Arrays in Practice
 
 ```go

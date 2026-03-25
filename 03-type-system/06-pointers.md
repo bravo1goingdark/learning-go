@@ -351,6 +351,8 @@ func process() *int {
 
 **Don't worry about this prematurely.** Let the compiler optimize. Only optimize when profiling shows allocation is a bottleneck.
 
+**When escape analysis actually matters:** In high-throughput systems (web servers handling thousands of requests/sec, databases, real-time trading), GC pressure from heap allocations causes latency spikes. Each heap allocation is work the garbage collector must later clean up. If profiling (`go tool pprof`) shows GC pause is your bottleneck, look for unnecessary heap escapes — e.g., passing `*bytes.Buffer` to an `io.Writer` interface parameter forces heap allocation. For most applications, this is a non-issue.
+
 ---
 
 ## 7. When to Use Pointers

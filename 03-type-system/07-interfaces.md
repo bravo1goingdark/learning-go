@@ -86,6 +86,18 @@ func (f *File) Close() error                       { return nil }
 // File automatically satisfies Reader, Writer, Closer
 ```
 
+### Why Implicit? (The Design Philosophy)
+
+Go chose implicit interface satisfaction for three reasons:
+
+1. **Satisfy interfaces you don't own.** You can make `time.Duration` satisfy an interface you defined — without modifying the standard library. With explicit `implements`, you can only declare interfaces your type's author knew about.
+
+2. **Avoid coupling.** A type doesn't need to import the interface package. The type and the interface live in different worlds and meet only at the call site. This keeps packages independent.
+
+3. **"Accept interfaces, return structs."** Because any type with the right methods satisfies an interface, functions that accept interfaces are maximally flexible. Callers can pass any type they want — no registration, no import dependency.
+
+The downside: the compiler can't tell you "this type was *meant* to satisfy this interface." You find out at usage time. Go compensates with the `var _ MyInterface = (*MyType)(nil)` compile-time check pattern (shown below).
+
 ### Retroactive Interface Implementation
 
 ```go
