@@ -119,6 +119,25 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
+### [07-systems-project/](07-systems-project/) — Capstone: Mini Message Queue
+> Build an in-memory message broker from scratch. Uses everything from Topics 1-18 and all Software Patterns.
+
+| # | File | What You'll Build |
+|---|------|-------------------|
+| 01 | [Overview](07-systems-project/01-overview.md) | Architecture, design decisions |
+| 02 | [Message Model](07-systems-project/02-message-model.md) | Message & topic types, sentinel errors |
+| 03 | [Subscriber](07-systems-project/03-subscriber.md) | Per-subscriber channels, 3 backpressure strategies |
+| 04 | [Broker Core](07-systems-project/04-broker-core.md) | Topic registry, fan-out, RWMutex |
+| 05 | [Service Layer](07-systems-project/05-service-layer.md) | Validation, business rules |
+| 06 | [Wiring](07-systems-project/06-wiring.md) | DI, main.go, config |
+| 07 | [Graceful Shutdown](07-systems-project/07-graceful-shutdown.md) | Context, drain, signal handling |
+| 08 | [Resilience](07-systems-project/08-resilience.md) | Dead letter queue, backpressure strategies |
+| 09 | [Demo](07-systems-project/09-demo.md) | Full walkthrough, test scenarios |
+
+**Milestone:** Working in-memory message broker with topic-based pub-sub, per-subscriber channels, backpressure, DLQ, and graceful shutdown.
+
+---
+
 ## Rules
 
 1. **Don't skip ahead.** If a later topic feels confusing, revisit the folder it depends on.
