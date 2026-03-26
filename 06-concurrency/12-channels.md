@@ -19,7 +19,7 @@
 
 ---
 
-## 1. Channel Basics
+## 1. Channel Basics [CORE]
 
 Goroutines can share memory, but unprotected shared memory causes data races. Channels provide a safer alternative: instead of sharing memory and locking it, you **communicate** values between goroutines. This follows Go's philosophy: *"Do not communicate by sharing memory; instead, share memory by communicating."*
 
@@ -50,7 +50,7 @@ close(ch)      // Close channel
 
 ---
 
-## 2. Unbuffered Channels
+## 2. Unbuffered Channels [CORE]
 
 Unbuffered channels provide **synchronous** communication. Every send blocks until a receive happens.
 
@@ -112,7 +112,7 @@ func main() {
 
 ---
 
-## 3. Buffered Channels
+## 3. Buffered Channels [CORE]
 
 **When to choose buffered vs unbuffered:** Use unbuffered when you need synchronization — a handshake where sender and receiver must meet (e.g., signaling completion). Use buffered when the producer and consumer run at different speeds, or when you want to decouple timing. The buffer size = how many items can be produced before the consumer must catch up. If the consumer is slower than the producer and the buffer fills, the producer blocks.
 
@@ -296,7 +296,7 @@ val, ok := <-ch  // val=0, ok=false (always returns zero value, ok=false)
 
 ---
 
-## 4. Directional Channels
+## 4. Directional Channels [CORE]
 
 Restrict channel to send-only or receive-only at the **type level**.
 
@@ -354,7 +354,7 @@ func bad2(in <-chan int) {
 
 ---
 
-## 5. Closing Channels
+## 5. Closing Channels [CORE]
 
 ### Rules
 
@@ -411,7 +411,7 @@ case val, ok := <-ch:
 
 ---
 
-## 6. Range Over Channel
+## 6. Range Over Channel [CORE]
 
 `range` on a channel receives values until the channel is **closed**.
 
@@ -437,7 +437,7 @@ func main() {
 
 ---
 
-## 7. Nil Channels
+## 7. Nil Channels [CORE]
 
 A nil channel is the **zero value** of a channel. Operations on it **block forever**.
 
@@ -472,7 +472,9 @@ func process(ch1, ch2 <-chan int, done chan<- struct{}) {
 
 ---
 
-## 8. Channel Internals
+## 8. Channel Internals [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
 > **Connection to Topic 3 (Slices):** Both slices and buffered channels use a **ring buffer** internally. A slice's backing array is accessed via index; a channel's `buf` uses `sendx` and `recvx` indices that wrap around when they reach `dataqsiz`. Understanding one helps you understand the other — the key difference is that channels add locking and goroutine queues on top.
 
@@ -529,7 +531,9 @@ Receive:
 
 ---
 
-## 9. Common Patterns
+## 9. Common Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Signal-Only (Done Channel)
 
@@ -596,7 +600,7 @@ func main() {
 
 ---
 
-## 10. Common Pitfalls
+## 10. Common Pitfalls [CORE]
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -610,7 +614,9 @@ func main() {
 
 ---
 
-## 11. Production Patterns
+## 11. Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Broker Pattern with Multiple Producers
 
@@ -799,7 +805,9 @@ func split(input <-chan T) (<-chan T, <-chan T) {
 
 ---
 
-## 12. Buffer Size Guidelines
+## 12. Buffer Size Guidelines [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Rule of Thumb
 
@@ -828,7 +836,9 @@ buffer := calculateBuffer(100, 50*time.Millisecond) // 10
 
 ---
 
-## 13. Testing Channels
+## 13. Testing Channels [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Deterministic Testing with time Package
 
@@ -876,3 +886,158 @@ func TestChannelChaos(t *testing.T) {
     }
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Producer-Consumer ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create one goroutine that sends the integers 0 through 9 on a channel, then closes it. The main goroutine receives and prints each value using `range` over the channel.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	ch := make(chan int)
+
+	go func() {
+		for i := 0; i < 10; i++ {
+			ch <- i
+		}
+		close(ch)
+	}()
+
+	for val := range ch {
+		fmt.Println(val)
+	}
+}
+```
+
+</details>
+
+### Exercise 2: Buffered Channel Blocking ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a buffered channel with capacity 3. Send 5 items to it. For the first 3 sends, print "sent without blocking". For sends 4 and 5, demonstrate that the send blocks by wrapping it in a goroutine with a print before and after.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch := make(chan int, 3)
+
+	for i := 1; i <= 3; i++ {
+		ch <- i
+		fmt.Printf("sent %d (no block)\n", i)
+	}
+
+	// These will block unless we drain the channel first
+	go func() {
+		ch <- 4
+		fmt.Println("sent 4 (after blocking)")
+	}()
+	go func() {
+		ch <- 5
+		fmt.Println("sent 5 (after blocking)")
+	}()
+
+	time.Sleep(100 * time.Millisecond)
+
+	// Drain to unblock the goroutines
+	for i := 0; i < 5; i++ {
+		fmt.Println("received:", <-ch)
+	}
+}
+```
+
+</details>
+
+### Exercise 3: Pipeline ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Build a pipeline: goroutine A generates integers 1–5, goroutine B receives each and doubles it, main collects and prints the doubled values.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	nums := make(chan int)
+	doubled := make(chan int)
+
+	// Stage A: generate
+	go func() {
+		defer close(nums)
+		for i := 1; i <= 5; i++ {
+			nums <- i
+		}
+	}()
+
+	// Stage B: double
+	go func() {
+		defer close(doubled)
+		for n := range nums {
+			doubled <- n * 2
+		}
+	}()
+
+	// Main: collect
+	for val := range doubled {
+		fmt.Println(val)
+	}
+}
+```
+
+</details>
+
+### Exercise 4: Close and Range ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a channel, send 7 string values from a goroutine, close the channel, and use `range` in main to collect all values into a slice. Print the slice.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	ch := make(chan string)
+
+	go func() {
+		defer close(ch)
+		for _, word := range []string{"the", "quick", "brown", "fox", "jumps", "over", "lazy"} {
+			ch <- word
+		}
+	}()
+
+	var collected []string
+	for word := range ch {
+		collected = append(collected, word)
+	}
+	fmt.Println(collected)
+}
+```
+
+</details>

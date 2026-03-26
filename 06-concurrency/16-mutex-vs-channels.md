@@ -22,7 +22,7 @@
 
 ---
 
-## 1. The Core Difference
+## 1. The Core Difference [CORE]
 
 | | Mutex | Channel |
 |-|-------|---------|
@@ -38,7 +38,7 @@
 
 ---
 
-## 2. When to Use Mutex
+## 2. When to Use Mutex [CORE]
 
 Use a mutex when **multiple goroutines access shared state** and you need mutual exclusion.
 
@@ -91,7 +91,7 @@ func (p *Pool) Put(conn Connection) {
 
 ---
 
-## 3. When to Use Channels
+## 3. When to Use Channels [CORE]
 
 Use channels when you need to **coordinate goroutines** or **pass data between them**.
 
@@ -144,7 +144,7 @@ go func() {
 
 ---
 
-## 4. Mutex Deep Dive
+## 4. Mutex Deep Dive [CORE]
 
 ### Basic Mutex
 
@@ -210,7 +210,9 @@ func (c *UserCache) Count() int {
 
 ---
 
-## 5. RWMutex
+## 5. RWMutex [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 `sync.RWMutex` allows **multiple readers** OR **one writer**.
 
@@ -253,7 +255,9 @@ Lock()   ──► Goroutine D writes ──► Unlock()   (exclusive — blocks
 
 ---
 
-## 6. sync.Map
+## 6. sync.Map [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 Optimized for two common patterns: keys rarely change, or goroutines read/write disjoint sets of keys.
 
@@ -289,7 +293,9 @@ m.Range(func(key, value any) bool {
 
 ---
 
-## 7. sync.Once
+## 7. sync.Once [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 Ensures a function runs **exactly once**, even with concurrent calls.
 
@@ -338,7 +344,7 @@ func GetService() *Service {
 
 ---
 
-## 8. Channel as Mutex
+## 8. Channel as Mutex [CORE]
 
 You can use a buffered channel of size 1 as a mutex. **Don't do this in production** — use `sync.Mutex`.
 
@@ -371,7 +377,7 @@ mu.Unlock() // Fast atomic release
 
 ---
 
-## 9. Side-by-Side Comparison
+## 9. Side-by-Side Comparison [CORE]
 
 ### Same Problem, Two Solutions
 
@@ -443,7 +449,9 @@ func (c *Counter) Value() int { return <-c.get }
 
 ---
 
-## 10. Decision Flowchart
+## 10. Decision Flowchart [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ```
 Do you need to protect shared state?
@@ -479,3 +487,178 @@ Do you need to protect shared state?
 | Concurrent map (special cases) | `sync.Map` |
 | Pipeline processing | Channels |
 | Graceful shutdown | `context.Context` + WaitGroup |
+
+---
+
+## Exercises
+
+### Exercise 1: Thread-Safe Counter with Mutex ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Build a `SafeCounter` struct with a `sync.Mutex` and an `int` field. Write `Inc()` and `Value()` methods. Spawn 10 goroutines that each increment 1000 times. Print the final value (should be 10000).
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+type SafeCounter struct {
+	mu    sync.Mutex
+	value int
+}
+
+func (c *SafeCounter) Inc() {
+	c.mu.Lock()
+	c.value++
+	c.mu.Unlock()
+}
+
+func (c *SafeCounter) Value() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.value
+}
+
+func main() {
+	c := &SafeCounter{}
+	var wg sync.WaitGroup
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 1000; j++ {
+				c.Inc()
+			}
+		}()
+	}
+
+	wg.Wait()
+	fmt.Println("final value:", c.Value()) // 10000
+}
+```
+
+</details>
+
+### Exercise 2: Channel-Based Counter ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Rewrite the counter from Exercise 1 using channels. Use a `run` goroutine that owns the counter value and responds to `inc` and `get` channel operations.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+type Counter struct {
+	inc chan struct{}
+	get chan int
+}
+
+func NewCounter() *Counter {
+	c := &Counter{
+		inc: make(chan struct{}),
+		get: make(chan int),
+	}
+	go c.run()
+	return c
+}
+
+func (c *Counter) run() {
+	var val int
+	for {
+		select {
+		case <-c.inc:
+			val++
+		case c.get <- val:
+		}
+	}
+}
+
+func (c *Counter) Inc()       { c.inc <- struct{}{} }
+func (c *Counter) Value() int { return <-c.get }
+
+func main() {
+	c := NewCounter()
+	var wg sync.WaitGroup
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 1000; j++ {
+				c.Inc()
+			}
+		}()
+	}
+
+	wg.Wait()
+	fmt.Println("final value:", c.Value()) // 10000
+}
+```
+
+</details>
+
+### Exercise 3: sync.Once ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Use `sync.Once` to initialize a shared resource (e.g., a database connection string) exactly once, even when 5 goroutines try to initialize it concurrently. Print how many times the init function actually runs.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+var (
+	config     string
+	configOnce sync.Once
+	initCount  int
+	mu         sync.Mutex
+)
+
+func getConfig() string {
+	configOnce.Do(func() {
+		mu.Lock()
+		initCount++
+		mu.Unlock()
+		config = "initialized: postgres://localhost:5432/mydb"
+	})
+	return config
+}
+
+func main() {
+	var wg sync.WaitGroup
+
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			cfg := getConfig()
+			fmt.Printf("goroutine %d got: %s\n", id, cfg)
+		}(i)
+	}
+
+	wg.Wait()
+	fmt.Printf("init ran %d time(s)\n", initCount) // 1
+}
+```
+
+</details>

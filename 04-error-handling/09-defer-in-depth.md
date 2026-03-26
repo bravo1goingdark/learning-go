@@ -20,7 +20,7 @@
 
 ---
 
-## 1. What Defer Does
+## 1. What Defer Does [CORE]
 
 `defer` schedules a function call to run **when the surrounding function returns** — not when the block ends.
 
@@ -67,7 +67,7 @@ func process() error {
 
 ---
 
-## 2. Execution Order (LIFO)
+## 2. Execution Order (LIFO) [CORE]
 
 Deferred functions are pushed onto a **stack**. Last deferred = first executed.
 
@@ -125,7 +125,7 @@ func processFile(path string) error {
 
 ---
 
-## 3. Arguments Are Evaluated Immediately
+## 3. Arguments Are Evaluated Immediately [CORE]
 
 This is the **most important defer gotcha**.
 
@@ -266,7 +266,7 @@ func main() {
 
 ---
 
-## 4. Deferred Closures
+## 4. Deferred Closures [CORE]
 
 ### Capture by Reference
 
@@ -313,7 +313,7 @@ func example() (result int) {
 
 ---
 
-## 5. Defer and Return Values
+## 5. Defer and Return Values [CORE]
 
 This is one of Go's most subtle features.
 
@@ -432,7 +432,7 @@ func (s *Service) Process(ctx context.Context, req Request) (resp Response, err 
 
 ---
 
-## 6. Defer and Panic/Recover
+## 6. Defer and Panic/Recover [CORE]
 
 ### Defer Runs During Panic
 
@@ -540,7 +540,7 @@ func main() {
 
 ---
 
-## 7. Defer in Loops
+## 7. Defer in Loops [CORE]
 
 ### The Problem
 
@@ -621,7 +621,9 @@ func cleanup() {
 
 ---
 
-## 8. Defer Performance
+## 8. Defer Performance [INTERNALS]
+
+> ⚠️ **GATE [INTERNALS]:** This section covers defer's internal overhead and performance characteristics. You can skip this on first read and return when optimizing hot paths.
 
 ### Why Defer Has Overhead
 
@@ -699,7 +701,9 @@ func BenchmarkExplicit(b *testing.B) {
 
 ---
 
-## 9. Production Patterns
+## 9. Production Patterns [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers production defer patterns (resource cleanup, mutex unlock, transactions, HTTP body close, timing). Ensure you understand sections 1-8 first.
 
 ### Pattern 1: Resource Cleanup
 
@@ -885,7 +889,7 @@ func (s *BatchWriter) Process(ctx context.Context, records []Record) error {
 
 ---
 
-## 10. Advanced Patterns
+## 10. Advanced Patterns [PRODUCTION]
 
 ### Pattern 1: Defer with Channel Signal
 
@@ -1030,7 +1034,7 @@ func (s *Service) Import(ctx context.Context, path string) error {
 
 ---
 
-## 11. Common Pitfalls
+## 11. Common Pitfalls [CORE]
 
 ### 1. Arguments Evaluated Immediately
 
@@ -1190,118 +1194,9 @@ defer func() {
 
 ---
 
-## 12. Production Patterns
+## 12. Debugging Defer [PRODUCTION]
 
-### Cleanup Functions
-
-```go
-func processFile(path string) error {
-    f, err := os.Open(path)
-    if err != nil {
-        return err
-    }
-    defer f.Close()
-    
-    // Process file
-    return nil
-}
-```
-
-### Lock Management
-
-```go
-func safeAccess(m *sync.Mutex) {
-    m.Lock()
-    defer m.Unlock()
-    
-    // Protected access
-}
-```
-
-### Database Transactions
-
-```go
-func withTx(db *sql.DB, fn func(*sql.Tx) error) error {
-    tx, err := db.Begin()
-    if err != nil {
-        return err
-    }
-    defer func() {
-        if err != nil {
-            tx.Rollback()
-        } else {
-            tx.Commit()
-        }
-    }()
-    
-    return fn(tx)
-}
-```
-
-### HTTP Response Cleanup
-
-```go
-func handler(w http.ResponseWriter, r *http.Request) {
-    start := time.Now()
-    
-    defer func() {
-        duration := time.Since(start)
-        log.Printf("%s %s %s", r.Method, r.URL.Path, duration)
-    }()
-    
-    // Handle request
-}
-```
-
-### Cleanup in Tests
-
-```go
-func TestWithTempFile(t *testing.T) {
-    f, err := os.CreateTemp("", "test-*.txt")
-    if err != nil {
-        t.Fatal(err)
-    }
-    defer os.Remove(f.Name()) // Clean up file
-    defer f.Close()
-    
-    // Test with file
-}
-```
-
----
-
-## 13. Defer Performance
-
-### Benchmark
-
-```go
-func BenchmarkDefer(b *testing.B) {
-    for i := 0; i < b.N; i++ {
-        deferFunc()
-    }
-}
-
-func deferFunc() {
-    defer func() {}()
-}
-
-// Defer has ~50ns overhead per call
-// Use only when needed, not for trivial cases
-```
-
-### When to Use Defer
-
-| Use | Defer? | Reason |
-|-----|--------|--------|
-| File close | Yes | Always run, even on error |
-| Mutex unlock | Yes | Guaranteed unlock |
-| Timer stop | Yes | Prevent leaks |
-| Simple print | No | Use direct call |
-| Hot path | No | 50ns overhead |
-
----
-
-## 14. Debugging Defer
+> 🚧 **GATE [PRODUCTION]:** This section covers debugging techniques for defer execution order.
 
 ```go
 // Add tracing to understand defer order
@@ -1329,72 +1224,149 @@ func example() {
 
 ---
 
-## 15. Common Mistakes
-
-### Forgetting Deferred Function Returns Value
-
-```go
-// BAD
-func bad() int {
-    defer func() {
-        return 5 // This doesn't change the return!
-    }()
-    return 1
-}
-// Returns 1, not 5!
-
-// GOOD
-func good() int {
-    result := 1
-    defer func() {
-        result = 5 // This changes result
-    }()
-    return result
-}
-// Returns 5
-```
-
-### Defer in Loop
-
-```go
-// BAD: Deferred functions run after loop ends
-for _, file := range files {
-    defer os.Remove(file.Name()) // All run after loop!
-}
-
-// GOOD: Use anonymous function
-for _, file := range files {
-    func(f string) {
-        defer os.Remove(f)
-    }(file.Name())
-}
-```
-
-### Recover Not Working
-
-```go
-// BAD: Recover in different goroutine
-go func() {
-    defer func() {
-        if r := recover(); r != nil {
-            log.Println(r)
-        }
-    }()
-    panic("oh no") // Won't be caught by main's recover!
-}()
-
-// GOOD: Recover in same goroutine
-func safe() {
-    defer func() {
-        if r := recover(); r != nil {
-            log.Println(r)
-        }
-    }()
-    panic("oh no") // Will be caught
-}
-```
-
 ---
+
+## Exercises
+
+### Exercise 1: Verify LIFO Execution Order ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a `main` function with 5 deferred calls that each print a distinct label (e.g., `"first"`, `"second"`, etc.). Run the program and confirm the output prints in reverse order (LIFO).
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	defer fmt.Println("first")
+	defer fmt.Println("second")
+	defer fmt.Println("third")
+	defer fmt.Println("fourth")
+	defer fmt.Println("fifth")
+}
+
+// Output:
+// fifth
+// fourth
+// third
+// second
+// first
+```
+
+</details>
+
+### Exercise 2: Defer Argument Evaluation vs Closure ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function that captures `time.Now()` as a direct defer argument and also captures `time.Now()` inside a deferred closure. Add a `time.Sleep` between the two defers and the return. Print both timestamps to show that the direct argument was evaluated at defer time, while the closure captures the call time.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func example() {
+	defer fmt.Println("Direct arg time:", time.Now())
+
+	time.Sleep(100 * time.Millisecond)
+
+	defer func() {
+		fmt.Println("Closure time:", time.Now())
+	}()
+
+	time.Sleep(100 * time.Millisecond)
+}
+
+func main() {
+	example()
+}
+
+// The direct arg prints the time at the moment `defer` executed.
+// The closure prints the time when the deferred function actually runs.
+```
+
+</details>
+
+### Exercise 3: Open, Read, and Defer Close ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function `readFileContent(path string) (string, error)` that opens a file with `os.Open`, defers `f.Close()`, reads all content with `io.ReadAll`, and returns the content as a string. Handle errors at each step.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"os"
+)
+
+func readFileContent(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", fmt.Errorf("open: %w", err)
+	}
+	defer f.Close()
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return "", fmt.Errorf("read: %w", err)
+	}
+	return string(data), nil
+}
+
+func main() {
+	content, err := readFileContent("go.mod")
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	fmt.Println(content)
+}
+```
+
+</details>
+
+### Exercise 4: Defer Modifying Named Return Values ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function `increment() (result int)` that sets `result = 10` then returns. Add a deferred closure that increments `result` by 5 before the function returns. Print the return value from `main` to verify defer modified it (should print 15).
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func increment() (result int) {
+	defer func() {
+		result += 5
+	}()
+	result = 10
+	return
+}
+
+func main() {
+	fmt.Println(increment()) // 15
+}
+```
+
+</details>
 
 ## End of Series
 

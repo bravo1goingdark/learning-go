@@ -19,7 +19,7 @@
 
 ---
 
-## 1. What Is Context
+## 1. What Is Context [CORE]
 
 **The problem context solves:** A web handler calls `getUser()`, which calls `db.Query()`. The client disconnects. How does `db.Query()` know to stop? Without context, there's no way to propagate cancellation across function boundaries and goroutines. `context.Context` solves this by threading a cancellation signal through every function call.
 
@@ -45,7 +45,7 @@ type Context interface {
 
 ---
 
-## 2. Creating Contexts
+## 2. Creating Contexts [CORE]
 
 ### `context.Background()`
 
@@ -74,7 +74,7 @@ ctx := context.TODO() // Same as Background, signals "fix me later"
 
 ---
 
-## 3. Cancellation
+## 3. Cancellation [CORE]
 
 ### `context.WithCancel`
 
@@ -141,7 +141,7 @@ cancelChild()
 
 ---
 
-## 4. Deadlines & Timeouts
+## 4. Deadlines & Timeouts [CORE]
 
 ### `context.WithTimeout`
 
@@ -197,7 +197,7 @@ func fetch(ctx context.Context, url string) ([]byte, error) {
 
 ---
 
-## 5. Context Values
+## 5. Context Values [CORE]
 
 ### Storing Values
 
@@ -237,7 +237,9 @@ ctx := context.WithValue(ctx, "traceID", "abc") // Don't do this
 
 ---
 
-## 6. Context Propagation
+## 6. Context Propagation [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### The Rule
 
@@ -289,7 +291,9 @@ func ProcessOrder(ctx context.Context, orderID string) error {
 
 ---
 
-## 7. Context in HTTP Servers
+## 7. Context in HTTP Servers [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Automatic Context Cancellation
 
@@ -341,7 +345,7 @@ func WithRequestID(next http.Handler) http.Handler {
 
 ---
 
-## 8. ErrCause Inspection
+## 8. ErrCause Inspection [CORE]
 
 ### `ctx.Err()` Returns
 
@@ -367,7 +371,9 @@ func handleErr(err error) {
 
 ---
 
-## 9. Common Patterns
+## 9. Common Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Fan-Out with Shared Context
 
@@ -416,7 +422,7 @@ func retry(ctx context.Context, fn func() error, max int) error {
 
 ---
 
-## 10. Common Pitfalls
+## 10. Common Pitfalls [CORE]
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -430,7 +436,9 @@ func retry(ctx context.Context, fn func() error, max int) error {
 
 ---
 
-## 11. Production Best Practices
+## 11. Production Best Practices [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### HTTP Middleware with Context
 
@@ -654,7 +662,9 @@ func handle(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-## 12. Testing with Context
+## 12. Testing with Context [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ```go
 func TestContextCancellation(t *testing.T) {
@@ -715,3 +725,164 @@ func TestContextMock(t *testing.T) {
     }
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Context with Timeout ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a context with a 1-second timeout. Pass it to a goroutine that sleeps for 2 seconds and then tries to send a result. Verify the goroutine detects cancellation via `ctx.Done()`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	done := make(chan struct{})
+	go func() {
+		select {
+		case <-time.After(2 * time.Second):
+			fmt.Println("work finished")
+		case <-ctx.Done():
+			fmt.Println("cancelled:", ctx.Err())
+		}
+		close(done)
+	}()
+
+	<-done
+	fmt.Println("main done")
+}
+```
+
+</details>
+
+### Exercise 2: WithCancel ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~10 min
+
+Use `context.WithCancel` to create a context. Launch a goroutine that loops, checking `ctx.Done()` each iteration. After 500ms, call `cancel()` from main. The goroutine should detect the cancellation and print a message.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("goroutine cancelled:", ctx.Err())
+				return
+			default:
+				fmt.Println("working...")
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+	}()
+
+	time.Sleep(500 * time.Millisecond)
+	cancel()
+	time.Sleep(100 * time.Millisecond) // give goroutine time to print
+	fmt.Println("main done")
+}
+```
+
+</details>
+
+### Exercise 3: Context Values ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Define a custom key type. Store a value in a context using `WithValue`. Pass the context to a nested function and retrieve the value. Print it.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+)
+
+type key string
+
+const userIDKey key = "userID"
+
+func process(ctx context.Context) {
+	val := ctx.Value(userIDKey)
+	if uid, ok := val.(string); ok {
+		fmt.Println("user ID:", uid)
+	} else {
+		fmt.Println("no user ID found")
+	}
+}
+
+func main() {
+	ctx := context.WithValue(context.Background(), userIDKey, "abc-123")
+	process(ctx)
+}
+```
+
+</details>
+
+### Exercise 4: Respect Context in a Loop ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~10 min
+
+Write a function that runs a loop performing simulated work (sleep + print). It must check `ctx.Err()` and exit cleanly when the context is cancelled. Call it with a 1-second timeout.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func worker(ctx context.Context) {
+	for i := 0; ; i++ {
+		if ctx.Err() != nil {
+			fmt.Println("worker exiting:", ctx.Err())
+			return
+		}
+		fmt.Printf("iteration %d\n", i)
+		time.Sleep(200 * time.Millisecond)
+	}
+}
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	worker(ctx)
+	fmt.Println("main done")
+}
+```
+
+</details>

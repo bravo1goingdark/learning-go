@@ -21,7 +21,7 @@
 
 ---
 
-## 1. What Is a Pipeline
+## 1. What Is a Pipeline [CORE]
 
 A pipeline is a series of stages connected by channels. Each stage is a goroutine that:
 
@@ -96,7 +96,7 @@ Step 4: sink() consumes
 
 ---
 
-## 2. Basic Pipeline
+## 2. Basic Pipeline [CORE]
 
 ```go
 func main() {
@@ -153,7 +153,9 @@ gen(1,2,3,4,5) → [1,2,3,4,5] → double → [2,4,6,8,10] → addOne → [3,5,7
 
 ---
 
-## 3. Pipeline Stages
+## 3. Pipeline Stages [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Stage Template
 
@@ -233,7 +235,9 @@ func mapStage[T, U any](in <-chan T, fn func(T) U) <-chan U {
 
 ---
 
-## 4. Generator Pattern
+## 4. Generator Pattern [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 A generator is the **first stage** — it produces values and closes when done.
 
@@ -297,7 +301,9 @@ func readLines(path string) (<-chan string, error) {
 
 ---
 
-## 5. Pipeline with Error Handling
+## 5. Pipeline with Error Handling [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Result Type Pattern
 
@@ -363,7 +369,9 @@ func parseLines(in <-chan string) Stage[int] {
 
 ---
 
-## 6. Pipeline with Context
+## 6. Pipeline with Context [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 Every stage respects cancellation. When a downstream stage cancels, upstream stops producing.
 
@@ -411,7 +419,9 @@ func main() {
 
 ---
 
-## 7. Bounded Pipelines
+## 7. Bounded Pipelines [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Fan-Out Within Pipeline Stages
 
@@ -461,7 +471,9 @@ gen() ────►├── Worker 2 ──├───► filter() ──►
 
 ---
 
-## 8. Real-World Example: Log Processing
+## 8. Real-World Example: Log Processing [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ```go
 // Stage 1: Read log lines from file
@@ -572,7 +584,9 @@ func processLogs(ctx context.Context, path string) error {
 
 ---
 
-## 9. Common Pitfalls
+## 9. Common Pitfalls [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -585,7 +599,9 @@ func processLogs(ctx context.Context, path string) error {
 
 ---
 
-## 10. Production Patterns
+## 10. Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Pipeline with Retry
 
@@ -799,7 +815,9 @@ func (p *Pipeline) Stop() {
 
 ---
 
-## 11. Testing Pipelines
+## 11. Testing Pipelines [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ```go
 func TestPipeline(t *testing.T) {
@@ -831,3 +849,184 @@ func TestPipeline(t *testing.T) {
 }
 ```
 | No backpressure | OOM on slow consumer | Use bounded buffers |
+
+---
+
+## Exercises
+
+### Exercise 1: 3-Stage Pipeline ⭐
+**Difficulty:** Beginner | **Time:** ~15 min
+
+Build a 3-stage pipeline: generate integers 1–5, square each one, and print the results. Each stage runs in its own goroutine connected by channels.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func generate(nums ...int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for _, n := range nums {
+			out <- n
+		}
+	}()
+	return out
+}
+
+func square(in <-chan int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for n := range in {
+			out <- n * n
+		}
+	}()
+	return out
+}
+
+func main() {
+	for val := range square(generate(1, 2, 3, 4, 5)) {
+		fmt.Println(val)
+	}
+	// Output: 1 4 9 16 25
+}
+```
+
+</details>
+
+### Exercise 2: Pipeline with Error Handling ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Define a `Result` struct with `Value` and `Err` fields. Write a pipeline stage that converts strings to integers (using `strconv.Atoi`), wrapping each result in the `Result` type. Collect results in main, printing errors and values separately.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+type Result struct {
+	Value int
+	Err   error
+}
+
+func generate(lines ...string) <-chan string {
+	out := make(chan string)
+	go func() {
+		defer close(out)
+		for _, l := range lines {
+			out <- l
+		}
+	}()
+	return out
+}
+
+func parseInto(in <-chan string) <-chan Result {
+	out := make(chan Result)
+	go func() {
+		defer close(out)
+		for line := range in {
+			n, err := strconv.Atoi(line)
+			out <- Result{Value: n, Err: err}
+		}
+	}()
+	return out
+}
+
+func main() {
+	input := generate("10", "abc", "30", "42", "not-a-number", "7")
+
+	for r := range parseInto(input) {
+		if r.Err != nil {
+			fmt.Println("error:", r.Err)
+		} else {
+			fmt.Println("value:", r.Value)
+		}
+	}
+}
+```
+
+</details>
+
+### Exercise 3: Pipeline with Context Cancellation ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Add `context.Context` to each pipeline stage. Cancel the context after 2 seconds. Each stage should check `ctx.Done()` and exit cleanly when cancelled.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func generate(ctx context.Context, nums ...int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for _, n := range nums {
+			select {
+			case out <- n:
+			case <-ctx.Done():
+				return
+			}
+			time.Sleep(500 * time.Millisecond) // slow producer
+		}
+	}()
+	return out
+}
+
+func square(ctx context.Context, in <-chan int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("square stage cancelled")
+				return
+			case n, ok := <-in:
+				if !ok {
+					return
+				}
+				select {
+				case out <- n * n:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+	return out
+}
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	input := generate(ctx, 1, 2, 3, 4, 5, 6, 7, 8)
+	output := square(ctx, input)
+
+	for val := range output {
+		fmt.Println("result:", val)
+	}
+	fmt.Println("pipeline done")
+}
+```
+
+</details>

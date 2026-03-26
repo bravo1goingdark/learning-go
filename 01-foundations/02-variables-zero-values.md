@@ -21,7 +21,7 @@
 
 ---
 
-## 1. Basic Types
+## 1. Basic Types [CORE]
 
 ### Numeric Types
 
@@ -66,7 +66,7 @@ var y int64 = 1000000000000000000 // Always works
 
 ---
 
-## 2. Variable Declaration Forms
+## 2. Variable Declaration Forms [CORE]
 
 **When to use which form:** The choice depends on scope, initialization needs, and readability. At package level, you must use `var` since `:=` isn't allowed. Within functions, prefer `:=` for local variables since it's more concise and the type is usually obvious from context. Use explicit `var` when you want zero value initialization without specifying a type, or when the variable might be reassigned later (making `:=` inappropriate). Use `var` with explicit type when the type isn't obvious from the right-hand side or when you want to make the type explicit for clarity.
 
@@ -160,7 +160,7 @@ p.Name = "Alice"
 
 ---
 
-## 3. Zero Values (Complete Reference)
+## 3. Zero Values (Complete Reference) [CORE]
 
 **Every variable in Go is initialized to its zero value.** There is no uninitialized memory. This is a core Go design decision.
 
@@ -268,7 +268,7 @@ Go eliminates the "is this null?" question for basic types. You only need to che
 
 ---
 
-## 4. Short Declaration (`:=`)
+## 4. Short Declaration (`:=`) [CORE]
 
 ### Rules
 
@@ -321,7 +321,7 @@ func main() {
 
 ---
 
-## 5. Type Inference
+## 5. Type Inference [CORE]
 
 Go infers types from the right-hand side of `:=` or `var` without explicit type.
 
@@ -364,7 +364,7 @@ var y float32 = 3.14 // Force float32, not float64
 
 ---
 
-## 6. Constants
+## 6. Constants [CORE]
 
 ### Basic Constants
 
@@ -443,7 +443,7 @@ Constants CANNOT be:
 
 ---
 
-## 7. Iota (Enumerations)
+## 7. Iota (Enumerations) [CORE]
 
 `iota` is a counter that increments in each `const` line.
 
@@ -566,7 +566,7 @@ func (s *Status) UnmarshalText(data []byte) error {
 
 ---
 
-## 8. Blank Identifier (`_`)
+## 8. Blank Identifier (`_`) [CORE]
 
 The blank identifier discards values. It's a write-only variable.
 
@@ -631,7 +631,7 @@ for range items {
 
 ---
 
-## 9. Type Conversions
+## 9. Type Conversions [CORE]
 
 Go requires **explicit** type conversions. No implicit conversions.
 
@@ -699,7 +699,7 @@ func stringToBytes(s string) []byte {
 
 ---
 
-## 10. Scope & Shadowing
+## 10. Scope & Shadowing [CORE]
 
 ### Scope Levels
 
@@ -779,7 +779,9 @@ func main() {
 
 ---
 
-## 11. Production Patterns
+## 11. Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** The Functional Options Pattern uses closures (covered in Topic 11). Come back after completing Phase 5.
 
 ### Configuration Pattern
 
@@ -875,7 +877,7 @@ var (
 
 ---
 
-## 12. Common Pitfalls
+## 12. Common Pitfalls [CORE]
 
 ### 1. Integer Overflow
 
@@ -997,196 +999,127 @@ import _ "pkg"               // Import for side effects
 
 ---
 
-## 13. Production Patterns
+## Exercises
 
-### Configuration with Zero Values
+### Exercise 1: Print Zero Values ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Declare one variable of each basic type (`bool`, `int`, `float64`, `string`) without assigning a value. Print each with `fmt.Printf("%+v\n", ...)` to see its zero value.
+
+<details>
+<summary>Solution</summary>
 
 ```go
-type Config struct {
-    Host        string
-    Port        int
-    Timeout     time.Duration
-    MaxRetries  int
-    Debug       bool
-}
+package main
 
-func DefaultConfig() *Config {
-    return &Config{
-        Host:       "localhost",
-        Port:       8080,
-        Timeout:    30 * time.Second,
-        MaxRetries: 3,
-        Debug:      false,
-    }
-}
+import "fmt"
 
-func LoadConfig() *Config {
-    cfg := DefaultConfig()
-    
-    if v := os.Getenv("HOST"); v != "" {
-        cfg.Host = v
-    }
-    if v := os.Getenv("PORT"); v != "" {
-        if port, err := strconv.Atoi(v); err == nil {
-            cfg.Port = port
-        }
-    }
-    
-    return cfg
+func main() {
+	var b bool
+	var i int
+	var f float64
+	var s string
+
+	fmt.Printf("bool:   %v\n", b)
+	fmt.Printf("int:    %v\n", i)
+	fmt.Printf("float:  %v\n", f)
+	fmt.Printf("string: %q\n", s)
+}
+// Output:
+// bool:   false
+// int:    0
+// float:  0
+// string: ""
+```
+
+</details>
+
+### Exercise 2: Predict Shadowing Output ⭐⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Read the code below. Predict every line of output before running it.
+
+```go
+package main
+
+import "fmt"
+
+var x = "package"
+
+func main() {
+	fmt.Println(x)
+	x := "function"
+	{
+		x := "block"
+		fmt.Println(x)
+	}
+	fmt.Println(x)
 }
 ```
 
-### Option Pattern for Configuration
+<details>
+<summary>Answer</summary>
 
-```go
-type Server struct {
-    host string
-    port int
-}
-
-type ServerOption func(*Server)
-
-func WithHost(host string) ServerOption {
-    return func(s *Server) {
-        s.host = host
-    }
-}
-
-func WithPort(port int) ServerOption {
-    return func(s *Server) {
-        s.port = port
-    }
-}
-
-func NewServer(opts ...ServerOption) *Server {
-    s := &Server{host: "localhost", port: 8080}
-    for _, opt := range opts {
-        opt(s)
-    }
-    return s
-}
-
-// Usage
-server := NewServer(WithHost("0.0.0.0"), WithPort(9090))
+```
+package
+block
+function
 ```
 
-### Functional Options Pattern
+</details>
+
+### Exercise 3: Type Conversions ⭐⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a program that: (1) declares an `int` value of `65`, (2) converts it to `float64` and prints it, (3) converts the `int` to a `string` using `strconv.Itoa` and prints it.
+
+<details>
+<summary>Solution</summary>
 
 ```go
-type Cache struct {
-    maxSize    int
-    ttl        time.Duration
-    onEvict    func(key, value interface{})
-}
+package main
 
-type CacheOption func(*Cache)
-
-func MaxSize(n int) CacheOption {
-    return func(c *Cache) { c.maxSize = n }
-}
-
-func TTL(d time.Duration) CacheOption {
-    return func(c *Cache) { c.ttl = d }
-}
-
-func OnEvict(fn func(key, value interface{})) CacheOption {
-    return func(c *Cache) { c.onEvict = fn }
-}
-
-func NewCache(opts ...CacheOption) *Cache {
-    c := &Cache{maxSize: 1000, ttl: time.Hour}
-    for _, opt := range opts {
-        opt(c)
-    }
-    return c
-}
-```
-
----
-
-## 14. Working with Constants
-
-### Iota Usage
-
-```go
-const (
-    StatusPending int = iota  // 0
-    StatusRunning             // 1
-    StatusSuccess             // 2
-    StatusFailed              // 3
+import (
+	"fmt"
+	"strconv"
 )
 
-// With bit flags
-const (
-    FlagRead  = 1 << iota // 1
-    FlagWrite             // 2
-    FlagExecute           // 4
+func main() {
+	i := 65
+
+	f := float64(i)
+	fmt.Println("float64:", f)
+
+	s := strconv.Itoa(i)
+	fmt.Println("string:", s)
+}
+```
+
+</details>
+
+### Exercise 4: Blank Identifier for Error ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Use `strconv.Atoi` to convert the string `"42"` to an integer. You are certain the input is valid, so discard the error with `_` and only keep the number.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
 )
 
-// Custom iota values
-const (
-    _ = iota
-    KB = 1 << (10 * iota) // 1024
-    MB                    // 1048576
-    GB                    // 1073741824
-)
-```
-
-### Typed vs Untyped Constants
-
-```go
-const Pi = 3.14159              // Untyped
-const PiFloat float64 = 3.14159 // Typed
-
-func demo() {
-    var f float64 = Pi      // OK
-    var c complex128 = Pi  // OK
-    var f2 float64 = PiFloat // OK
-    // var c2 complex128 = PiFloat // ERROR
+func main() {
+	num, _ := strconv.Atoi("42")
+	fmt.Println("parsed:", num)
 }
 ```
 
----
-
-## 15. Zero Value Gotchas
-
-### Slices (Safe to use nil)
-
-```go
-func appendToNil() {
-    var s []int
-    s = append(s, 1, 2, 3) // Works fine
-}
-```
-
-### Maps (Reading safe, writing panics)
-
-```go
-func mapNil() {
-    var m map[string]int
-    _ = m["key"]   // OK - returns 0
-    // m["key"] = 1 // PANIC!
-}
-
-func mapSafe() {
-    m := make(map[string]int)
-    m["key"] = 1 // OK
-}
-```
-
-### Pointers (Writing panics)
-
-```go
-func pointerNil() {
-    var p *User
-    // p.Name = "Alice" // PANIC!
-}
-
-func pointerSafe() {
-    p := &User{}
-    p.Name = "Alice" // OK
-}
-```
+</details>
 
 ---
 

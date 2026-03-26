@@ -21,7 +21,7 @@
 
 ---
 
-## 1. What Is a Worker Pool
+## 1. What Is a Worker Pool [CORE]
 
 A fixed number of goroutines (workers) pull jobs from a shared channel and process them concurrently.
 
@@ -156,7 +156,7 @@ A fixed number of goroutines (workers) pull jobs from a shared channel and proce
 
 ---
 
-## 2. Basic Worker Pool
+## 2. Basic Worker Pool [CORE]
 
 ```go
 func worker(id int, jobs <-chan int, results chan<- int) {
@@ -200,7 +200,7 @@ func main() {
 
 ---
 
-## 3. Worker Pool with Results
+## 3. Worker Pool with Results [CORE]
 
 ### Collecting with WaitGroup
 
@@ -268,7 +268,7 @@ func runPool(ctx context.Context, jobs []Job, numWorkers int) ([]Result, error) 
 
 ---
 
-## 4. Context-Aware Worker Pool
+## 4. Context-Aware Worker Pool [CORE]
 
 Workers respect cancellation — clean shutdown on timeout or signal.
 
@@ -318,7 +318,9 @@ func main() {
 
 ---
 
-## 5. Dynamic Worker Pool
+## 5. Dynamic Worker Pool [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 Scale workers up/down based on load.
 
@@ -376,7 +378,9 @@ func (p *DynamicPool) Stop() {
 
 ---
 
-## 6. Generic Worker Pool (Go 1.18+)
+## 6. Generic Worker Pool [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16. (Go 1.18+)
 
 ```go
 type Job[T any, R any] struct {
@@ -449,7 +453,9 @@ for _, r := range results {
 
 ---
 
-## 7. Rate-Limited Worker Pool
+## 7. Rate-Limited Worker Pool [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 Combine worker pool with rate limiting (e.g., API calls).
 
@@ -489,7 +495,9 @@ func main() {
 
 ---
 
-## 8. Production Patterns
+## 8. Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Worker Pool with Timeout per Job
 
@@ -541,44 +549,6 @@ func worker(ctx context.Context, jobs <-chan Job, metrics *PoolMetrics) {
     }
 }
 ```
-
----
-
-## 9. Common Pitfalls
-
-| Pitfall | Problem | Fix |
-|---------|---------|-----|
-| Not closing jobs channel | Workers block forever | Close when done sending |
-| Results channel too small | Workers block on send | Buffer size >= job count, or collect concurrently |
-| No context | Can't cancel workers | Pass `context.Context` |
-| Too many workers | Defeats purpose | Match to CPU or I/O capacity |
-| Panicking worker | Takes down pool | Recover in worker |
-| Sending after close | Panic | Track senders with WaitGroup |
-
-### Panic-Safe Worker
-
-```go
-func safeWorker(ctx context.Context, id int, jobs <-chan Job) {
-    defer func() {
-        if r := recover(); r != nil {
-            log.Printf("worker %d panic: %v", id, r)
-        }
-    }()
-
-    for {
-        select {
-        case <-ctx.Done():
-            return
-        case job := <-jobs:
-            job.Execute(ctx)
-        }
-    }
-}
-```
-
----
-
-## 10. Production Patterns
 
 ### Queue-Based Worker Pool with Separate Completion
 
@@ -873,7 +843,43 @@ func (p *AutoScalePool) monitor() {
 
 ---
 
-## 11. Worker Pool Testing
+## 9. Common Pitfalls [CORE]
+
+| Pitfall | Problem | Fix |
+|---------|---------|-----|
+| Not closing jobs channel | Workers block forever | Close when done sending |
+| Results channel too small | Workers block on send | Buffer size >= job count, or collect concurrently |
+| No context | Can't cancel workers | Pass `context.Context` |
+| Too many workers | Defeats purpose | Match to CPU or I/O capacity |
+| Panicking worker | Takes down pool | Recover in worker |
+| Sending after close | Panic | Track senders with WaitGroup |
+
+### Panic-Safe Worker
+
+```go
+func safeWorker(ctx context.Context, id int, jobs <-chan Job) {
+    defer func() {
+        if r := recover(); r != nil {
+            log.Printf("worker %d panic: %v", id, r)
+        }
+    }()
+
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case job := <-jobs:
+            job.Execute(ctx)
+        }
+    }
+}
+```
+
+---
+
+## 10. Worker Pool Testing [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ```go
 func TestWorkerPool(t *testing.T) {
@@ -929,7 +935,9 @@ func TestWorkerPool(t *testing.T) {
 
 ---
 
-## 12. Monitoring Worker Pools
+## 11. Monitoring Worker Pools [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 > **`expvar`** is a stdlib package that publishes named variables (integers, floats, strings, maps) via HTTP at `/debug/vars` as JSON. It's useful for runtime monitoring — you can see live metrics by hitting that endpoint. See: `go doc expvar`.
 
@@ -958,7 +966,9 @@ func init() {
 
 ---
 
-## 13. Debugging Worker Pools
+## 12. Debugging Worker Pools [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ```go
 // Add to worker to log queue depth periodically
@@ -986,3 +996,223 @@ func (p *WorkerPool) worker(id int) {
     }
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Basic Worker Pool ⭐
+**Difficulty:** Beginner | **Time:** ~15 min
+
+Build a worker pool with 3 workers and 10 jobs. Each job is an integer. A worker receives a job, prints which worker is processing it, and sends `job * 2` as a result. Collect all results in main.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func worker(id int, jobs <-chan int, results chan<- int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for j := range jobs {
+		fmt.Printf("worker %d processing job %d\n", id, j)
+		results <- j * 2
+	}
+}
+
+func main() {
+	const numWorkers = 3
+	const numJobs = 10
+
+	jobs := make(chan int, numJobs)
+	results := make(chan int, numJobs)
+
+	var wg sync.WaitGroup
+	wg.Add(numWorkers)
+	for w := 1; w <= numWorkers; w++ {
+		go worker(w, jobs, results, &wg)
+	}
+
+	for j := 1; j <= numJobs; j++ {
+		jobs <- j
+	}
+	close(jobs)
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	for r := range results {
+		fmt.Println("result:", r)
+	}
+}
+```
+
+</details>
+
+### Exercise 2: Context Cancellation in Worker Pool ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Extend Exercise 1 by adding a `context.Context`. Cancel the context after collecting 5 results. Verify that workers stop processing remaining jobs.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"time"
+)
+
+func worker(ctx context.Context, id int, jobs <-chan int, results chan<- int) {
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Printf("worker %d shutting down\n", id)
+			return
+		case j, ok := <-jobs:
+			if !ok {
+				return
+			}
+			time.Sleep(50 * time.Millisecond) // simulate work
+			select {
+			case results <- j * 2:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	jobs := make(chan int, 20)
+	results := make(chan int, 20)
+
+	for w := 1; w <= 3; w++ {
+		go worker(ctx, w, jobs, results)
+	}
+
+	// Send 20 jobs
+	for j := 1; j <= 20; j++ {
+		jobs <- j
+	}
+	close(jobs)
+
+	// Collect only 5, then cancel
+	count := 0
+	for r := range results {
+		fmt.Println("result:", r)
+		count++
+		if count >= 5 {
+			cancel()
+			break
+		}
+	}
+
+	time.Sleep(100 * time.Millisecond)
+	fmt.Println("collected", count, "results")
+}
+```
+
+</details>
+
+### Exercise 3: Worker Pool with Timeout ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Add a timeout: if any single job takes longer than 2 seconds, cancel remaining work. Use `context.WithTimeout` on a per-job or global basis.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"time"
+)
+
+type Job struct {
+	ID   int
+	Sleep time.Duration // simulate variable work time
+}
+
+func worker(ctx context.Context, id int, jobs <-chan Job, results chan<- int) {
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Printf("worker %d: cancelled\n", id)
+			return
+		case j, ok := <-jobs:
+			if !ok {
+				return
+			}
+			fmt.Printf("worker %d: job %d (sleep %v)\n", id, j.ID, j.Sleep)
+
+			jobCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+			done := make(chan int, 1)
+			go func() {
+				time.Sleep(j.Sleep)
+				done <- j.ID * 10
+			}()
+
+			select {
+			case r := <-done:
+				results <- r
+			case <-jobCtx.Done():
+				fmt.Printf("worker %d: job %d timed out\n", id, j.ID)
+			}
+			cancel()
+		}
+	}
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	jobs := make(chan Job, 10)
+	results := make(chan int, 10)
+
+	for w := 1; w <= 3; w++ {
+		go worker(ctx, w, jobs, results)
+	}
+
+	jobs <- Job{ID: 1, Sleep: 500 * time.Millisecond}
+	jobs <- Job{ID: 2, Sleep: 3 * time.Second} // will timeout
+	jobs <- Job{ID: 3, Sleep: 100 * time.Millisecond}
+	close(jobs)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for r := range results {
+			fmt.Println("result:", r)
+		}
+	}()
+
+	time.Sleep(4 * time.Second)
+	cancel()
+	close(results)
+	wg.Wait()
+	fmt.Println("done")
+}
+```
+
+</details>

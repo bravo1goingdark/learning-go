@@ -26,7 +26,7 @@
 
 ---
 
-## 1. Why Generics?
+## 1. Why Generics? [CORE]
 
 Generics solve the tradeoff between **reusability** and **type safety**. Before Go 1.18, you had to choose.
 
@@ -81,7 +81,7 @@ _ = Sum([]myInt{1, 2, 3})        // T = myInt (if underlying is int)
 
 ---
 
-## 2. Type Parameters Basics
+## 2. Type Parameters Basics [CORE]
 
 Type parameters are compile-time type variables. They exist only during compilation and are substituted with concrete types.
 
@@ -142,7 +142,7 @@ This is called **monomorphization** — compile-time code generation for each ty
 
 ---
 
-## 3. Type Constraints
+## 3. Type Constraints [CORE]
 
 A constraint is a compile-time contract. It tells the compiler: "T can be any type, as long as it supports X." Without constraints, the compiler can't allow operations like `+` or `==` on T because it doesn't know if T supports them — what if T is a struct? Constraints bridge this gap by specifying what operations T must support.
 
@@ -203,7 +203,7 @@ func Max[T Ordered](a, b T) T { ... }
 
 ---
 
-## 4. Predeclared Constraints
+## 4. Predeclared Constraints [CORE]
 
 Go provides built-in constraints for common use cases.
 
@@ -263,7 +263,7 @@ func Max[T constraints.Ordered](a, b T) T { ... }
 
 ---
 
-## 5. Custom Constraints with Interfaces
+## 5. Custom Constraints with Interfaces [CORE]
 
 Create reusable constraints for your domain.
 
@@ -330,7 +330,7 @@ _ = Display(Score(100))
 
 ---
 
-## 6. Type Sets and the ~ Operator
+## 6. Type Sets and the ~ Operator [CORE]
 
 **The problem the tilde solves:** You define `type UserID int64`. You want a generic function that works with `int64` and `UserID`. Without `~`, the constraint `int64` rejects `UserID` because Go treats them as different types. The `~` prefix says "accept any type whose *underlying* type is int64," which includes `UserID`. This is essential when your codebase uses custom types for domain concepts (UserID, OrderID, Price — all `int64` underneath).
 
@@ -413,7 +413,7 @@ type MyFloat float64    // OK (underlying float64)
 
 ---
 
-## 7. Generic Structs
+## 7. Generic Structs [CORE]
 
 Generic structs enable type-safe containers without runtime overhead.
 
@@ -521,7 +521,9 @@ v, ok := cache.Get("key") // v=42, ok=true
 
 ---
 
-## 8. Generic Methods
+## 8. Generic Methods [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 Go supports generic methods on structs and types, enabling type-safe operations on container types.
 
@@ -592,7 +594,9 @@ result := Result[int]{val: 10}.
 
 ---
 
-## 9. Generic Interfaces
+## 9. Generic Interfaces [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 Interfaces can have type parameters, enabling generic contracts for collections and algorithms.
 
@@ -651,7 +655,7 @@ func Sort[T any, S Sortable[T]](s S) {
 
 ---
 
-## 10. Comparable Constraint Deep Dive
+## 10. Comparable Constraint Deep Dive [CORE]
 
 The `comparable` constraint is more nuanced than it appears. Understanding it prevents subtle bugs.
 
@@ -751,7 +755,7 @@ func FindByIDs[T Entity](items []T, ids []string) []T {
 
 ---
 
-## 11. Type Inference
+## 11. Type Inference [CORE]
 
 Go's type inference reduces verbosity by letting the compiler figure out type arguments.
 
@@ -826,7 +830,9 @@ result := Combine([]int{1, 2}, []int{3, 4}) // T = int
 
 ---
 
-## 12. Common Production Patterns
+## 12. Common Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Functional Options Pattern with Generics
 
@@ -931,7 +937,9 @@ func Retry[T any](attempts int, delay time.Duration, fn func() (T, error)) (T, e
 
 ---
 
-## 13. Generics vs Interfaces Performance
+## 13. Generics vs Interfaces Performance [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers compiler internals. Come back after completing Topics 11-19.
 
 ### The Tradeoff
 
@@ -985,7 +993,9 @@ func Retry[T any](attempts int, delay time.Duration, fn func() (T, error)) (T, e
 
 ---
 
-## 14. Internals: How Go Implements Generics
+## 14. Internals: How Go Implements Generics [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers compiler internals. Come back after completing Topics 11-19.
 
 ### GC Shape Stenciling (Go 1.18+)
 
@@ -1062,7 +1072,9 @@ At runtime, Go passes a "dictionary" of type-specific operations:
 
 ---
 
-## 15. Testing Generic Code
+## 15. Testing Generic Code [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Table-Driven Tests for Generic Functions
 
@@ -1102,7 +1114,7 @@ var _ Numeric = float64(0)
 
 ---
 
-## 16. Common Pitfalls
+## 16. Common Pitfalls [CORE]
 
 ### Pitfall 1: Over-Using `any`
 
@@ -1167,7 +1179,9 @@ u := First(users) // u is nil, not an empty User!
 
 ---
 
-## 17. Production Guidelines
+## 17. Production Guidelines [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### 1. Prefer Generics for Data Structures
 
@@ -1307,3 +1321,174 @@ func Print(val any) { fmt.Println(val) }
 - **DATA STRUCTURE (generics):** If you're building containers that hold values, use generics. Examples: `Stack[T]`, `Cache[K,V]`, `Queue[T]` — type-safe containers.
 - **Need TYPE SAFETY (generics):** If you want compile-time guarantees that wrong types won't compile, use generics. Examples: `Map[T,U]`, `Filter[T]` — algorithms that preserve type information.
 - **Don't need type safety (interfaces/any):** If flexibility is more important than type safety, use interfaces or plain `any`. Examples: Logging, serialization, plugin systems.
+
+---
+
+## Exercises
+
+### Exercise 1: Generic Map Function ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a generic `Map[T, U any](s []T, f func(T) U) []U` function that applies `f` to every element of `s` and returns a new slice. Test it by mapping `[]int{1, 2, 3}` to `[]string{"1", "2", "3"}` using `strconv.Itoa`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func Map[T, U any](s []T, f func(T) U) []U {
+	result := make([]U, len(s))
+	for i, v := range s {
+		result[i] = f(v)
+	}
+	return result
+}
+
+func main() {
+	nums := []int{1, 2, 3}
+	strs := Map(nums, func(n int) string {
+		return strconv.Itoa(n)
+	})
+	fmt.Println(strs) // [1 2 3]
+}
+```
+
+</details>
+
+### Exercise 2: Generic Filter Function ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a generic `Filter[T any](s []T, pred func(T) bool) []T` function that returns a new slice containing only elements for which `pred` returns `true`. Test it by filtering even numbers from `[]int{1, 2, 3, 4, 5, 6}`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func Filter[T any](s []T, pred func(T) bool) []T {
+	var result []T
+	for _, v := range s {
+		if pred(v) {
+			result = append(result, v)
+		}
+	}
+	return result
+}
+
+func main() {
+	nums := []int{1, 2, 3, 4, 5, 6}
+	evens := Filter(nums, func(n int) bool {
+		return n%2 == 0
+	})
+	fmt.Println(evens) // [2 4 6]
+}
+```
+
+</details>
+
+### Exercise 3: Generic Stack ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a generic `Stack[T any]` struct backed by a slice. Implement `Push(v T)`, `Pop() (T, bool)`, `Peek() (T, bool)`, and `Len() int` methods. `Pop` and `Peek` should return the zero value and `false` when the stack is empty. Test it with `Stack[string]`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+type Stack[T any] struct {
+	items []T
+}
+
+func (s *Stack[T]) Push(v T) {
+	s.items = append(s.items, v)
+}
+
+func (s *Stack[T]) Pop() (T, bool) {
+	if len(s.items) == 0 {
+		var zero T
+		return zero, false
+	}
+	idx := len(s.items) - 1
+	v := s.items[idx]
+	s.items = s.items[:idx]
+	return v, true
+}
+
+func (s *Stack[T]) Peek() (T, bool) {
+	if len(s.items) == 0 {
+		var zero T
+		return zero, false
+	}
+	return s.items[len(s.items)-1], true
+}
+
+func (s *Stack[T]) Len() int {
+	return len(s.items)
+}
+
+func main() {
+	var st Stack[string]
+	st.Push("hello")
+	st.Push("world")
+	fmt.Println(st.Len()) // 2
+
+	if v, ok := st.Peek(); ok {
+		fmt.Println("Peek:", v) // world
+	}
+	if v, ok := st.Pop(); ok {
+		fmt.Println("Pop:", v) // world
+	}
+	fmt.Println(st.Len()) // 1
+}
+```
+
+</details>
+
+### Exercise 4: Ordered Constraint and Min Function ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Define an `Ordered` constraint interface using `~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr | ~float32 | ~float64 | ~string`. Write a `Min[T Ordered](a, b T) T` function that returns the smaller value. Test it with `int`, `float64`, and `string`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+type Ordered interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+		~float32 | ~float64 |
+		~string
+}
+
+func Min[T Ordered](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func main() {
+	fmt.Println(Min(3, 7))         // 3
+	fmt.Println(Min(2.5, 1.8))     // 1.8
+	fmt.Println(Min("apple", "banana")) // apple
+}
+```
+
+</details>

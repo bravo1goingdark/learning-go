@@ -29,7 +29,7 @@
 
 ---
 
-## 1. Arrays
+## 1. Arrays [CORE]
 
 ### Declaration
 
@@ -110,7 +110,7 @@ var ring [256]byte
 
 ---
 
-## 2. Slices — The Three Fields
+## 2. Slices — The Three Fields [CORE]
 
 A slice is a **descriptor** (fat pointer) with three fields:
 
@@ -164,7 +164,7 @@ fmt.Println(cap(s))  // 6 (or larger — grew automatically)
 
 ---
 
-## 3. Slice Creation Methods
+## 3. Slice Creation Methods [CORE]
 
 ### Method 1: Literal
 
@@ -225,7 +225,7 @@ for i := 0; i < 1000000; i++ {
 
 ---
 
-## 4. Slicing Operations
+## 4. Slicing Operations [CORE]
 
 **Before seeing the syntax, understand the core concept:** Slicing does NOT copy data. It creates a new slice header pointing into the same backing array. This is efficient (no allocation) but dangerous — modifying a sub-slice can silently modify the original. This is the #1 source of slice bugs in production Go.
 
@@ -275,7 +275,7 @@ sub := s[2:4]
 
 ---
 
-## 5. The `append` Function
+## 5. The `append` Function [CORE]
 
 ### Basic Usage
 
@@ -325,7 +325,7 @@ func addElement(s *[]int, v int) {
 
 ---
 
-## 6. Capacity Growth Strategy
+## 6. Capacity Growth Strategy [CORE]
 
 ### Growth Algorithm (Go 1.18+)
 
@@ -394,7 +394,7 @@ The pre-allocated version is typically 2-10x faster.
 
 ---
 
-## 7. The Shared-Array Bug
+## 7. The Shared-Array Bug [CORE]
 
 This is the **#1 slice bug** in production Go code.
 
@@ -475,7 +475,7 @@ func firstN(s []int, n int) []int {
 
 ---
 
-## 8. Copy
+## 8. Copy [CORE]
 
 ### Basic Copy
 
@@ -529,7 +529,7 @@ func insertAt[T any](s []T, i int, v T) []T {
 
 ---
 
-## 9. Nil Slice vs Empty Slice
+## 9. Nil Slice vs Empty Slice [CORE]
 
 For most operations, nil and empty slices behave identically — `len()`, `cap()`, `range`, and `append` all work the same. The distinction matters in exactly one place: **serialization**. If your API returns `null` when you meant `[]`, clients may break. Understanding this difference prevents subtle API bugs.
 
@@ -585,7 +585,9 @@ func getItems() []Item {
 
 ---
 
-## 10. Slice Internals (Memory Layout)
+## 10. Slice Internals (Memory Layout) [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
 ### Slice Structure
 
@@ -820,7 +822,7 @@ fmt.Println(unsafe.Sizeof([]int{}))  // 24
 
 ---
 
-## 11. Passing Slices to Functions
+## 11. Passing Slices to Functions [CORE]
 
 ### Pass by Value (Default)
 
@@ -872,7 +874,9 @@ func main() {
 
 ---
 
-## 12. Common Patterns
+## 12. Common Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 > **Generics Primer:** The functions below use Go generics syntax like `[T any]` and `[T comparable]`. If this is unfamiliar, here's the quick version:
 > - `[T any]` means "this function works with any type `T`" — `T` is a placeholder the compiler fills in when you call the function.
@@ -995,7 +999,9 @@ func deleteUnordered[T any](s []T, i int) []T {
 
 ---
 
-## 13. Performance Considerations
+## 13. Performance Considerations [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 Slices are the most-used data structure in Go. In hot paths — processing thousands of items per request, handling high-throughput data pipelines — slice performance directly impacts latency. These patterns are standard practice, not premature optimization.
 
@@ -1058,7 +1064,7 @@ Use pointer slices when:
 
 ---
 
-## 14. Common Pitfalls
+## 14. Common Pitfalls [CORE]
 
 ### 1. The Shared-Array Bug (Most Common)
 
@@ -1171,7 +1177,9 @@ func equal(a, b []int) bool {
 
 ---
 
-## 14. Production Patterns
+## 15. Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 **Choose your data structure based on access pattern:**
 - **Ring Buffer** — fixed-size sliding window (last N events, rate limiting, log rotation)
@@ -1280,7 +1288,9 @@ func (q *Queue[T]) Len() int {
 
 ---
 
-## 15. Memory Optimization
+## 16. Memory Optimization [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Pre-allocation
 
@@ -1331,7 +1341,9 @@ func reuseSlice() {
 
 ---
 
-## 16. Slice vs Array Performance
+## 17. Slice vs Array Performance [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
 ```go
 func benchmark() {
@@ -1348,7 +1360,9 @@ func benchmark() {
 
 ---
 
-## 17. Testing Slices
+## 18. Testing Slices [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ```go
 func TestSliceOperations(t *testing.T) {
@@ -1394,6 +1408,132 @@ func TestSliceContains(t *testing.T) {
     }
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Append and Track Length/Capacity ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create an empty slice of integers. Append 5 elements one at a time. After each `append`, print the element, `len`, and `cap`. Observe when the capacity doubles versus when it stays the same.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	s := []int{}
+	for i := 1; i <= 5; i++ {
+		s = append(s, i*10)
+		fmt.Printf("appended %2d → len=%d, cap=%d\n", i*10, len(s), cap(s))
+	}
+}
+```
+
+</details>
+
+### Exercise 2: Shared-Array Bug and the Fix ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a slice `original := []int{1, 2, 3, 4, 5}`. Take a subslice `sub := original[1:4]`, append a value to `sub`, and print `original` to show it was corrupted. Then fix the bug using `copy()` so appending to the subslice no longer affects the original.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// Bug: shared backing array
+	original := []int{1, 2, 3, 4, 5}
+	sub := original[1:4]
+	sub = append(sub, 99)
+	fmt.Println("corrupted:", original) // [1 2 3 99 5]
+
+	// Fix: independent copy
+	original2 := []int{1, 2, 3, 4, 5}
+	sub2 := make([]int, 3)
+	copy(sub2, original2[1:4])
+	sub2 = append(sub2, 99)
+	fmt.Println("safe:     ", original2) // [1 2 3 4 5]
+	fmt.Println("sub2:     ", sub2)       // [2 3 4 99]
+}
+```
+
+</details>
+
+### Exercise 3: Nil Slice vs Empty Slice ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Declare a nil slice and an empty slice (using both `[]int{}` and `make([]int, 0)`). For each one, print `== nil`, `len()`, and `cap()`. Confirm that nil and empty slices behave the same for `len`/`cap`/`append` but differ in `== nil` comparison.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var nilSlice []int
+	emptyLit := []int{}
+	emptyMake := make([]int, 0)
+
+	printInfo := func(name string, s []int) {
+		fmt.Printf("%-12s  nil=%-5v  len=%d  cap=%d\n", name, s == nil, len(s), cap(s))
+	}
+
+	printInfo("nilSlice", nilSlice)
+	printInfo("emptyLit", emptyLit)
+	printInfo("emptyMake", emptyMake)
+
+	// All work identically for append
+	nilSlice = append(nilSlice, 1)
+	emptyLit = append(emptyLit, 1)
+	fmt.Println("After append:", nilSlice, emptyLit) // [1] [1]
+}
+```
+
+</details>
+
+### Exercise 4: Reverse a Slice ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function `func reverse(s []int) []int` that returns a **new** slice with the elements in reversed order. The original slice must remain unchanged. Call it from `main` and print both slices.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func reverse(s []int) []int {
+	result := make([]int, len(s))
+	for i, v := range s {
+		result[len(s)-1-i] = v
+	}
+	return result
+}
+
+func main() {
+	original := []int{1, 2, 3, 4, 5}
+	reversed := reverse(original)
+	fmt.Println("original:", original) // [1 2 3 4 5]
+	fmt.Println("reversed:", reversed) // [5 4 3 2 1]
+}
+```
+
+</details>
 
 ---
 

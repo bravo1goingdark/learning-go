@@ -22,7 +22,7 @@
 
 ---
 
-## 1. What is a Pointer
+## 1. What is a Pointer [CORE]
 
 A pointer **holds the memory address** of another variable.
 
@@ -49,7 +49,7 @@ Pointer:     p = 0x14000100008
 
 ---
 
-## 2. Declaration & Dereferencing
+## 2. Declaration & Dereferencing [CORE]
 
 ### `&` — Address Of
 
@@ -101,7 +101,7 @@ fmt.Println(r == nil)  // true
 
 ---
 
-## 3. Pointers with Functions
+## 3. Pointers with Functions [CORE]
 
 ### Pass by Value (Default) — Does NOT Modify Original
 
@@ -176,7 +176,7 @@ func findUser(id int) (*User, error) {
 
 ---
 
-## 4. Pointers with Structs
+## 4. Pointers with Structs [CORE]
 
 ### Creating Struct Pointers
 
@@ -225,7 +225,7 @@ func main() {
 
 ---
 
-## 5. `new()` vs `&Type{}`
+## 5. `new()` vs `&Type{}` [CORE]
 
 ### `new(T)` — Pointer to Zero Value
 
@@ -266,7 +266,9 @@ u2 := &User{Name: "Alice", Age: 30}
 
 ---
 
-## 6. Escape Analysis
+## 6. Escape Analysis [INTERNALS]
+
+> ⚠️ **GATE [INTERNALS]:** This section covers compiler internals (escape analysis, stack vs heap allocation). You can skip this on first read and return when optimizing performance.
 
 Go's compiler decides whether a variable lives on the **stack** or the **heap**. You don't control this explicitly.
 
@@ -357,7 +359,7 @@ func process() *int {
 
 ---
 
-## 7. When to Use Pointers
+## 7. When to Use Pointers [CORE]
 
 ### 1. To Modify a Value in a Function
 
@@ -452,7 +454,7 @@ func (f *File) Write(p []byte) (n int, err error) {
 
 ---
 
-## 8. When NOT to Use Pointers
+## 8. When NOT to Use Pointers [CORE]
 
 ### 1. Small Value Types
 
@@ -500,7 +502,7 @@ func process() {
 
 ---
 
-## 9. Pointer Gotchas
+## 9. Pointer Gotchas [CORE]
 
 ### 1. Nil Pointer Dereference
 
@@ -589,7 +591,9 @@ func main() {
 
 ---
 
-## 10. Production Patterns
+## 10. Production Patterns [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers production-ready patterns (constructors, optional fields, atomic pointers). Ensure you understand sections 1-9 first.
 
 ### Constructor Returning Pointer
 
@@ -666,7 +670,7 @@ func updateConfig(newCfg *Config) {
 
 ---
 
-## 11. Common Pitfalls
+## 11. Common Pitfalls [CORE]
 
 ### 1. Nil Pointer Dereference
 
@@ -746,7 +750,9 @@ func newUser() *User { return &User{Name: "Alice"} }
 
 ---
 
-## 11. Production Best Practices
+## 12. Production Best Practices [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers production decision-making (pointer vs value, memory allocation patterns). Ensure you understand sections 1-11 first.
 
 ### When to Use Pointers
 
@@ -819,7 +825,9 @@ func putUser(u *User) {
 
 ---
 
-## 12. Performance Considerations
+## 13. Performance Considerations [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers performance benchmarking and optimization with pointers.
 
 ### Pointer Indirection Cost
 
@@ -883,87 +891,7 @@ func BenchmarkPointer(b *testing.B) {
 
 ---
 
-## 13. Common Pitfalls
-
-### Nil Pointer Dereference
-
-```go
-// BAD
-func bad() {
-    var p *int
-    fmt.Println(*p) // PANIC: invalid memory address or nil pointer dereference
-}
-
-// GOOD: Check for nil
-func good() {
-    var p *int
-    if p != nil {
-        fmt.Println(*p)
-    } else {
-        fmt.Println("p is nil")
-    }
-}
-```
-
-### Returning Pointer to Internal Field
-
-```go
-// BAD: Expose internal mutable state
-type Container struct {
-    data []byte
-}
-
-func (c *Container) Data() *[]byte {
-    return &c.data // Caller can mutate internal state!
-}
-
-// GOOD: Return immutable copy or value
-func (c *Container) Data() []byte {
-    result := make([]byte, len(c.data))
-    copy(result, c.data)
-    return result
-}
-```
-
-### Pointer in Map
-
-```go
-// BAD: Pointer in map can cause issues
-m := map[string]*User{
-    "alice": {Name: "Alice", Age: 30},
-}
-m["alice"].Age = 31 // This is safe but be careful with concurrency
-
-// If you modify the pointer value itself:
-m["bob"] = &User{Name: "Bob"} // This is fine
-
-// But with concurrent access, use sync.Map or mutex
-```
-
-### Forgetting to Initialize Pointer to Struct
-
-```go
-// BAD
-func bad() {
-    var u *User
-    u.Name = "Alice" // PANIC: nil pointer dereference
-}
-
-// GOOD
-func good() {
-    u := &User{}
-    u.Name = "Alice"
-}
-
-// Or use constructor
-func NewUser() *User {
-    return &User{Name: "Unknown"} // Pre-initialized
-}
-```
-
----
-
-## 14. Debugging Pointers
+## 14. Debugging Pointers [PRODUCTION]
 
 ### Print Pointer Values
 
@@ -996,7 +924,7 @@ func printPointerInfo() {
 
 ---
 
-## 15. Testing with Pointers
+## 15. Testing with Pointers [PRODUCTION]
 
 ```go
 func TestPointerModification(t *testing.T) {
@@ -1031,6 +959,121 @@ func safeGetName(u *User) string {
     return u.Name
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Increment via Pointer ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function `func increment(x *int)` that adds 1 to the value the pointer refers to. In `main`, declare an integer, print it, call `increment(&n)`, and print it again to confirm the change.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func increment(x *int) {
+	*x++
+}
+
+func main() {
+	n := 10
+	fmt.Println("before:", n) // 10
+	increment(&n)
+	fmt.Println("after: ", n) // 11
+}
+```
+
+</details>
+
+### Exercise 2: Modify Struct Field via Pointer ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Define a `Config` struct with `Host` and `Port` fields. Write a function `func setPort(cfg *Config, port int)` that modifies the `Port` field. Create a `Config` in `main`, pass it by pointer, and verify the field changed.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+type Config struct {
+	Host string
+	Port int
+}
+
+func setPort(cfg *Config, port int) {
+	cfg.Port = port
+}
+
+func main() {
+	cfg := Config{Host: "localhost", Port: 8080}
+	fmt.Println("before:", cfg)
+	setPort(&cfg, 3000)
+	fmt.Println("after: ", cfg)
+}
+```
+
+</details>
+
+### Exercise 3: Swap Two Integers ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function `func swap(a, b *int)` that swaps the values of two integers using pointers. In `main`, declare `x` and `y`, call `swap(&x, &y)`, and print both to confirm the swap.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func swap(a, b *int) {
+	*a, *b = *b, *a
+}
+
+func main() {
+	x, y := 1, 2
+	fmt.Println("before:", x, y) // 1 2
+	swap(&x, &y)
+	fmt.Println("after: ", x, y) // 2 1
+}
+```
+
+</details>
+
+### Exercise 4: Create Pointer with new() ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Use `new(int)` to create a pointer to an integer. Print the pointer (should show the address), print the dereferenced value (should show 0), then set it to 42 and print again.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	p := new(int)
+	fmt.Println("address:", p)
+	fmt.Println("value: ", *p) // 0
+
+	*p = 42
+	fmt.Println("updated:", *p) // 42
+}
+```
+
+</details>
 
 ---
 

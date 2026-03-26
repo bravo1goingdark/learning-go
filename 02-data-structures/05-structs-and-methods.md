@@ -23,7 +23,7 @@
 
 ---
 
-## 1. Struct Basics
+## 1. Struct Basics [CORE]
 
 ### Definition
 
@@ -65,7 +65,7 @@ type OrderItem struct {
 
 ---
 
-## 2. Struct Construction
+## 2. Struct Construction [CORE]
 
 ### Method 1: Zero Value
 
@@ -207,7 +207,7 @@ u := NewUser("Alice", "alice@example.com",
 
 ---
 
-## 3. Methods
+## 3. Methods [CORE]
 
 Go has no classes. A method is simply a function with a **receiver** — an extra parameter that comes before the function name. The receiver is Go's equivalent of `self` or `this`, but it is explicitly typed and explicitly named. Any named type (not just structs) can have methods — you can add methods to `type Celsius float64`, `type UserID string`, etc.
 
@@ -271,7 +271,7 @@ fmt.Println(temp.Kelvin())      // 373.15
 
 ---
 
-## 4. Value vs Pointer Receivers
+## 4. Value vs Pointer Receivers [CORE]
 
 ### Value Receiver — Modifies Copy
 
@@ -342,7 +342,7 @@ func (u User) Email() string      { return u.email }
 
 ---
 
-## 5. Method Sets & Interface Satisfaction
+## 5. Method Sets & Interface Satisfaction [CORE]
 
 ### What Is a Method Set?
 
@@ -430,7 +430,7 @@ func main() {
 
 ---
 
-## 6. Embedding (Composition)
+## 6. Embedding (Composition) [CORE]
 
 Go has no inheritance. Instead, use **embedding** for composition. Go rejected inheritance because it creates tight coupling — when class B extends class A, changing A can break B. With embedding, `Dog` embeds `Animal` — Dog *has* an Animal, not *is* an Animal. You compose behavior without fragile base-class problems.
 
@@ -566,7 +566,9 @@ func (s *UserService) Create(user User) error {
 
 ---
 
-## 7. Struct Tags
+## 7. Struct Tags [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 Struct tags are metadata attached to struct fields. They're read at runtime via reflection.
 
@@ -658,7 +660,7 @@ func parseValidateTag(tag string) map[string]string {
 
 ---
 
-## 8. Comparable Structs
+## 8. Comparable Structs [CORE]
 
 Structs are comparable if all their fields are comparable.
 
@@ -705,7 +707,7 @@ cache[CacheKey{UserID: 1, Path: "/api/users"}] = "cached-response"
 
 ---
 
-## 9. Empty Struct
+## 9. Empty Struct [CORE]
 
 The empty struct `struct{}` has zero size.
 
@@ -752,7 +754,9 @@ func (Validator) Validate(data []byte) error {
 
 ---
 
-## 10. Struct Memory Layout
+## 10. Struct Memory Layout [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
 ### Field Ordering Matters
 
@@ -816,7 +820,9 @@ fmt.Println(unsafe.Sizeof(Good{}))  // 24
 
 ---
 
-## 11. Production Patterns
+## 11. Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Domain Model Pattern
 
@@ -911,7 +917,7 @@ func LoadConfig(path string) (*Config, error) {
 
 ---
 
-## 12. Common Pitfalls
+## 12. Common Pitfalls [CORE]
 
 ### 1. Copying Mutex Fields
 
@@ -1052,6 +1058,160 @@ type User struct {
     Name string `json:"name,omitempty" validate:"required"`
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Person Struct with Greet Method ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Define a `Person` struct with `Name`, `Age`, and `Email` fields. Add a `Greet()` method (value receiver) that returns a greeting string like `"Hi, I'm Alice, 30 years old."`. Call it from `main`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+type Person struct {
+	Name  string
+	Age   int
+	Email string
+}
+
+func (p Person) Greet() string {
+	return fmt.Sprintf("Hi, I'm %s, %d years old.", p.Name, p.Age)
+}
+
+func main() {
+	p := Person{Name: "Alice", Age: 30, Email: "alice@example.com"}
+	fmt.Println(p.Greet())
+}
+```
+
+</details>
+
+### Exercise 2: Employee Embedding Person ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Use embedding to create an `Employee` struct that embeds `Person` and adds a `Department` field. Show that `Employee` can call `Greet()` (promoted from `Person`) and access `Name` directly. Print the results.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+type Person struct {
+	Name  string
+	Age   int
+	Email string
+}
+
+func (p Person) Greet() string {
+	return fmt.Sprintf("Hi, I'm %s, %d years old.", p.Name, p.Age)
+}
+
+type Employee struct {
+	Person
+	Department string
+}
+
+func main() {
+	e := Employee{
+		Person:     Person{Name: "Bob", Age: 28, Email: "bob@corp.com"},
+		Department: "Engineering",
+	}
+	fmt.Println(e.Greet())     // promoted from Person
+	fmt.Println(e.Name)        // promoted field
+	fmt.Println(e.Department)  // own field
+}
+```
+
+</details>
+
+### Exercise 3: Constructor Function ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a constructor `func NewPerson(name string, age int) *Person` that returns a pointer to a new `Person`. Validate that `name` is not empty and `age` is positive — return an error if invalid. Call it from `main` with valid and invalid inputs.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+type Person struct {
+	Name  string
+	Age   int
+	Email string
+}
+
+func NewPerson(name string, age int) (*Person, error) {
+	if name == "" {
+		return nil, errors.New("name cannot be empty")
+	}
+	if age <= 0 {
+		return nil, errors.New("age must be positive")
+	}
+	return &Person{Name: name, Age: age}, nil
+}
+
+func main() {
+	p, err := NewPerson("Alice", 30)
+	fmt.Println(p, err) // &{Alice 30 } <nil>
+
+	p, err = NewPerson("", 30)
+	fmt.Println(p, err) // <nil> name cannot be empty
+}
+```
+
+</details>
+
+### Exercise 4: Struct Tags and JSON ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Define a struct with `json:"name"` and `json:"email,omitempty"` tags. Marshal two instances to JSON — one with all fields set, one with the email field empty — and print the results to show that `omitempty` omits zero-value fields.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type User struct {
+	Name  string `json:"name"`
+	Email string `json:"email,omitempty"`
+	Age   int    `json:"age"`
+}
+
+func main() {
+	u1 := User{Name: "Alice", Email: "alice@example.com", Age: 30}
+	b1, _ := json.Marshal(u1)
+	fmt.Println(string(b1)) // {"name":"Alice","email":"alice@example.com","age":30}
+
+	u2 := User{Name: "Bob", Age: 25}
+	b2, _ := json.Marshal(u2)
+	fmt.Println(string(b2)) // {"name":"Bob","age":25}
+}
+```
+
+</details>
 
 ---
 

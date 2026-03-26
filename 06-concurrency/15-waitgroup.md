@@ -20,7 +20,7 @@
 
 ---
 
-## 1. What Is WaitGroup
+## 1. What Is WaitGroup [CORE]
 
 A `WaitGroup` waits for a collection of goroutines to finish. The main goroutine calls `Add` to set the number of goroutines to wait for, then each goroutine calls `Done` when finished, and `Wait` blocks until all goroutines are done.
 
@@ -43,7 +43,7 @@ main goroutine                     worker goroutines
 
 ---
 
-## 2. Basic Usage
+## 2. Basic Usage [CORE]
 
 ```go
 func main() {
@@ -84,7 +84,7 @@ All workers done
 
 ---
 
-## 3. API Reference
+## 3. API Reference [CORE]
 
 ```go
 var wg sync.WaitGroup
@@ -105,7 +105,7 @@ var wg sync.WaitGroup
 
 ---
 
-## 4. Waiting for N Goroutines
+## 4. Waiting for N Goroutines [CORE]
 
 ### Known Count
 
@@ -153,7 +153,9 @@ wg.Wait()
 
 ---
 
-## 5. Dynamic Goroutine Spawning
+## 5. Dynamic Goroutine Spawning [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 When goroutines spawn more goroutines, use nested WaitGroups.
 
@@ -211,7 +213,7 @@ func main() {
 
 ---
 
-## 6. WaitGroup vs Channels
+## 6. WaitGroup vs Channels [CORE]
 
 | Feature | WaitGroup | Channel |
 |---------|-----------|---------|
@@ -283,7 +285,9 @@ func processAll(tasks []Task) []Result {
 
 ---
 
-## 7. Common Patterns
+## 7. Common Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Parallel Map
 
@@ -356,7 +360,7 @@ func main() {
 
 ---
 
-## 8. Common Pitfalls
+## 8. Common Pitfalls [CORE]
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -390,3 +394,137 @@ for i := 0; i < 5; i++ {
 }
 wg.Wait()
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Random Sleep Workers ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Launch 5 goroutines. Each sleeps for a random duration between 100–500ms, then prints its ID and the duration it slept. Use a `sync.WaitGroup` to wait for all to finish.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"sync"
+	"time"
+)
+
+func main() {
+	var wg sync.WaitGroup
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			d := time.Duration(r.Intn(400)+100) * time.Millisecond
+			time.Sleep(d)
+			fmt.Printf("worker %d slept %v\n", id, d)
+		}(i)
+	}
+
+	wg.Wait()
+	fmt.Println("all workers done")
+}
+```
+
+</details>
+
+### Exercise 2: Parallel URL Fetcher ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~10 min
+
+Write a function that takes a slice of URL strings and launches a goroutine for each one. Each goroutine prints "fetching <url>" (simulate, no real HTTP). Use a WaitGroup to wait for all to complete.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func fetchAll(urls []string) {
+	var wg sync.WaitGroup
+
+	for _, url := range urls {
+		wg.Add(1)
+		go func(u string) {
+			defer wg.Done()
+			fmt.Printf("fetching %s\n", u)
+			time.Sleep(100 * time.Millisecond) // simulate network
+			fmt.Printf("done %s\n", u)
+		}(url)
+	}
+
+	wg.Wait()
+	fmt.Println("all fetches complete")
+}
+
+func main() {
+	urls := []string{
+		"https://example.com/a",
+		"https://example.com/b",
+		"https://example.com/c",
+		"https://example.com/d",
+	}
+	fetchAll(urls)
+}
+```
+
+</details>
+
+### Exercise 3: Panic from Add After Wait ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~10 min
+
+Demonstrate that calling `wg.Add(1)` after `wg.Wait()` has already returned (and the counter was 0) is safe, but calling `wg.Done()` when the counter is 0 causes a panic. Write both cases.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	// Case 1: Add after Wait returns — this is safe
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		fmt.Println("first goroutine done")
+	}()
+	wg.Wait()
+	fmt.Println("first wait returned")
+
+	wg.Add(1) // Safe: Wait already returned, reusing is OK
+	go func() {
+		defer wg.Done()
+		fmt.Println("second goroutine done")
+	}()
+	wg.Wait()
+	fmt.Println("second wait returned")
+
+	// Case 2: Done when counter is 0 — panics
+	// Uncomment to see the panic:
+	// var wg2 sync.WaitGroup
+	// wg2.Done() // panic: sync: negative WaitGroup counter
+}
+```
+
+</details>

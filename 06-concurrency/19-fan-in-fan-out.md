@@ -22,7 +22,7 @@
 
 ---
 
-## 1. What Is Fan-Out / Fan-In
+## 1. What Is Fan-Out / Fan-In [CORE]
 
 ```
 Fan-Out: Distribute work to multiple goroutines
@@ -47,7 +47,9 @@ Fan-In: Collect results from multiple goroutines into one channel
 
 ---
 
-## 2. Fan-Out
+## 2. Fan-Out [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 Fan-out starts multiple goroutines that read from the **same channel**.
 
@@ -104,7 +106,7 @@ func worker(id int, jobs <-chan Job) {
 
 ---
 
-## 3. Fan-In
+## 3. Fan-In [PRODUCTION]
 
 Fan-in merges multiple channels into **one output channel**.
 
@@ -186,7 +188,7 @@ func fanInSelect(ch1, ch2 <-chan int) <-chan int {
 
 ---
 
-## 4. Fan-Out / Fan-In Together
+## 4. Fan-Out / Fan-In Together [PRODUCTION]
 
 The full pattern: distribute work (fan-out) then collect results (fan-in).
 
@@ -298,7 +300,7 @@ func fanIn(ctx context.Context, channels ...<-chan Result) <-chan Result {
 
 ---
 
-## 5. Fan-Out with Context
+## 5. Fan-Out with Context [PRODUCTION]
 
 All goroutines respect cancellation. When context is cancelled, everything stops.
 
@@ -342,7 +344,7 @@ func worker(ctx context.Context, id int, jobs <-chan Job) <-chan Result {
 
 ---
 
-## 6. Fan-Out with Error Handling
+## 6. Fan-Out with Error Handling [PRODUCTION]
 
 ### Fail-Fast: Cancel on First Error
 
@@ -425,7 +427,7 @@ func processAll(ctx context.Context, items []Item) []error {
 
 ---
 
-## 7. Bounded Fan-Out
+## 7. Bounded Fan-Out [PRODUCTION]
 
 Without bounds, spawning a goroutine per item creates N goroutines for N items. With 100,000 items, that's ~200MB of stack memory, massive scheduler contention, and potential OOM. Bounded fan-out limits concurrent goroutines to a fixed number (e.g., 10-100), keeping resource usage predictable regardless of input size.
 
@@ -505,7 +507,7 @@ func boundedFanOut(ctx context.Context, items []Item, numWorkers int) []Result {
 
 ---
 
-## 8. Fan-In from Multiple Sources
+## 8. Fan-In from Multiple Sources [PRODUCTION]
 
 ### Merge HTTP Response Channels
 
@@ -591,7 +593,7 @@ func mergeWithPriority(high, low <-chan Job) <-chan Job {
 
 ---
 
-## 9. Real-World Examples
+## 9. Real-World Examples [PRODUCTION]
 
 ### Parallel URL Checker
 
@@ -689,7 +691,7 @@ func processFiles(paths []string) error {
 
 ---
 
-## 10. Common Pitfalls
+## 10. Common Pitfalls [CORE]
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -708,3 +710,197 @@ func processFiles(paths []string) error {
 3. **Buffer result channels** to avoid blocking workers
 4. **Fan-in must close its output** when all inputs are drained
 5. **Never assume ordering** — fan-out results arrive in any order
+
+---
+
+## Exercises
+
+### Exercise 1: Fan-Out Fan-In ⭐
+**Difficulty:** Beginner | **Time:** ~15 min
+
+Create a single job channel with 12 jobs. Fan-out to 4 worker goroutines that each double the job value and send it to a result channel. Fan-in results to one output channel and collect in main.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func worker(id int, jobs <-chan int, results chan<- int) {
+	for j := range jobs {
+		fmt.Printf("worker %d processing %d\n", id, j)
+		results <- j * 2
+	}
+}
+
+func fanIn(channels ...<-chan int) <-chan int {
+	out := make(chan int)
+	var wg sync.WaitGroup
+
+	for _, ch := range channels {
+		wg.Add(1)
+		go func(c <-chan int) {
+			defer wg.Done()
+			for v := range c {
+				out <- v
+			}
+		}(ch)
+	}
+
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+
+	return out
+}
+
+func main() {
+	jobs := make(chan int, 12)
+	for i := 1; i <= 12; i++ {
+		jobs <- i
+	}
+	close(jobs)
+
+	const numWorkers = 4
+	workerResults := make([]<-chan int, numWorkers)
+	for w := 0; w < numWorkers; w++ {
+		ch := make(chan int, 3)
+		workerResults[w] = ch
+		go worker(w, jobs, ch)
+	}
+
+	// Fan-in
+	merged := fanIn(workerResults...)
+	for val := range merged {
+		fmt.Println("result:", val)
+	}
+}
+```
+
+</details>
+
+### Exercise 2: Context Cancellation in Fan-Out ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Extend Exercise 1 by adding a `context.Context`. After receiving 6 results, cancel the context. Verify all workers stop and the program exits cleanly.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"time"
+)
+
+func worker(ctx context.Context, id int, jobs <-chan int, results chan<- int) {
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Printf("worker %d stopped\n", id)
+			return
+		case j, ok := <-jobs:
+			if !ok {
+				return
+			}
+			time.Sleep(100 * time.Millisecond)
+			select {
+			case results <- j * 2:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	jobs := make(chan int, 20)
+	results := make(chan int, 20)
+
+	for i := 1; i <= 20; i++ {
+		jobs <- i
+	}
+	close(jobs)
+
+	for w := 0; w < 4; w++ {
+		go worker(ctx, w, jobs, results)
+	}
+
+	count := 0
+	for r := range results {
+		fmt.Println("result:", r)
+		count++
+		if count >= 6 {
+			cancel()
+			break
+		}
+	}
+
+	time.Sleep(200 * time.Millisecond)
+	fmt.Printf("collected %d results, cancelled\n", count)
+}
+```
+
+</details>
+
+### Exercise 3: Bounded Fan-Out with Semaphore ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Process 20 items, but limit concurrent goroutines to 3 using a buffered channel as a semaphore. Each goroutine acquires the semaphore before processing and releases it after.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func main() {
+	sem := make(chan struct{}, 3) // max 3 concurrent
+	var wg sync.WaitGroup
+	results := make(chan string, 20)
+
+	for i := 1; i <= 20; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			sem <- struct{}{}        // acquire
+			defer func() { <-sem }() // release
+
+			fmt.Printf("processing item %d\n", id)
+			time.Sleep(200 * time.Millisecond)
+			results <- fmt.Sprintf("item %d done", id)
+		}(i)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	for r := range results {
+		fmt.Println(r)
+	}
+	fmt.Println("all done")
+}
+```
+
+</details>

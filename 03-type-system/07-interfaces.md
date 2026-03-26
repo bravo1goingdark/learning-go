@@ -23,7 +23,7 @@
 
 ---
 
-## 1. Interface Basics
+## 1. Interface Basics [CORE]
 
 An interface defines a **set of methods**. Any type that implements all those methods satisfies the interface.
 
@@ -72,7 +72,7 @@ func (f *File) Close() error {
 
 ---
 
-## 2. Implicit Satisfaction
+## 2. Implicit Satisfaction [CORE]
 
 ### No `implements` Keyword
 
@@ -144,7 +144,9 @@ func copyData(dst *os.File, src *os.File) error {
 
 ---
 
-## 3. Interface Internals
+## 3. Interface Internals [INTERNALS]
+
+> ⚠️ **GATE [INTERNALS]:** This section covers the internal two-word structure of interface values (eface/iface). You can skip this on first read and return when debugging interface behavior.
 
 Understanding the internal structure answers three important questions that trip up production Go code: (1) Why can an interface hold `nil` but not be `nil` itself? (2) Why are interface comparisons sometimes surprising? (3) Why does assigning a value to an interface cause a heap allocation? The two-word structure below explains all three.
 
@@ -211,7 +213,7 @@ fmt.Println(unsafe.Sizeof(r))  // 16 (two 8-byte pointers on 64-bit)
 
 ---
 
-## 4. The Empty Interface (`any`)
+## 4. The Empty Interface (`any`) [CORE]
 
 ### Definition
 
@@ -257,7 +259,7 @@ func process(v any) {
 
 ---
 
-## 5. Type Assertions
+## 5. Type Assertions [CORE]
 
 ### Basic Assertion
 
@@ -305,7 +307,7 @@ if ok {
 
 ---
 
-## 6. Type Switches
+## 6. Type Switches [CORE]
 
 ```go
 func describe(v any) string {
@@ -359,7 +361,7 @@ case fmt.Stringer:    // Then Stringer (less specific)
 
 ---
 
-## 7. Nil Interface vs Interface Holding Nil
+## 7. Nil Interface vs Interface Holding Nil [CORE]
 
 **This is the #1 interface bug in production Go.**
 
@@ -466,7 +468,7 @@ func doSomething() error {
 
 ---
 
-## 8. Interface Composition
+## 8. Interface Composition [CORE]
 
 ### Combining Interfaces
 
@@ -531,7 +533,7 @@ func Migrate(db DB) error { ... }  // Needs both
 
 ---
 
-## 9. Standard Library Interfaces
+## 9. Standard Library Interfaces [CORE]
 
 ### Most Important Interfaces
 
@@ -647,7 +649,9 @@ func (r *MyReader) Read(p []byte) (n int, err error) {
 
 ---
 
-## 10. Design Principles
+## 10. Design Principles [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers production interface design principles (accept interfaces/return structs, small interfaces, consumer-side definition). Ensure you understand sections 1-9 first.
 
 Go interfaces are implicit — any type with the right methods satisfies an interface automatically. This is powerful but requires discipline. Without clear principles, you end up with either too many interfaces (over-abstraction, impossible to mock) or too few (tight coupling, untestable code). These four principles guide you to the right balance.
 
@@ -737,7 +741,9 @@ func LoadConfig(path string) (*Config, error) { ... }
 
 ---
 
-## 11. Common Patterns
+## 11. Common Patterns [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers production interface patterns (mocking, decorators, strategy pattern).
 
 ### Mock-Friendly Code
 
@@ -829,7 +835,7 @@ var _ io.ReadWriteCloser = (*File)(nil)
 
 ---
 
-## 12. Common Pitfalls
+## 12. Common Pitfalls [CORE]
 
 ### 1. Nil Interface Holding Nil Pointer
 
@@ -985,7 +991,9 @@ var _ io.Reader = (*MyReader)(nil)
 
 ---
 
-## 13. Production Patterns
+## 13. Production Patterns [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers production patterns (dependency injection, interface composition, table-driven tests).
 
 ### Dependency Injection
 
@@ -1104,7 +1112,7 @@ func TestFormatter(t *testing.T) {
 
 ---
 
-## 14. Error Handling with Interfaces
+## 14. Error Handling with Interfaces [PRODUCTION]
 
 ```go
 type ErrorHandler interface {
@@ -1142,7 +1150,7 @@ func (r *RetryHandler) Handle(err error) bool {
 
 ---
 
-## 15. Interface Performance
+## 15. Interface Performance [PRODUCTION]
 
 ```go
 // Interfaces add a small indirection cost
@@ -1161,7 +1169,7 @@ func directCall(s *someType) int {
 
 ---
 
-## 16. Common Mistakes
+## 16. Common Mistakes [PRODUCTION]
 
 ### Defining Interfaces Too Early
 
@@ -1216,7 +1224,7 @@ type Closer interface { Close() error }
 
 ---
 
-## 17. Testing with Interfaces
+## 17. Testing with Interfaces [PRODUCTION]
 
 ```go
 // Create mock implementations
@@ -1260,7 +1268,7 @@ func TestService(t *testing.T) {
 
 ---
 
-## 18. Interface vs Concrete Types
+## 18. Interface vs Concrete Types [PRODUCTION]
 
 ```go
 // Use concrete types when:
@@ -1284,7 +1292,7 @@ func NewCache() *Cache {
 
 ---
 
-## 19. Best Practices Summary
+## 19. Best Practices Summary [CORE]
 
 1. **Define interfaces at the consumer side** — not the producer
 2. **Keep interfaces small** — 1-3 methods is ideal
@@ -1293,6 +1301,160 @@ func NewCache() *Cache {
 5. **Don't create interfaces prematurely** — create when you need them
 6. **Use interface composition** — combine small interfaces
 7. **Document interface contracts** — what does each method do?
+
+---
+
+## Exercises
+
+### Exercise 1: Shape Interface with Area() ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Define a `Shape` interface with `Area() float64`. Implement it on `Circle` (with `Radius`) and `Rectangle` (with `Width`, `Height`). Write a function that takes a `Shape` and prints its area. Call it with both types.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+type Shape interface {
+	Area() float64
+}
+
+type Circle struct {
+	Radius float64
+}
+
+func (c Circle) Area() float64 {
+	return math.Pi * c.Radius * c.Radius
+}
+
+type Rectangle struct {
+	Width, Height float64
+}
+
+func (r Rectangle) Area() float64 {
+	return r.Width * r.Height
+}
+
+func printArea(s Shape) {
+	fmt.Printf("%T area: %.2f\n", s, s.Area())
+}
+
+func main() {
+	printArea(Circle{Radius: 5})
+	printArea(Rectangle{Width: 3, Height: 4})
+}
+```
+
+</details>
+
+### Exercise 2: Type Switch on any ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function `func classify(v any)` that uses a type switch to handle `int`, `string`, and `float64` with different messages. Pass it values of each type plus an unsupported type and print the results.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func classify(v any) {
+	switch val := v.(type) {
+	case int:
+		fmt.Printf("integer: %d\n", val)
+	case string:
+		fmt.Printf("string: %q\n", val)
+	case float64:
+		fmt.Printf("float64: %.2f\n", val)
+	default:
+		fmt.Printf("unknown type: %T\n", val)
+	}
+}
+
+func main() {
+	classify(42)
+	classify("hello")
+	classify(3.14)
+	classify(true)
+}
+```
+
+</details>
+
+### Exercise 3: Nil Interface vs Interface Holding Nil ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Demonstrate the difference between a nil interface and an interface holding a nil pointer. Declare `var err error = nil` and `var err2 error = (*MyError)(nil)`. Print `== nil` for both and explain the result.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+type MyError struct {
+	Msg string
+}
+
+func (e *MyError) Error() string {
+	return e.Msg
+}
+
+func main() {
+	var err1 error = nil
+	var err2 error = (*MyError)(nil)
+
+	fmt.Println("err1 == nil:", err1 == nil) // true  — nil interface
+	fmt.Println("err2 == nil:", err2 == nil) // false — non-nil type pointer, nil data
+
+	// The two-word interface structure:
+	// err1: type=nil,  data=nil  → nil
+	// err2: type=*MyError, data=nil → NOT nil (type pointer is set)
+}
+```
+
+</details>
+
+### Exercise 4: describe() with fmt.Sprintf ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a function `func describe(v any) string` that returns `fmt.Sprintf("%T: %v", v, v)`. Call it with an int, a string, a float64, a bool, and a struct, then print each result.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func describe(v any) string {
+	return fmt.Sprintf("%T: %v", v, v)
+}
+
+type Point struct{ X, Y int }
+
+func main() {
+	fmt.Println(describe(42))
+	fmt.Println(describe("hello"))
+	fmt.Println(describe(3.14))
+	fmt.Println(describe(true))
+	fmt.Println(describe(Point{1, 2}))
+}
+```
+
+</details>
 
 ---
 

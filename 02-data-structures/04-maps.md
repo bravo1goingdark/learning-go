@@ -22,7 +22,7 @@
 
 ---
 
-## 1. Map Basics
+## 1. Map Basics [CORE]
 
 A map is an **unordered** collection of key-value pairs. It's a reference type (like slices and channels).
 
@@ -44,7 +44,7 @@ var m map[string]int
 
 ---
 
-## 2. Creation Methods
+## 2. Creation Methods [CORE]
 
 ### Method 1: `make()`
 
@@ -82,7 +82,7 @@ m := make(map[string]int, 10000)
 
 ---
 
-## 3. CRUD Operations
+## 3. CRUD Operations [CORE]
 
 ### Create / Update
 
@@ -150,7 +150,7 @@ func main() {
 
 ---
 
-## 4. Iteration
+## 4. Iteration [CORE]
 
 ### Basic Range
 
@@ -232,7 +232,9 @@ for k := range m {
 
 ---
 
-## 5. Map Internals
+## 5. Map Internals [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
 ### How Maps Work
 
@@ -371,7 +373,7 @@ fmt.Println(unsafe.Sizeof(m))  // 8
 
 ---
 
-## 6. Key Types
+## 6. Key Types [CORE]
 
 ### Comparable Types (Can Be Keys)
 
@@ -452,7 +454,7 @@ fmt.Println(m[a])             // might not find
 
 ---
 
-## 7. Nil Map Behavior
+## 7. Nil Map Behavior [CORE]
 
 ### Reading from Nil Map
 
@@ -500,7 +502,9 @@ func NewService() *Service {
 
 ---
 
-## 8. Concurrency
+## 8. Concurrency [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 > **Prerequisite:** This section uses `sync.Mutex`, `sync.RWMutex`, and goroutines — all covered in detail in the Concurrency section (Topics 11-16). If you haven't read those yet, skim this section now and revisit after learning concurrency. The key concept: maps are NOT safe for concurrent read/write. You need a lock.
 
@@ -651,7 +655,9 @@ This reduces lock contention by distributing keys across 32 independent shards.
 
 ---
 
-## 9. Common Patterns
+## 9. Common Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Counting / Frequency
 
@@ -801,7 +807,9 @@ func getOrDefault[K comparable, V any](m map[K]V, key K, defaultVal V) V {
 
 ---
 
-## 10. Performance
+## 10. Performance [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Pre-allocation
 
@@ -861,7 +869,7 @@ for k, v := range m {
 
 ---
 
-## 11. Common Pitfalls
+## 11. Common Pitfalls [CORE]
 
 ### 1. Writing to Nil Map
 
@@ -1001,7 +1009,9 @@ maps.Values(m)                     // Iterator of values
 
 ---
 
-## 14. Production Best Practices
+## 12. Production Best Practices [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Map with Pre-allocation
 
@@ -1180,7 +1190,9 @@ func (a *AtomicCounter) Inc(key string) int64 {
 
 ---
 
-## 15. Performance Considerations
+## 13. Performance Considerations [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ### Hash Collision Attack Mitigation
 
@@ -1250,7 +1262,9 @@ func buildKey(parts ...string) string {
 
 ---
 
-## 16. Testing Maps
+## 14. Testing Maps [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
 ```go
 func TestMapOperations(t *testing.T) {
@@ -1308,7 +1322,9 @@ func TestMapConcurrency(t *testing.T) {
 
 ---
 
-## 17. Debugging Maps
+## 15. Debugging Maps [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
 ```go
 import "runtime/debug"
@@ -1329,6 +1345,139 @@ func diagnoseMap() {
     // nilMap["a"] = 1 // This would panic
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Word Frequency Counter ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Given the sentence `"the quick brown fox jumps over the lazy dog the fox"`, build a `map[string]int` that counts how many times each word appears. Print each word and its count.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	sentence := "the quick brown fox jumps over the lazy dog the fox"
+	freq := make(map[string]int)
+	for _, word := range strings.Fields(sentence) {
+		freq[word]++
+	}
+	for word, count := range freq {
+		fmt.Printf("%-8s %d\n", word, count)
+	}
+}
+```
+
+</details>
+
+### Exercise 2: Check Before Delete ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a map of student scores. Write a function that takes a key, uses the `value, ok` pattern to check if the key exists, prints the score if it does, and only then deletes the key. Demonstrate both the found and not-found cases.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func removeIfExists(m map[string]int, key string) {
+	if score, ok := m[key]; ok {
+		fmt.Printf("Found %s = %d, deleting...\n", key, score)
+		delete(m, key)
+	} else {
+		fmt.Printf("%s not found\n", key)
+	}
+}
+
+func main() {
+	scores := map[string]int{"alice": 95, "bob": 82, "charlie": 78}
+	removeIfExists(scores, "alice")
+	removeIfExists(scores, "dave")
+	fmt.Println("remaining:", scores)
+}
+```
+
+</details>
+
+### Exercise 3: Print Map Keys in Sorted Order ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a `map[string]int` with at least 5 entries. Iterate over the map, collect the keys into a slice, sort them with `sort.Strings`, then print the key-value pairs in alphabetical order.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+func main() {
+	m := map[string]int{"banana": 2, "apple": 5, "cherry": 1, "date": 3, "elderberry": 4}
+
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		fmt.Printf("%-12s %d\n", k, m[k])
+	}
+}
+```
+
+</details>
+
+### Exercise 4: Nil Map Panic and Fix ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Demonstrate that writing to a nil map causes a panic (use `defer` + `recover` to catch it). Then fix the problem by initializing the map with `make()` and repeat the write successfully.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// Demonstrate nil map panic
+	var m map[string]int
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("caught panic:", r)
+			}
+		}()
+		m["key"] = 1 // panics
+	}()
+
+	// Fix: initialize with make
+	m = make(map[string]int)
+	m["key"] = 1
+	fmt.Println("fixed map:", m) // map[key:1]
+}
+```
+
+</details>
 
 ---
 

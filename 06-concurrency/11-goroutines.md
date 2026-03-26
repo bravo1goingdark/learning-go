@@ -23,7 +23,7 @@
 
 ---
 
-## 1. What Is a Goroutine
+## 1. What Is a Goroutine [CORE]
 
 A goroutine is a **lightweight thread** managed by the Go runtime. Not an OS thread.
 
@@ -37,7 +37,7 @@ A goroutine is a **lightweight thread** managed by the Go runtime. Not an OS thr
 
 ---
 
-## 2. Creating Goroutines
+## 2. Creating Goroutines [CORE]
 
 ### Basic Syntax
 
@@ -287,7 +287,9 @@ func main() {
 
 ---
 
-## 3. Goroutine Internals
+## 3. Goroutine Internals [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
 ### G-M-P Model
 
@@ -366,7 +368,7 @@ func main() {
 
 ---
 
-## 4. Goroutine Lifecycle
+## 4. Goroutine Lifecycle [CORE]
 
 ```
                             ┌──────────────────┐
@@ -410,7 +412,7 @@ func main() {
 
 ---
 
-## 5. Closure Gotchas
+## 5. Closure Gotchas [CORE]
 
 ### Closures Primer
 
@@ -476,7 +478,9 @@ for _, v := range values {
 
 ---
 
-## 6. Goroutine Leaks
+## 6. Goroutine Leaks [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 A goroutine leak happens when a goroutine **never exits** — it stays alive forever, consuming memory.
 
@@ -533,7 +537,9 @@ func safe(ctx context.Context) {
 
 ---
 
-## 7. GOMAXPROCS & Scheduler
+## 7. GOMAXPROCS & Scheduler [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
 ### GOMAXPROCS
 
@@ -575,7 +581,9 @@ runtime.GC()
 
 ---
 
-## 8. Stack Growth
+## 8. Stack Growth [INTERNALS]
+
+> ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
 Goroutines start with a **2 KB stack** that grows dynamically.
 
@@ -613,7 +621,7 @@ go build -gcflags="-m" main.go
 
 ---
 
-## 9. Common Pitfalls
+## 9. Common Pitfalls [CORE]
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -645,7 +653,9 @@ func safeWorker(ctx context.Context, jobs <-chan int) {
 
 ---
 
-## 10. Production Best Practices
+## 10. Production Best Practices [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### 1. Always Use Context for Cancellation
 
@@ -780,7 +790,9 @@ func worker(ctx context.Context, jobs <-chan Job) {
 
 ---
 
-## 11. Debugging Goroutines
+## 11. Debugging Goroutines [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Using runtime/pprof
 
@@ -828,7 +840,9 @@ GODEBUG=scheddetail=1 ./myapp
 
 ---
 
-## 12. Performance Considerations
+## 12. Performance Considerations [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### When to Use Goroutines
 
@@ -862,7 +876,9 @@ Max stack: 1 GB (can grow dynamically)
 
 ---
 
-## 13. Common Production Patterns
+## 13. Common Production Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Pipeline with Backpressure
 
@@ -934,3 +950,180 @@ func boundedProcess(ctx context.Context, items []Item, limit int) {
     wg.Wait()
 }
 ```
+
+---
+
+## Exercises
+
+### Exercise 1: Spawn and Wait ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Spawn 10 goroutines where each one prints its ID (0 through 9). Use a `sync.WaitGroup` to wait for all goroutines to finish before the program exits. Do not use `time.Sleep`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	var wg sync.WaitGroup
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			fmt.Printf("goroutine %d\n", id)
+		}(i)
+	}
+
+	wg.Wait()
+	fmt.Println("all done")
+}
+```
+
+</details>
+
+### Exercise 2: Closure Gotcha ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a `for` loop that spawns 5 goroutines that each print the loop variable `i`. First, capture `i` by reference (the bug) and observe the output. Then fix it using the argument-passing approach.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	var wg sync.WaitGroup
+
+	// BUG: all goroutines may print 5
+	fmt.Println("=== Buggy version ===")
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Println(i) // captures i by reference
+		}()
+	}
+	wg.Wait()
+
+	// FIX: pass i as argument
+	fmt.Println("=== Fixed version ===")
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(n int) {
+			defer wg.Done()
+			fmt.Println(n)
+		}(i)
+	}
+	wg.Wait()
+}
+```
+
+</details>
+
+### Exercise 3: Goroutine with Done Channel ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~10 min
+
+Write a function `doWork` that launches a goroutine performing a simulated task (sleep 1 second, print "work done"). The goroutine signals completion through a `done` channel. The main goroutine must wait on that channel.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func doWork(done chan<- struct{}) {
+	go func() {
+		fmt.Println("working...")
+		time.Sleep(time.Second)
+		fmt.Println("work done")
+		done <- struct{}{}
+	}()
+}
+
+func main() {
+	done := make(chan struct{})
+	doWork(done)
+	<-done
+	fmt.Println("main continues")
+}
+```
+
+</details>
+
+### Exercise 4: Leaky Goroutine ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~10 min
+
+Write a function that contains a goroutine leak: a goroutine blocks on a channel send that nobody will ever read from. Explain why it leaks. Then fix it using a buffered channel or a `select` with `ctx.Done()`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"runtime"
+	"time"
+)
+
+// Leaky version: goroutine blocks forever on send
+func leaky() {
+	ch := make(chan int) // unbuffered
+	go func() {
+		ch <- 42 // blocks forever — nobody reads
+		fmt.Println("sent") // never reached
+	}()
+	// forgot to receive from ch
+}
+
+// Fixed version: use context for cancellation
+func safe(ctx context.Context) {
+	ch := make(chan int, 1) // buffered so send doesn't block
+	go func() {
+		select {
+		case ch <- 42:
+			fmt.Println("sent")
+		case <-ctx.Done():
+			fmt.Println("goroutine exiting")
+			return
+		}
+	}()
+}
+
+func main() {
+	fmt.Println("goroutines before leak:", runtime.NumGoroutine())
+	leaky()
+	time.Sleep(100 * time.Millisecond)
+	fmt.Println("goroutines after leak:", runtime.NumGoroutine())
+
+	ctx, cancel := context.WithCancel(context.Background())
+	safe(ctx)
+	time.Sleep(100 * time.Millisecond)
+	cancel()
+	time.Sleep(100 * time.Millisecond)
+	fmt.Println("goroutines after safe:", runtime.NumGoroutine())
+}
+```
+
+</details>

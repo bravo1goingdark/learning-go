@@ -24,7 +24,7 @@
 
 ---
 
-## 1. Installation & Environment
+## 1. Installation & Environment [CORE]
 
 ### Verify Installation
 
@@ -65,7 +65,7 @@ export PATH=$PATH:$(go env GOPATH)/bin
 
 ---
 
-## 2. Go Modules (`go mod`)
+## 2. Go Modules (`go mod`) [CORE]
 
 Go modules replaced `GOPATH` mode. Every project has a `go.mod` file at its root.
 
@@ -189,7 +189,7 @@ Programmatic editing of `go.mod`. Useful in scripts/CI.
 
 ---
 
-## 3. Building (`go build`)
+## 3. Building (`go build`) [CORE]
 
 ### Basic Build
 
@@ -303,7 +303,7 @@ The race detector finds data races at runtime. **Never deploy `-race` binaries t
 
 ---
 
-## 4. Running (`go run`)
+## 4. Running (`go run`) [CORE]
 
 ### Basic Usage
 
@@ -342,7 +342,7 @@ Unlike `go build`, `go install` puts the binary in `$GOBIN` and caches the build
 
 ---
 
-## 5. Testing (`go test`)
+## 5. Testing (`go test`) [CORE]
 
 This is where Go shines. Testing is built into the toolchain. No frameworks required.
 
@@ -632,7 +632,7 @@ go tool cover -func=coverage.out           # Show per-function coverage
 
 ---
 
-## 6. Formatting (`go fmt`)
+## 6. Formatting (`go fmt`) [CORE]
 
 ### The Golden Rule
 
@@ -687,7 +687,7 @@ goimports -w .    # Formats + adds/removes imports
 
 ---
 
-## 7. Vetting (`go vet`)
+## 7. Vetting (`go vet`) [CORE]
 
 Static analysis that catches common mistakes.
 
@@ -734,7 +734,7 @@ for _, item := range items {
 
 ---
 
-## 8. Dependency Management
+## 8. Dependency Management [CORE]
 
 ### Versioning
 
@@ -782,7 +782,9 @@ go build ./...                  # Fails if go.mod is dirty
 
 ---
 
-## 9. Cross-Compilation
+## 9. Cross-Compilation [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
 Go compiles to any OS/architecture from any OS/architecture. No toolchain setup needed.
 
@@ -826,7 +828,9 @@ build-all:
 
 ---
 
-## 10. Profiling & Benchmarks
+## 10. Profiling & Benchmarks [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
 ### CPU Profile
 
@@ -890,7 +894,9 @@ go tool trace trace.out   # Opens browser UI
 
 ---
 
-## 11. Go Workspace (Monorepo)
+## 11. Go Workspace (Monorepo) [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
 Go 1.18+ workspaces let you work on multiple modules simultaneously.
 
@@ -919,7 +925,9 @@ Now `service-a` can import from `shared-libs` without publishing it. Changes are
 
 ---
 
-## 12. Production Build Patterns
+## 12. Production Build Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
 ### Multi-Stage Docker Build
 
@@ -970,7 +978,7 @@ jobs:
 
 ---
 
-## 13. Common Pitfalls
+## 13. Common Pitfalls [CORE]
 
 ### 1. Forgetting `go mod tidy` After Adding Imports
 
@@ -1056,178 +1064,153 @@ go doc -src fmt.Printf          # Source code
 
 ---
 
-## 14. Production Build Patterns
+## Exercises
 
-### Release Build
+### Exercise 1: Hello Module ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
 
-```bash
-# Optimized release build
-go build -ldflags="-s -w -X main.version=1.0.0 -X main.commit=$(git rev-parse HEAD)" \
-    -o myapp .
-```
+Create a new directory called `hello-mod`. Initialize a Go module inside it, write a `main.go` that prints `"Hello, Go Toolchain!"`, and run it with `go run`.
 
-### Docker Multi-stage Build
-
-```dockerfile
-# Build stage
-FROM golang:1.22-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 go build -o /app/main .
-
-# Runtime stage
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-COPY --from=builder /app/main /app/
-WORKDIR /app
-CMD ["./main"]
-```
-
-### Makefile Pattern
-
-```makefile
-.PHONY: build test lint run clean
-
-BINARY_NAME=myapp
-VERSION=$(shell git describe --tags --always --dirty)
-LDFLAGS=-ldflags "-X main.version=${VERSION} -s -w"
-
-build:
-	CGO_ENABLED=0 go build ${LDFLAGS} -o ${BINARY_NAME} .
-
-test:
-	go test -race -cover ./...
-
-lint:
-	golangci-lint run ./...
-
-run: build
-	./${BINARY_NAME}
-
-clean:
-	rm -f ${BINARY_NAME}
-
-deps:
-	go mod tidy
-	go mod download
-```
-
----
-
-## 15. Performance Profiling
-
-### CPU Profile
+<details>
+<summary>Solution</summary>
 
 ```bash
-# Generate profile
-go run -cpuprofile=cpu.prof main.go
-
-# Analyze
-go tool pprof cpu.prof
-
-# In pprof:
-# (pprof) top
-# (pprof) web
-# (pprof) list functionName
+mkdir hello-mod && cd hello-mod
+go mod init example.com/hello-mod
 ```
-
-### Memory Profile
-
-```bash
-go run -memprofile=mem.prof main.go
-go tool pprof mem.prof
-```
-
-### Trace
-
-```bash
-go run -trace=trace.out main.go
-go tool trace trace.out
-```
-
-### Benchmark Profiling
 
 ```go
-func BenchmarkMain(b *testing.B) {
-    for i := 0; i < b.N; i++ {
-        main()
-    }
-}
-
-// Run with profiling
-go test -bench=. -benchmem -cpuprof=cpu.prof ./...
-```
-
----
-
-## 16. Continuous Integration
-
-### GitHub Actions
-
-```yaml
-name: Go CI
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-      - run: go mod download
-      - run: go test -race -cover ./...
-      - run: go vet ./...
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-      - run: go build -ldflags="-s -w" -o app .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: app
-          path: app
-```
-
----
-
-## 17. Common Issues
-
-### Module Not Found
-
-```bash
-# Fix module issues
-go mod tidy
-go clean -modcache
-go mod download
-```
-
-### Build Constraints
-
-```go
-//go:build linux
-// +build linux
-
+// main.go
 package main
 
-func linuxOnly() {}
-```
+import "fmt"
 
-### cgo Issues
+func main() {
+	fmt.Println("Hello, Go Toolchain!")
+}
+```
 
 ```bash
-# Static build without cgo
-CGO_ENABLED=0 go build .
-
-# With cgo but no shared libs
-CGO_ENABLED=1 go build -tags netgo .
+go run main.go
 ```
+
+</details>
+
+### Exercise 2: Import Your Own Function ⭐⭐
+**Difficulty:** Beginner | **Time:** ~15 min
+
+In the same module, create a second file `greet.go` with a package-level function `func Greet(name string) string`. Call it from `main.go` and print the result.
+
+<details>
+<summary>Solution</summary>
+
+```go
+// greet.go
+package main
+
+import "fmt"
+
+func Greet(name string) string {
+	return fmt.Sprintf("Hello, %s!", name)
+}
+```
+
+```go
+// main.go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println(Greet("Go"))
+}
+```
+
+```bash
+go run .
+```
+
+</details>
+
+### Exercise 3: Write and Run a Test ⭐⭐
+**Difficulty:** Beginner | **Time:** ~15 min
+
+Write a `Multiply(a, b int) int` function in a new module. Create a `_test.go` file with a test for it. Run `go test -v` and confirm the test passes.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+mkdir mathmod && cd mathmod
+go mod init example.com/mathmod
+```
+
+```go
+// math.go
+package mathmod
+
+func Multiply(a, b int) int {
+	return a * b
+}
+```
+
+```go
+// math_test.go
+package mathmod
+
+import "testing"
+
+func TestMultiply(t *testing.T) {
+	got := Multiply(3, 4)
+	want := 12
+	if got != want {
+		t.Errorf("Multiply(3,4) = %d; want %d", got, want)
+	}
+}
+```
+
+```bash
+go test -v
+```
+
+</details>
+
+### Exercise 4: Catch Bugs with `go vet` ⭐⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a file that declares an unused variable (e.g., `x := 10` with no further use). Run `go vet` and observe the error. Then fix it.
+
+<details>
+<summary>Solution</summary>
+
+```go
+// main.go
+package main
+
+import "fmt"
+
+func main() {
+	x := 10
+	fmt.Println("hello")
+}
+```
+
+```bash
+go vet ./...
+# Output: x declared but not used (or similar)
+```
+
+Fix — either use the variable or assign to `_`:
+
+```go
+func main() {
+	x := 10
+	_ = x
+	fmt.Println("hello")
+}
+```
+
+</details>
 
 ---
 

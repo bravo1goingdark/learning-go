@@ -18,7 +18,7 @@
 
 ---
 
-## 1. Select Basics
+## 1. Select Basics [CORE]
 
 Without `select`, receiving from multiple channels requires sequential blocking — you'd block on `ch1`, then check `ch2`. With `select`, you wait on all channels simultaneously and respond to whichever is ready first. This is Go's multiplexer for channels.
 
@@ -44,7 +44,7 @@ case msg := <-ch3:
 
 ---
 
-## 2. How Select Works
+## 2. How Select Works [CORE]
 
 ```
 select {
@@ -91,7 +91,7 @@ case v := <-ch2:
 
 ---
 
-## 3. Default Case (Non-Blocking)
+## 3. Default Case (Non-Blocking) [CORE]
 
 Sometimes you want to try a channel operation but continue with other work if it's not ready. Without `default`, `select` blocks indefinitely. Adding `default` makes it a "try and move on" operation — essential for polling, rate limiting, and avoiding deadlocks when multiple channels might not have data yet.
 
@@ -139,7 +139,7 @@ func poll(ch <-chan int) {
 
 ---
 
-## 4. Timeouts with time.After
+## 4. Timeouts with time.After [CORE]
 
 `time.After` returns a channel that sends the current time after a duration.
 
@@ -205,7 +205,7 @@ func heartbeat(done <-chan struct{}) {
 
 ---
 
-## 5. Select with Done Channel
+## 5. Select with Done Channel [CORE]
 
 ### Context Cancellation Pattern
 
@@ -257,7 +257,7 @@ func run(ctx context.Context) {
 
 ---
 
-## 6. Select with Nil Channels
+## 6. Select with Nil Channels [CORE]
 
 Operations on nil channels **block forever**, effectively **disabling** that case.
 
@@ -297,7 +297,7 @@ func merge(ch1, ch2 <-chan int) <-chan int {
 
 ---
 
-## 7. For-Select Loop
+## 7. For-Select Loop [CORE]
 
 The most common concurrency pattern in Go.
 
@@ -358,7 +358,9 @@ func monitor(ctx context.Context, ch <-chan Event) {
 
 ---
 
-## 8. Common Patterns
+## 8. Common Patterns [PRODUCTION]
+
+> ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
 ### Multiplexing (Merge Channels)
 
@@ -415,7 +417,7 @@ func readWithCancel(ctx context.Context, ch <-chan int) (int, error) {
 
 ---
 
-## 9. Common Pitfalls
+## 9. Common Pitfalls [CORE]
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -425,3 +427,177 @@ func readWithCancel(ctx context.Context, ch <-chan int) (int, error) {
 | Missing timeout | Hangs forever | Always use `time.After` or `ctx.Done()` |
 | Multiple sends in select | Only one fires | Design for single operation per select |
 | Forgetting `ok` check | Miss closed channel | Always use `val, ok := <-ch` |
+
+---
+
+## Exercises
+
+### Exercise 1: First Channel Wins ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create two channels. Launch two goroutines: one sends "fast" after 50ms, the other sends "slow" after 200ms. Use `select` in main to receive from whichever arrives first.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		ch1 <- "fast"
+	}()
+
+	go func() {
+		time.Sleep(200 * time.Millisecond)
+		ch2 <- "slow"
+	}()
+
+	select {
+	case msg := <-ch1:
+		fmt.Println("received:", msg)
+	case msg := <-ch2:
+		fmt.Println("received:", msg)
+	}
+}
+```
+
+</details>
+
+### Exercise 2: Timeout Pattern ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Try to receive from a channel, but if nothing arrives within 2 seconds, print "timed out" and move on. Use `time.After` inside `select`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch := make(chan string)
+
+	// Simulate a slow sender (3 seconds — slower than timeout)
+	go func() {
+		time.Sleep(3 * time.Second)
+		ch <- "data"
+	}()
+
+	select {
+	case msg := <-ch:
+		fmt.Println("received:", msg)
+	case <-time.After(2 * time.Second):
+		fmt.Println("timed out")
+	}
+}
+```
+
+</details>
+
+### Exercise 3: Non-Blocking Send ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~10 min
+
+Create a buffered channel of size 1. Fill it. Then attempt a non-blocking send using `select` with a `default` case. Print whether the send succeeded or was skipped.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	ch := make(chan int, 1)
+	ch <- 99 // channel is now full
+
+	select {
+	case ch <- 100:
+		fmt.Println("sent 100")
+	default:
+		fmt.Println("channel full, skipping send")
+	}
+
+	// Drain to show the value
+	fmt.Println("in channel:", <-ch)
+}
+```
+
+</details>
+
+### Exercise 4: Fan-In ⭐⭐
+**Difficulty:** Intermediate | **Time:** ~15 min
+
+Create two channels that each produce values. Write a `merge` function that uses `select` in a goroutine to fan-in both channels into one output channel. Collect all values in main.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func merge(ch1, ch2 <-chan int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for ch1 != nil || ch2 != nil {
+			select {
+			case v, ok := <-ch1:
+				if !ok {
+					ch1 = nil
+					continue
+				}
+				out <- v
+			case v, ok := <-ch2:
+				if !ok {
+					ch2 = nil
+					continue
+				}
+				out <- v
+			}
+		}
+	}()
+	return out
+}
+
+func main() {
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+
+	go func() {
+		defer close(ch1)
+		for i := 1; i <= 3; i++ {
+			ch1 <- i
+		}
+	}()
+	go func() {
+		defer close(ch2)
+		for i := 10; i <= 12; i++ {
+			ch2 <- i
+		}
+	}()
+
+	for val := range merge(ch1, ch2) {
+		fmt.Println(val)
+	}
+}
+```
+
+</details>

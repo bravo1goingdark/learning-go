@@ -22,7 +22,7 @@
 
 ---
 
-## 1. The `error` Interface
+## 1. The `error` Interface [CORE]
 
 ```go
 type error interface {
@@ -82,7 +82,7 @@ func main() {
 
 ---
 
-## 2. Creating Errors
+## 2. Creating Errors [CORE]
 
 ### `errors.New`
 
@@ -139,7 +139,7 @@ func validate(name string) error {
 
 ---
 
-## 3. Error Checking Patterns
+## 3. Error Checking Patterns [CORE]
 
 Go's error handling has one rule: every function that can fail returns `error` as its last return value. The caller then has exactly four choices: (1) **handle it** immediately, (2) **wrap and propagate** it up the call stack, (3) **retry**, or (4) **explicitly ignore** it with `_`. This section shows each pattern.
 
@@ -211,7 +211,7 @@ result, _ := doSomething()  // Error is safe to ignore: best-effort operation
 
 ---
 
-## 4. Error Wrapping (Go 1.13+)
+## 4. Error Wrapping (Go 1.13+) [CORE]
 
 ### `%w` Verb
 
@@ -287,7 +287,7 @@ func doMultiple() error {
 
 ---
 
-## 5. Sentinel Errors
+## 5. Sentinel Errors [CORE]
 
 Pre-defined errors used for comparison. Without sentinels, callers would compare error messages as strings (`err.Error() == "not found"`) — fragile and breaks when wording changes. Sentinels provide stable, comparable error values. `errors.Is(err, ErrNotFound)` works even when the error has been wrapped with `fmt.Errorf(...%w...)`, walking the entire error chain.
 
@@ -348,7 +348,7 @@ var ErrNotFound = errors.New("not found")
 
 ---
 
-## 6. Custom Error Types
+## 6. Custom Error Types [CORE]
 
 ### Struct Error
 
@@ -450,7 +450,7 @@ func validateAge(age int) error {
 
 ---
 
-## 7. Error Inspection (`errors.Is`, `errors.As`)
+## 7. Error Inspection (`errors.Is`, `errors.As`) [CORE]
 
 ### `errors.Is` — Check Equality
 
@@ -533,7 +533,7 @@ errors.As(err, &httpErr)  // Correct
 
 ---
 
-## 8. Panic & Recover
+## 8. Panic & Recover [CORE]
 
 ### Panic
 
@@ -629,7 +629,9 @@ var tmpl = Must(template.New("main").Parse(templateStr))
 
 ---
 
-## 9. Production Error Handling Patterns
+## 9. Production Error Handling Patterns [PRODUCTION]
+
+> 🚧 **GATE [PRODUCTION]:** This section covers production error handling patterns (wrapping with context, error accumulation, typed HTTP errors, domain errors). Ensure you understand sections 1-8 first.
 
 ### Pattern 1: Wrap with Context
 
@@ -793,7 +795,7 @@ func (s *OrderService) Cancel(orderID string) error {
 
 ---
 
-## 10. Structured Errors (With `slog`)
+## 10. Structured Errors (With `slog`) [PRODUCTION]
 
 ```go
 import "log/slog"
@@ -825,7 +827,7 @@ func (s *Service) Process(ctx context.Context, id string) error {
 
 ---
 
-## 11. Common Pitfalls
+## 11. Common Pitfalls [CORE]
 
 ### 1. Ignoring Errors
 
@@ -975,169 +977,9 @@ var ErrNotFound = errors.New("not found")
 
 ---
 
-## 12. Production Patterns
+## 12. Testing Errors [PRODUCTION]
 
-### Error Handling in HTTP Handlers
-
-```go
-type APIError struct {
-    Code    int    `json:"code"`
-    Message string `json:"message"`
-    Err     error  `json:"-"`
-}
-
-func (e *APIError) Error() string {
-    return e.Message
-}
-
-func (e *APIError) Unwrap() error {
-    return e.Err
-}
-
-func JSONError(w http.ResponseWriter, status int, msg string) {
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(status)
-    json.NewEncoder(w).Encode(map[string]string{"error": msg})
-}
-
-func HandleError(w http.ResponseWriter, err error) {
-    var apiErr *APIError
-    if errors.As(err, &apiErr) {
-        JSONError(w, apiErr.Code, apiErr.Message)
-        return
-    }
-
-    // Default 500
-    JSONError(w, 500, "internal server error")
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-    err := doWork(r.Context())
-    if err != nil {
-        HandleError(w, err)
-        return
-    }
-    w.WriteHeader(http.StatusOK)
-}
-```
-
-### Error Handling with Structured Logging
-
-```go
-import "github.com/rs/zerolog"
-
-type Service struct {
-    log zerolog.Logger
-}
-
-func (s *Service) Process(ctx context.Context, id string) error {
-    data, err := s.fetch(ctx, id)
-    if err != nil {
-        s.log.Error().
-            Str("id", id).
-            Str("error", err.Error()).
-            Str("function", "Process").
-            Msg("failed to fetch")
-        return fmt.Errorf("fetch %s: %w", id, err)
-    }
-
-    result, err := s.transform(data)
-    if err != nil {
-        s.log.Error().
-            Str("id", id).
-            Str("error", err.Error()).
-            Str("function", "transform").
-            Msg("failed to transform")
-        return fmt.Errorf("transform: %w", err)
-    }
-
-    return nil
-}
-```
-
-### Retry with Backoff
-
-```go
-func retry(ctx context.Context, maxRetries int, fn func() error) error {
-    var lastErr error
-    for attempt := 0; attempt < maxRetries; attempt++ {
-        if err := fn(); err != nil {
-            lastErr = err
-
-            // Don't retry on non-retryable errors
-            if !isRetryable(err) {
-                return err
-            }
-
-            // Check context
-            if ctx.Err() != nil {
-                return ctx.Err()
-            }
-
-            // Exponential backoff
-            delay := time.Duration(attempt+1) * time.Second
-            select {
-            case <-ctx.Done():
-                return ctx.Err()
-            case <-time.After(delay):
-                continue
-            }
-        } else {
-            return nil
-        }
-    }
-    return fmt.Errorf("max retries (%d) exceeded: %w", maxRetries, lastErr)
-}
-
-func isRetryable(err error) bool {
-    // net.Error is an interface for network errors with Timeout() and Temporary() methods.
-    // See: go doc net.Error
-    var netErr net.Error
-    if errors.As(err, &netErr) {
-        return netErr.Timeout() || netErr.Temporary()
-    }
-    return false
-}
-```
-
-### Error Handling in Goroutines
-
-```go
-func parallelWork(ctx context.Context, tasks []Task) error {
-    ctx, cancel := context.WithCancel(ctx)
-    defer cancel()
-
-    errCh := make(chan error, len(tasks))
-    var wg sync.WaitGroup
-
-    for _, task := range tasks {
-        wg.Add(1)
-        go func(t Task) {
-            defer wg.Done()
-            if err := t.Execute(ctx); err != nil {
-                select {
-                case errCh <- err:
-                default:
-                }
-                cancel() // Cancel remaining
-            }
-        }(task)
-    }
-
-    wg.Wait()
-    close(errCh)
-
-    // Return first error or nil
-    for err := range errCh {
-        return err
-    }
-    return nil
-}
-```
-
----
-
-## 13. Testing Errors
+> 🚧 **GATE [PRODUCTION]:** This section covers testing error handling patterns.
 
 ```go
 func TestErrorTypes(t *testing.T) {
@@ -1191,7 +1033,7 @@ func doPanic() {
 
 ---
 
-## 14. Error Handling Best Practices
+## 13. Error Handling Best Practices [PRODUCTION]
 
 ### Don't Ignore Errors
 
@@ -1255,5 +1097,183 @@ if errors.As(err, &ve) {
 ```
 
 ---
+
+---
+
+## Exercises
+
+### Exercise 1: Custom ValidationError Type ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Create a custom error type `ValidationError` with `Field` and `Message` string fields. Implement the `Error() string` method. Write a `validateUsername(name string) error` function that returns a `ValidationError` when the name is empty or shorter than 3 characters. Call it from `main` and print the error.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+type ValidationError struct {
+	Field   string
+	Message string
+}
+
+func (e *ValidationError) Error() string {
+	return fmt.Sprintf("validation failed on %s: %s", e.Field, e.Message)
+}
+
+func validateUsername(name string) error {
+	if name == "" {
+		return &ValidationError{Field: "username", Message: "cannot be empty"}
+	}
+	if len(name) < 3 {
+		return &ValidationError{Field: "username", Message: "must be at least 3 characters"}
+	}
+	return nil
+}
+
+func main() {
+	if err := validateUsername("ab"); err != nil {
+		fmt.Println(err)
+	}
+}
+```
+
+</details>
+
+### Exercise 2: Wrap and Unwrap with errors.Is ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Define a sentinel error `var ErrNotFound = errors.New("not found")`. Write a `findUser(id string) (string, error)` function that returns `ErrNotFound` when the ID is `"unknown"`. Write a `getUser(id string) (string, error)` function that wraps the error with `fmt.Errorf("getUser: %w", err)`. In `main`, call `getUser("unknown")` and use `errors.Is` to detect the original `ErrNotFound`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrNotFound = errors.New("not found")
+
+func findUser(id string) (string, error) {
+	if id == "unknown" {
+		return "", ErrNotFound
+	}
+	return "User:" + id, nil
+}
+
+func getUser(id string) (string, error) {
+	user, err := findUser(id)
+	if err != nil {
+		return "", fmt.Errorf("getUser: %w", err)
+	}
+	return user, nil
+}
+
+func main() {
+	_, err := getUser("unknown")
+	if errors.Is(err, ErrNotFound) {
+		fmt.Println("User not found:", err)
+	}
+}
+```
+
+</details>
+
+### Exercise 3: Extract Custom Error with errors.As ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Use the `ValidationError` type from Exercise 1. Write a `processForm(age int) error` that wraps a `ValidationError` inside a generic error using `fmt.Errorf("processForm: %w", err)`. In `main`, call `processForm(-1)` and use `errors.As` to extract the `*ValidationError` and print its `Field`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+type ValidationError struct {
+	Field   string
+	Message string
+}
+
+func (e *ValidationError) Error() string {
+	return fmt.Sprintf("validation failed on %s: %s", e.Field, e.Message)
+}
+
+func validateAge(age int) error {
+	if age < 0 {
+		return &ValidationError{Field: "age", Message: "must be non-negative"}
+	}
+	return nil
+}
+
+func processForm(age int) error {
+	if err := validateAge(age); err != nil {
+		return fmt.Errorf("processForm: %w", err)
+	}
+	return nil
+}
+
+func main() {
+	err := processForm(-1)
+	var valErr *ValidationError
+	if errors.As(err, &valErr) {
+		fmt.Printf("Field: %s, Message: %s\n", valErr.Field, valErr.Message)
+	}
+}
+```
+
+</details>
+
+### Exercise 4: safeDivide Function ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Write a `safeDivide(a, b int) (int, error)` function that returns the integer division result, or an error if `b` is zero. In `main`, test it with `safeDivide(10, 0)` and `safeDivide(10, 3)`, printing results or errors as appropriate.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+func safeDivide(a, b int) (int, error) {
+	if b == 0 {
+		return 0, errors.New("division by zero")
+	}
+	return a / b, nil
+}
+
+func main() {
+	if result, err := safeDivide(10, 0); err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		fmt.Println("Result:", result)
+	}
+
+	if result, err := safeDivide(10, 3); err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		fmt.Println("Result:", result)
+	}
+}
+```
+
+</details>
 
 ## Next: [Defer In Depth →](./09-defer-in-depth.md)

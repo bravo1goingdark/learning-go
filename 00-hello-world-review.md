@@ -2,6 +2,8 @@
 
 After reading the first two files, you should be able to understand this program.
 
+> ℹ️ **Note:** Some code in this file previews Topics 6-7 (pointers, interfaces). It's OK to not understand everything yet — come back after Phase 2.
+
 > **Before you run this:** Save the code below as `review.go`, then run it with:
 > ```bash
 > go run review.go
@@ -148,6 +150,102 @@ After completing topics 1-9, you should understand every part of this program:
 | 56-57 | Interfaces |
 | 60-66 | Error handling |
 | 69 | Defer |
+
+---
+
+## Exercises
+
+### Exercise 1: Hello, Name! ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Modify the `main()` function so that instead of hardcoding `"Go Learner"`, it reads a name from the command line using `os.Args`. If no name is provided, default to `"World"`.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	name := "World"
+	if len(os.Args) > 1 {
+		name = os.Args[1]
+	}
+	fmt.Printf("Hello, %s!\n", name)
+}
+```
+
+</details>
+
+### Exercise 2: Add Your Own Function ⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Add a function called `greet(name string) string` that returns `"Hello, <name>!"`. Call it from `main()` and print the result.
+
+<details>
+<summary>Solution</summary>
+
+```go
+package main
+
+import "fmt"
+
+func greet(name string) string {
+	return fmt.Sprintf("Hello, %s!", name)
+}
+
+func main() {
+	msg := greet("Go Learner")
+	fmt.Println(msg)
+}
+```
+
+</details>
+
+### Exercise 3: Predict the Output ⭐⭐
+**Difficulty:** Beginner | **Time:** ~10 min
+
+Before running the code below, predict what it prints. Then run it to check.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	name := "Go"
+	age := 1
+	fmt.Println(name, "is", age, "year(s) old")
+
+	result := add(3, 4)
+	fmt.Println("3 + 4 =", result)
+
+	numbers := [3]int{10, 20, 30}
+	fmt.Println("Array:", numbers)
+	fmt.Println("First:", numbers[0])
+}
+
+func add(a, b int) int {
+	return a + b
+}
+```
+
+<details>
+<summary>Answer</summary>
+
+```
+Go is 1 year(s) old
+3 + 4 = 7
+Array: [10 20 30]
+First: 10
+```
+
+</details>
 
 ---
 
