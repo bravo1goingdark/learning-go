@@ -4,6 +4,27 @@ A complete, structured path to master Go from **zero** to production-ready code.
 
 > **New to Go?** Start with [GETTING_STARTED.md](GETTING_STARTED.md) first!
 
+## How to Study
+
+Each topic file has sections tagged with difficulty markers:
+
+| Marker | Meaning | When to Read |
+|--------|---------|--------------|
+| `[CORE]` | Fundamentals everyone needs | **First pass — read all CORE sections** |
+| `[PRODUCTION]` | Real-world patterns | After CORE is solid |
+| `[INTERNALS]` | Compiler/runtime details | When curious or optimizing |
+
+### First Pass Strategy
+
+1. Read only `[CORE]` sections in each topic
+2. Do the exercises at the end of each file
+3. Build the projects after each phase
+4. Then revisit `[PRODUCTION]` and `[INTERNALS]`
+
+This prevents overwhelm — you learn the essentials first, then fill in the details.
+
+---
+
 ## Quick Start
 
 1. **Install Go**: https://go.dev/doc/install
@@ -145,8 +166,23 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
-## Rules
+## Study Rules
 
-1. **Don't skip ahead.** If a later topic feels confusing, revisit the folder it depends on.
-2. **Practice after each file.** Read, then write code. Reading alone won't stick.
-3. **Revisit.** Come back to earlier folders as your understanding deepens.
+1. **Read only [CORE] sections first.** Don't try to read everything — you'll get overwhelmed.
+2. **Do the exercises.** Every topic has 3-5 exercises with solutions. They're essential for learning.
+3. **Build the projects.** After Phases 1-3, 5-6, and 7, build the corresponding project to reinforce concepts.
+4. **Revisit later.** Come back to `[PRODUCTION]` and `[INTERNALS]` sections after building projects.
+
+## Estimated Time
+
+| Phase | Topics | Est. Time |
+|-------|--------|-----------|
+| Phase 1: Foundations | 00-02 | ~6 hours |
+| Phase 2: Data & Types | 03-07 | ~10 hours |
+| Phase 3: Error Handling | 08-09 | ~4 hours |
+| Phase 4: Generics | 10 | ~3 hours |
+| Phase 5: Concurrency | 11-16 | ~10 hours |
+| Phase 6: Advanced Concurrency | 17-19 | ~6 hours |
+| Phase 7: Software Patterns | 01-08 | ~8 hours |
+| Projects | 3 projects | ~26 hours |
+| **Total** | | **~77 hours** |
