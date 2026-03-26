@@ -6,16 +6,16 @@
 ![Context](../assets/13.png)
 ## Table of Contents
 
-1. [What Is Context](#1-what-is-context)
-2. [Creating Contexts](#2-creating-contexts)
-3. [Cancellation](#3-cancellation)
-4. [Deadlines & Timeouts](#4-deadlines--timeouts)
-5. [Context Values](#5-context-values)
-6. [Context Propagation](#6-context-propagation)
-7. [Context in HTTP Servers](#7-context-in-http-servers)
-8. [ErrCause Inspection](#8-errcause-inspection)
-9. [Common Patterns](#9-common-patterns)
-10. [Common Pitfalls](#10-common-pitfalls)
+1. [What Is Context](#1-what-is-context-core)
+2. [Creating Contexts](#2-creating-contexts-core)
+3. [Cancellation](#3-cancellation-core)
+4. [Deadlines & Timeouts](#4-deadlines--timeouts-core)
+5. [Context Values](#5-context-values-core)
+6. [Context Propagation](#6-context-propagation-production)
+7. [Context in HTTP Servers](#7-context-in-http-servers-production)
+8. [ErrCause Inspection](#8-errcause-inspection-core)
+9. [Common Patterns](#9-common-patterns-production)
+10. [Common Pitfalls](#10-common-pitfalls-core)
 
 ---
 

@@ -6,16 +6,16 @@
 ![Channels](../assets/11.png)
 ## Table of Contents
 
-1. [Channel Basics](#1-channel-basics)
-2. [Unbuffered Channels](#2-unbuffered-channels)
-3. [Buffered Channels](#3-buffered-channels)
-4. [Directional Channels](#4-directional-channels)
-5. [Closing Channels](#5-closing-channels)
-6. [Range Over Channel](#6-range-over-channel)
-7. [Nil Channels](#7-nil-channels)
-8. [Channel Internals](#8-channel-internals)
-9. [Common Patterns](#9-common-patterns)
-10. [Common Pitfalls](#10-common-pitfalls)
+1. [Channel Basics](#1-channel-basics-core)
+2. [Unbuffered Channels](#2-unbuffered-channels-core)
+3. [Buffered Channels](#3-buffered-channels-core)
+4. [Directional Channels](#4-directional-channels-core)
+5. [Closing Channels](#5-closing-channels-core)
+6. [Range Over Channel](#6-range-over-channel-core)
+7. [Nil Channels](#7-nil-channels-core)
+8. [Channel Internals](#8-channel-internals-internals)
+9. [Common Patterns](#9-common-patterns-production)
+10. [Common Pitfalls](#10-common-pitfalls-core)
 
 ---
 

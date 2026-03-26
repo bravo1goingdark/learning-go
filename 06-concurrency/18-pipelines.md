@@ -9,15 +9,15 @@
 
 ## Table of Contents
 
-1. [What Is a Pipeline](#1-what-is-a-pipeline)
-2. [Basic Pipeline](#2-basic-pipeline)
-3. [Pipeline Stages](#3-pipeline-stages)
-4. [Generator Pattern](#4-generator-pattern)
-5. [Pipeline with Error Handling](#5-pipeline-with-error-handling)
-6. [Pipeline with Context](#6-pipeline-with-context)
-7. [Bounded Pipelines](#7-bounded-pipelines)
-8. [Real-World Example: Log Processing](#8-real-world-example-log-processing)
-9. [Common Pitfalls](#9-common-pitfalls)
+1. [What Is a Pipeline](#1-what-is-a-pipeline-core)
+2. [Basic Pipeline](#2-basic-pipeline-core)
+3. [Pipeline Stages](#3-pipeline-stages-production)
+4. [Generator Pattern](#4-generator-pattern-production)
+5. [Pipeline with Error Handling](#5-pipeline-with-error-handling-production)
+6. [Pipeline with Context](#6-pipeline-with-context-production)
+7. [Bounded Pipelines](#7-bounded-pipelines-production)
+8. [Real-World Example: Log Processing](#8-real-world-example-log-processing-production)
+9. [Common Pitfalls](#9-common-pitfalls-production)
 
 ---
 

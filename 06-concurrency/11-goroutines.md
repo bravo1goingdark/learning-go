@@ -8,18 +8,18 @@
 ![Goroutines](../assets/10.png)
 ## Table of Contents
 
-1. [What Is a Goroutine](#1-what-is-a-goroutine)
-2. [Creating Goroutines](#2-creating-goroutines)
+1. [What Is a Goroutine](#1-what-is-a-goroutine-core)
+2. [Creating Goroutines](#2-creating-goroutines-core)
    - [What `go` Does to the Flow of Execution](#what-go-does-to-the-flow-of-execution)
    - [What Happens When You Write `go`](#what-happens-when-you-write-go)
    - [Critical Behaviors of `go`](#critical-behaviors-of-go)
-3. [Goroutine Internals](#3-goroutine-internals)
-4. [Goroutine Lifecycle](#4-goroutine-lifecycle)
-5. [Closure Gotchas](#5-closure-gotchas)
-6. [Goroutine Leaks](#6-goroutine-leaks)
-7. [GOMAXPROCS & Scheduler](#7-gomaxprocs--scheduler)
-8. [Stack Growth](#8-stack-growth)
-9. [Common Pitfalls](#9-common-pitfalls)
+3. [Goroutine Internals](#3-goroutine-internals-internals)
+4. [Goroutine Lifecycle](#4-goroutine-lifecycle-core)
+5. [Closure Gotchas](#5-closure-gotchas-core)
+6. [Goroutine Leaks](#6-goroutine-leaks-production)
+7. [GOMAXPROCS & Scheduler](#7-gomaxprocs--scheduler-internals)
+8. [Stack Growth](#8-stack-growth-internals)
+9. [Common Pitfalls](#9-common-pitfalls-core)
 
 ---
 

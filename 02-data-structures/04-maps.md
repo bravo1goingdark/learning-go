@@ -8,17 +8,17 @@
 
 ## Table of Contents
 
-1. [Map Basics](#1-map-basics)
-2. [Creation Methods](#2-creation-methods)
-3. [CRUD Operations](#3-crud-operations)
-4. [Iteration](#4-iteration)
-5. [Map Internals](#5-map-internals)
-6. [Key Types](#6-key-types)
-7. [Nil Map Behavior](#7-nil-map-behavior)
-8. [Concurrency](#8-concurrency)
-9. [Common Patterns](#9-common-patterns)
-10. [Performance](#10-performance)
-11. [Common Pitfalls](#11-common-pitfalls)
+1. [Map Basics](#1-map-basics-core)
+2. [Creation Methods](#2-creation-methods-core)
+3. [CRUD Operations](#3-crud-operations-core)
+4. [Iteration](#4-iteration-core)
+5. [Map Internals](#5-map-internals-internals)
+6. [Key Types](#6-key-types-core)
+7. [Nil Map Behavior](#7-nil-map-behavior-core)
+8. [Concurrency](#8-concurrency-production)
+9. [Common Patterns](#9-common-patterns-production)
+10. [Performance](#10-performance-production)
+11. [Common Pitfalls](#11-common-pitfalls-core)
 
 ---
 

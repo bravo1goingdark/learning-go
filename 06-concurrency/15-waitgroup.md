@@ -9,14 +9,14 @@
 
 ## Table of Contents
 
-1. [What Is WaitGroup](#1-what-is-waitgroup)
-2. [Basic Usage](#2-basic-usage)
-3. [API Reference](#3-api-reference)
-4. [Waiting for N Goroutines](#4-waiting-for-n-goroutines)
-5. [Dynamic Goroutine Spawning](#5-dynamic-goroutine-spawning)
-6. [WaitGroup vs Channels](#6-waitgroup-vs-channels)
-7. [Common Patterns](#7-common-patterns)
-8. [Common Pitfalls](#8-common-pitfalls)
+1. [What Is WaitGroup](#1-what-is-waitgroup-core)
+2. [Basic Usage](#2-basic-usage-core)
+3. [API Reference](#3-api-reference-core)
+4. [Waiting for N Goroutines](#4-waiting-for-n-goroutines-core)
+5. [Dynamic Goroutine Spawning](#5-dynamic-goroutine-spawning-production)
+6. [WaitGroup vs Channels](#6-waitgroup-vs-channels-core)
+7. [Common Patterns](#7-common-patterns-production)
+8. [Common Pitfalls](#8-common-pitfalls-core)
 
 ---
 

@@ -8,18 +8,18 @@
 
 ## Table of Contents
 
-1. [Interface Basics](#1-interface-basics)
-2. [Implicit Satisfaction](#2-implicit-satisfaction)
-3. [Interface Internals](#3-interface-internals)
-4. [The Empty Interface (`any`)](#4-the-empty-interface-any)
-5. [Type Assertions](#5-type-assertions)
-6. [Type Switches](#6-type-switches)
-7. [Nil Interface vs Interface Holding Nil](#7-nil-interface-vs-interface-holding-nil)
-8. [Interface Composition](#8-interface-composition)
-9. [Standard Library Interfaces](#9-standard-library-interfaces)
-10. [Design Principles](#10-design-principles)
-11. [Common Patterns](#11-common-patterns)
-12. [Common Pitfalls](#12-common-pitfalls)
+1. [Interface Basics](#1-interface-basics-core)
+2. [Implicit Satisfaction](#2-implicit-satisfaction-core)
+3. [Interface Internals](#3-interface-internals-internals)
+4. [The Empty Interface (`any`)](#4-the-empty-interface-any-core)
+5. [Type Assertions](#5-type-assertions-core)
+6. [Type Switches](#6-type-switches-core)
+7. [Nil Interface vs Interface Holding Nil](#7-nil-interface-vs-interface-holding-nil-core)
+8. [Interface Composition](#8-interface-composition-core)
+9. [Standard Library Interfaces](#9-standard-library-interfaces-core)
+10. [Design Principles](#10-design-principles-production)
+11. [Common Patterns](#11-common-patterns-production)
+12. [Common Pitfalls](#12-common-pitfalls-core)
 
 ---
 

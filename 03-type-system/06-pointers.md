@@ -8,17 +8,17 @@
 
 ## Table of Contents
 
-1. [What is a Pointer](#1-what-is-a-pointer)
-2. [Declaration & Dereferencing](#2-declaration--dereferencing)
-3. [Pointers with Functions](#3-pointers-with-functions)
-4. [Pointers with Structs](#4-pointers-with-structs)
-5. [new() vs &Type{}](#5-new-vs-type)
-6. [Escape Analysis](#6-escape-analysis)
-7. [When to Use Pointers](#7-when-to-use-pointers)
-8. [When NOT to Use Pointers](#8-when-not-to-use-pointers)
-9. [Pointer Gotchas](#9-pointer-gotchas)
-10. [Production Patterns](#10-production-patterns)
-11. [Common Pitfalls](#11-common-pitfalls)
+1. [What is a Pointer](#1-what-is-a-pointer-core)
+2. [Declaration & Dereferencing](#2-declaration--dereferencing-core)
+3. [Pointers with Functions](#3-pointers-with-functions-core)
+4. [Pointers with Structs](#4-pointers-with-structs-core)
+5. [`new()` vs `&Type{}`](#5-new-vs-type-core)
+6. [Escape Analysis](#6-escape-analysis-internals)
+7. [When to Use Pointers](#7-when-to-use-pointers-core)
+8. [When NOT to Use Pointers](#8-when-not-to-use-pointers-core)
+9. [Pointer Gotchas](#9-pointer-gotchas-core)
+10. [Production Patterns](#10-production-patterns-production)
+11. [Common Pitfalls](#11-common-pitfalls-core)
 
 ---
 
