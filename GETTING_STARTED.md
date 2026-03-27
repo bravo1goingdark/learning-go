@@ -247,7 +247,9 @@ If you're confused, take a break. Come back later with fresh eyes.
 study/
 ├── README.md              ← Main index
 ├── GETTING_STARTED.md     ← You are here
+├── IDE_SETUP.md           ← Editor setup guide
 ├── CHEATSHEET.md          ← Quick reference
+├── STDLIB_COOKBOOK.md     ← Common recipes
 ├── 00-hello-world-review.md ← Warm-up exercise
 ├── 01-foundations/
 │   ├── 01-go-toolchain.md
@@ -274,10 +276,6 @@ study/
 │   ├── 17-worker-pools.md
 │   ├── 18-pipelines.md
 │   └── 19-fan-in-fan-out.md
-├── projects/
-│   ├── 09-project-csv-processor.md   ← Project 1: Topics 1-9
-│   ├── 19-concurrency-project.md    ← Project 2: Topics 11-19
-│   └── 20-layered-http-service.md   ← Project 3: Software Patterns
 ├── 06-software-patterns/
 │   ├── 01-project-structure.md
 │   ├── 02-repository-pattern.md
@@ -287,6 +285,18 @@ study/
 │   ├── 06-pub-sub-design.md
 │   ├── 07-retry-circuit-breaker.md
 │   └── 08-backpressure-strategies.md
+├── 07-systems-project/
+│   └── (capstone message broker)
+├── 08-stdlib-essentials/   ← Practical topics
+│   ├── 01-json-encoding.md
+│   ├── 02-http-basics.md
+│   ├── 03-database-sql.md
+│   └── 04-logging.md
+├── projects/
+│   ├── 09-project-csv-processor.md   ← Project 1: Topics 1-9
+│   ├── 19-concurrency-project.md    ← Project 2: Topics 11-19
+│   ├── 20-layered-http-service.md   ← Project 3: Software Patterns
+│   └── 21-progressive-exercises.md  ← Scaffolded practice
 └── assets/                ← Images and diagrams
 ```
 

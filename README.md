@@ -166,6 +166,37 @@ Work through these folders in order. Each one builds on the previous.
 
 ---
 
+### [08-stdlib-essentials/](08-stdlib-essentials/) — Standard Library Essentials
+> Practical topics for building real applications. Covers JSON, HTTP, databases, and logging.
+
+| # | Topic | What You'll Learn |
+|---|-------|-------------------|
+| 01 | [JSON & Encoding](08-stdlib-essentials/01-json-encoding.md) | Marshal/unmarshal, struct tags, nested structures, custom JSON |
+| 02 | [HTTP Basics](08-stdlib-essentials/02-http-basics.md) | HTTP client/server, routing, middleware, JSON APIs |
+| 03 | [Database SQL](08-stdlib-essentials/03-database-sql.md) | CRUD operations, prepared statements, transactions |
+| 04 | [Logging](08-stdlib-essentials/04-logging.md) | Basic log, structured logging with slog, custom loggers |
+
+---
+
+### [projects/21-progressive-exercises.md](projects/21-progressive-exercises.md) — Scaffolded Practice
+> Guided exercises with `// TODO:` markers. Fill in the code, check solutions when stuck.
+
+| Concepts Used |
+|---------------|
+| Functions, Structs, Methods, Interfaces, Error Handling, Concurrency, JSON, HTTP |
+
+---
+
+### Supplementary Files
+
+| File | Description |
+|------|-------------|
+| [IDE_SETUP.md](IDE_SETUP.md) | VS Code/GoLand/Neovim setup guide |
+| [CHEATSHEET.md](CHEATSHEET.md) | One-page Go reference |
+| [STDLIB_COOKBOOK.md](STDLIB_COOKBOOK.md) | Quick recipes for common tasks |
+
+---
+
 ## Study Rules
 
 1. **Read only [CORE] sections first.** Don't try to read everything — you'll get overwhelmed.
@@ -184,5 +215,6 @@ Work through these folders in order. Each one builds on the previous.
 | Phase 5: Concurrency | 11-16 | ~10 hours |
 | Phase 6: Advanced Concurrency | 17-19 | ~6 hours |
 | Phase 7: Software Patterns | 01-08 | ~8 hours |
-| Projects | 3 projects | ~26 hours |
-| **Total** | | **~77 hours** |
+| Phase 8: Stdlib Essentials | JSON, HTTP, DB, Logging | ~8 hours |
+| Projects | 4 projects + exercises | ~30 hours |
+| **Total** | | **~85 hours** |
