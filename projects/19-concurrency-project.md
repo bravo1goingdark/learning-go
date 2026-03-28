@@ -22,13 +22,56 @@
 
 ## 1. Project Overview
 
-A CLI tool that:
+### What We're Building
+
+A CLI tool that processes URLs concurrently using a bounded worker pool with graceful shutdown:
 
 - **Processes URLs concurrently** using a bounded worker pool
 - **Handles graceful shutdown** — completes current jobs before stopping
 - **Reports progress** in real-time
 - **Collects results** from all workers
 - **Handles errors** without crashing workers
+
+### Why This Project?
+
+| Why This Matters | Explanation |
+|-----------------|-------------|
+| **Real-world usage** | Every backend service needs background workers — HTTP clients, job processors, queue consumers |
+| **Concurrency mastery** | Combines goroutines, channels, WaitGroup, context — all Topics 11-19 |
+| **Production skills** | Graceful shutdown isn't optional — it's required for zero-downtime deployments |
+| **Error handling** | One crashing worker shouldn't kill the entire pool |
+
+### How It Works (Intuition)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        WORKER POOL FLOW                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   URLs Channel ──► Job Queue ──► Worker 1 ──► Results                     │
+│                       │              │                                     │
+│                       │              └──► Worker 2 ──► Results             │
+│                       │              │                                     │
+│                       │              └──► Worker 3 ──► Results             │
+│                       │                                                   │
+│                       ▼                                                   │
+│                  (bounded, blocks if full)                                 │
+│                                                                             │
+│   GRACEFUL SHUTDOWN:                                                       │
+│   1. Close URL channel (no new jobs)                                       │
+│   2. Wait for workers to finish current job                                │
+│   3. Collect final results                                                 │
+│   4. Exit                                                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key insight:** The worker pool is a **pipeline**:
+- **Stage 1:** Read URLs from file → send to job channel
+- **Stage 2:** Workers pull from job channel → process → send results
+- **Stage 3:** Main goroutine collects results
+
+Each stage runs concurrently. Channels connect them without shared state.
 
 ### Sample Input (`urls.txt`)
 
@@ -208,97 +251,193 @@ All workers exited
 
 > **Topics Used:** Structs (Topic 5), Interfaces (Topic 7), Pointers (Topic 6)
 
+### What / Why / How
+
+**What:** Define Job, JobResult, and Worker types.
+
+**Why:**
+- **Job** — represents work to do (URL + timeout)
+- **JobResult** — represents work completion (status + error)
+- **Worker** — the goroutine that processes jobs
+
+**How:**
+- Job has channel inputs (receive-only) and outputs (send-only)
+- Worker runs in a goroutine, receives jobs, sends results
+- Context propagates cancellation to all workers
+
 ### `types.go`
 
 ```go
 package main
 
 import (
-	"context"
-	"fmt"
-	"net/http"
-	"time"
+	"context"   // Context for cancellation propagation
+	"fmt"      // Formatted output
+	"net/http" // HTTP client
+	"time"     // Timeout handling
 )
 
+// ============================================================================
+// JOB TYPE
+// ============================================================================
+
 // Job represents a unit of work to be processed.
+// We use a struct because it groups related data.
+//
+// Why separate Job from Result?
+// - Job is the INPUT (what to do)
+// - Result is the OUTPUT (what happened)
+// - Keeping them separate lets us retry failed jobs easily
+//
+// Topic 5 (Structs): Struct with named fields
 type Job struct {
-	ID      int
-	URL     string
-	Timeout time.Duration
+	ID      int           // Unique job identifier (for tracking)
+	URL     string        // The URL to process
+	Timeout time.Duration // Max time to spend on this job
 }
 
-// Result holds the outcome of processing a job.
+// ============================================================================
+// RESULT TYPE  
+// ============================================================================
+
+// JobResult holds the outcome of processing a job.
+// Includes both success (Status) and failure (Err) information.
+//
+// Why include both?
+// - Status = 0 means error occurred
+// - Status > 0 means success (HTTP status code)
+// - Caller can check either field depending on needs
 type JobResult struct {
-	JobID     int
-	URL      string
-	Status   int
-	Duration time.Duration
-	Err      error
+	JobID     int           // Which job this result is for
+	URL      string        // Echo back the URL (for logging)
+	Status   int           // HTTP status code (0 if error)
+	Duration time.Duration // How long it took
+	Err      error         // Error if failed (nil if success)
 }
 
-// Worker represents a worker that processes jobs.
+// ============================================================================
+// WORKER TYPE
+// ============================================================================
+
+// Worker processes Jobs from a channel and sends Results.
+// Contains all the "ingredients" needed to do its job.
+//
+// Why use channels in the struct?
+// - jobs (<-chan *Job): receive-only channel for receiving work
+// - results (chan<- JobResult): send-only channel for sending results
+// - Directional channels prevent accidental misuse
+//
+// Topic 12 (Channels): Directional channel types
 type Worker struct {
-	ID      int
-	Jobs    <-chan *Job
-	Results chan<- JobResult
-	Context context.Context
-	Group   *sync.WaitGroup
+	ID      int             // Worker identifier (for logging)
+	Jobs    <-chan *Job   // Receive jobs from here (read-only)
+	Results chan<- JobResult // Send results to here (write-only)
+	Context context.Context // Cancellation signal
+	Group   *sync.WaitGroup // Track when this worker finishes
 }
 
-// NewWorker creates a new worker.
+// ============================================================================
+// WORKER CONSTRUCTOR
+// ============================================================================
+
+// NewWorker creates a new Worker with all dependencies injected.
+// Returns *Worker (pointer) because Worker is large (contains channels).
+//
+// Why pass channels and context as parameters?
+// - Constructor doesn't create them, caller creates
+// - Worker receives ready-to-use channels
+// - This is "dependency injection" for goroutines
+//
+// Topic 6 (Pointers): Returns pointer to avoid copying
+// Topic 4 (DI): Dependencies passed in, not created internally
 func NewWorker(id int, jobs <-chan *Job, results chan<- JobResult, ctx context.Context, wg *sync.WaitGroup) *Worker {
 	return &Worker{
 		ID:      id,
-		Jobs:    jobs,
-		Results: results,
-		Context: ctx,
-		Group:   wg,
+		Jobs:    jobs,    // Receive-only end
+		Results: results,  // Send-only end
+		Context: ctx,     // Cancellation from main
+		Group:   wg,      // WaitGroup for tracking
 	}
 }
 
+// ============================================================================
+// WORKER PROCESSING LOOP
+// ============================================================================
+
 // Start begins the worker's processing loop.
-// Topic 14: WaitGroup - tracks worker lifecycle
-// Topic 11: Channels - receive jobs, send results
-// Topic 13: Context - graceful shutdown
+// Runs in a goroutine — returns immediately.
+//
+// How it works:
+// 1. Register with WaitGroup (tell main we're running)
+// 2. Loop forever: receive job OR check context
+// 3. When context cancelled OR channel closed, exit
+//
+// Topic 14 (WaitGroup): wg.Add(1) registers this goroutine
+// Topic 11 (Goroutines): go func() starts concurrent execution
+// Topic 13 (Context): <-ctx.Done() receives cancellation signal
+// Topic 12 (Select): Multiplex between job receive and context done
 func (w *Worker) Start() {
-	w.Group.Add(1)
+	w.Group.Add(1) // Register this goroutine with the WaitGroup
 	go func() {
+		// defer ensures wg.Done() runs even if we panic
+		// This is CRITICAL — forgetting = goroutine leak!
 		defer w.Group.Done()
+		
 		fmt.Printf("[worker-%d] Started\n", w.ID)
 
+		// Infinite loop: keep processing until told to stop
 		for {
 			select {
+			// Check if context was cancelled (shutdown signal)
 			case <-w.Context.Done():
 				fmt.Printf("[worker-%d] Stopped\n", w.ID)
-				return
+				return // Exit the goroutine
 
+			// Try to receive a job from the jobs channel
 			case job, ok := <-w.Jobs:
+				// ok = false means channel was closed (no more jobs)
 				if !ok {
-					// Channel closed - no more jobs
 					fmt.Printf("[worker-%d] Stopped\n", w.ID)
-					return
+					return // Exit gracefully
 				}
+				// We got a valid job, process it
 				w.process(job)
 			}
 		}
 	}()
 }
 
-// process handles a single job.
-// Topic 12: Select - handle job or context cancellation
-// Topic 8: Error handling - wrap errors properly
+// ============================================================================
+// JOB PROCESSING
+// ============================================================================
+
+// process handles a single job: make HTTP request, send result.
+// This is where the actual work happens.
+//
+// How it works:
+// 1. Log start
+// 2. Create HTTP request with context (for timeout/cancellation)
+// 3. Make request
+// 4. Send result (success or failure)
+//
+// Topic 12 (Select): Handled in process() itself
+// Topic 8 (Error Handling): Proper error wrapping with %w
 func (w *Worker) process(job *Job) {
 	fmt.Printf("[worker-%d] Processing: %s\n", w.ID, job.URL)
 
 	start := time.Now()
 
-	// Create request with timeout
+	// Create HTTP request with timeout baked into context
+	// http.NewRequestWithContext returns error if URL is invalid
+	// The request carries the context for cancellation/timeout
 	req, err := http.NewRequestWithContext(w.Context, "GET", job.URL, nil)
 	if err != nil {
+		// Failed to create request (invalid URL?)
+		// Send error result, don't block the worker
 		w.Results <- JobResult{
-			JobID:   job.ID,
-			URL:    job.URL,
-			Err:    fmt.Errorf("create request: %w", err),
+			JobID: job.ID,
+			URL:   job.URL,
+			Err:   fmt.Errorf("create request: %w", err), // Wrap for error chain
 		}
 		return
 	}
@@ -477,7 +616,46 @@ func (p *Pool) Jobs() chan<- *Job {
 
 ## 6. Step 3 — Graceful Shutdown with Context
 
-> **Topics Used:** Context (13), Select (12), Channels (11)
+> **Topics Used:** Context (Topic 13), Select (Topic 12), Channels (Topic 11)
+
+### What / Why / How
+
+**What:** Handle SIGINT/SIGTERM signals and gracefully shut down the worker pool.
+
+**Why:**
+- Ctrl+C (SIGINT) or container restart (SIGTERM) should complete current work
+- Don't kill workers mid-job — that loses work
+- Clean shutdown = wait for workers to finish + collect results
+
+**How:**
+1. Create channel to receive OS signals
+2. Notify on SIGINT/SIGTERM
+3. When signal received, cancel context
+4. Workers see context cancelled → finish current job → exit
+
+### Intuition: Signal Flow
+
+```
+OS sends SIGINT (Ctrl+C)
+        │
+        ▼
+signal.Notify channel receives it
+        │
+        ▼
+goroutine calls cancel()
+        │
+        ▼
+ctx.Done() fires in ALL workers
+        │
+        ▼
+Workers finish current job, exit gracefully
+        │
+        ▼
+WaitGroup.Wait() returns
+        │
+        ▼
+Main exits cleanly
+```
 
 ### `shutdown.go`
 
@@ -485,44 +663,89 @@ func (p *Pool) Jobs() chan<- *Job {
 package main
 
 import (
-	"context"
-	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
+	"context" // Context for cancellation
+	"fmt"    // Logging
+	"os"     // Stderr for errors
+	"os/signal" // Signal handling
+	"syscall" // Signal constants
 )
 
+// ============================================================================
+// SIGNAL SETUP
+// ============================================================================
+
 // SetupGracefulShutdown creates a context that cancels on SIGINT/SIGTERM.
-// This is the standard pattern for graceful shutdown in Go.
+// This is the STANDARD pattern for graceful shutdown in Go.
+//
+// How it works:
+// 1. Create cancelable context
+// 2. Create signal channel (buffered = 1)
+// 3. Tell Go to deliver signals to our channel
+// 4. Start goroutine to wait for signals
+// 5. When signal arrives, call cancel()
+//
+// Why buffered channel?
+// - OS sends signal even if nobody listening yet
+// - Buffer of 1 prevents signal loss
+// - If signal arrives before we read, it's buffered
+//
+// Topic 13 (Context): Cancellation propagates to all workers
+// Topic 11 (Channels): Signal communication
 func SetupGracefulShutdown() (context.Context, context.CancelFunc) {
-	// Create a context that will be cancelled on signal
+	// Create context that can be cancelled
+	// WithCancel returns (ctx, cancelFunc)
+	// Calling cancel() sets ctx.Err() to context.Canceled
 	ctx, cancel := context.WithCancel(context.Background())
 
-	// Channel to receive signals
+	// Create buffered channel for signals
+	// Size = 1 because we only care about "signal received"
+	// Don't need to queue multiple signals
 	sigCh := make(chan os.Signal, 1)
 
-	// Notify on SIGINT (Ctrl+C) and SIGTERM (docker/k8s)
+	// Tell Go to deliver these signals to our channel
+	// SIGINT = Ctrl+C, SIGTERM = Docker/Kubernetes stop
+	// This DOES NOT block - just registers the handler
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	// Start goroutine to handle signals
+	// Start goroutine to wait for signal
+	// This runs independently, doesn't block main
 	go func() {
+		// <-sigCh blocks until signal arrives
+		// Then we log and cancel the context
 		sig := <-sigCh
 		fmt.Printf("\nReceived signal: %v\n", sig)
 		fmt.Println("Initiating graceful shutdown...")
-		cancel()
+		cancel() // This triggers ctx.Done() everywhere!
 	}()
 
 	return ctx, cancel
 }
 
+// ============================================================================
+// RUN WITH SHUTDOWN
+// ============================================================================
+
 // RunWithGracefulShutdown runs the main function with graceful shutdown support.
+// Handles setup and cleanup automatically.
+//
+// Why a wrapper?
+// - Single entry point for the entire program
+// - Handles both normal exit and signal exit
+// - defer ensures context is cancelled if main exits early
 func RunWithGracefulShutdown(fn func(ctx context.Context) error) {
+	// Setup graceful shutdown
 	ctx, cancel := SetupGracefulShutdown()
+	
+	// defer cancel() ensures context is cancelled on ANY exit
+	// Even if fn() panics, cancel() runs first
 	defer cancel()
 
+	// Run the main function with our context
+	// This is where actual work happens
 	if err := fn(ctx); err != nil {
+		// Print error to stderr (not stdout)
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		os.Exit(1) // Non-zero = error
 	}
 }
 ```
@@ -531,54 +754,126 @@ func RunWithGracefulShutdown(fn func(ctx context.Context) error) {
 
 ## 7. Step 4 — Result Collection
 
+### What / Why / How
+
+**What:** Collect results from workers and display a summary.
+
+**Why:**
+- Workers run concurrently, results come in any order
+- Need to collect all results before exiting
+- Summary shows success/failure counts
+
+**How:**
+- Separate goroutine collects results from channel
+- Main waits for all jobs to be submitted + all results to be collected
+
+### Intuition: Result Collection Flow
+
+```
+MAIN THREAD                    WORKER THREADS
+===========                    ==============
+
+Submit job ──────────────────► Worker receives job
+Submit job ──────────────────► Worker processes
+Submit job ──────────────────► 
+         │                        │
+         │                   Results ──────► Result channel
+         │                   Results ──────►
+         │                        │
+         ▼                        ▼
+   (wait for done)          (finish job)
+
+COLLECTOR GOROUTINE:
+  for result := range results {
+      aggregate.Add(result)
+  }
+  aggregate.Display()
+```
+
 ### `collector.go`
 
 ```go
 package main
 
 import (
-	"fmt"
-	"time"
+	"fmt"   // Formatted output
+	"time"  // Timing
 )
 
-// ResultAggregator collects and displays results.
+// ============================================================================
+// AGGREGATOR STRUCT
+// ============================================================================
+
+// ResultAggregator collects job results and displays a summary.
+// Runs in its own goroutine to collect results without blocking workers.
+//
+// Why a separate struct?
+// - Groups related functionality
+// - Holds state (results slice, start time)
+// - Methods for adding results and displaying summary
 type ResultAggregator struct {
-	results   []JobResult
-	startTime time.Time
+	results   []JobResult // All collected results
+	startTime time.Time   // When aggregation started
 }
 
 // NewResultAggregator creates a new aggregator.
+// Records start time for calculating total duration.
 func NewResultAggregator() *ResultAggregator {
 	return &ResultAggregator{
+		// Pre-allocate slice assuming some results
+		// make([]JobResult, 0) = empty slice, capacity unspecified
 		results:   make([]JobResult, 0),
-		startTime: time.Now(),
+		startTime: time.Now(), // Record when we started
 	}
 }
 
-// Add adds a result to the collection.
+// ============================================================================
+// ADD RESULT
+// ============================================================================
+
+// Add includes a result in the aggregation.
+// Called by main goroutine after receiving from results channel.
 func (ra *ResultAggregator) Add(r JobResult) {
+	// append returns new slice (if capacity exceeded)
+	// We reassign back to ra.results
 	ra.results = append(ra.results, r)
 }
 
-// Display prints the final summary.
+// ============================================================================
+// DISPLAY SUMMARY
+// ============================================================================
+
+// Display prints a formatted summary of all results.
+// Shows errors, status codes, and totals.
 func (ra *ResultAggregator) Display() {
+	// Calculate total duration
 	duration := time.Since(ra.startTime)
 
 	fmt.Println("\n--- Results ---")
 
-	// Group by status
-	byStatus := make(map[int]int)
-	var errors []JobResult
+	// =========================================================================
+	// COLLECT ERRORS
+	// =========================================================================
+	// Group results by type: errors vs successes
+	// Use map to count status codes
+	byStatus := make(map[int]int) // status code -> count
+	var errors []JobResult       // collect all errors
 
+	// Single pass through results
 	for _, r := range ra.results {
 		if r.Err != nil {
+			// This result has an error
 			errors = append(errors, r)
 		} else {
+			// Success - count by status code
 			byStatus[r.Status]++
 		}
 	}
 
-	// Print errors first
+	// =========================================================================
+	// PRINT ERRORS
+	// =========================================================================
+	// Show all errors first (most important for debugging)
 	if len(errors) > 0 {
 		fmt.Println("\nErrors:")
 		for _, e := range errors {
@@ -586,7 +881,10 @@ func (ra *ResultAggregator) Display() {
 		}
 	}
 
-	// Print status summary
+	// =========================================================================
+	// PRINT STATUS CODES
+	// =========================================================================
+	// Show breakdown by HTTP status
 	if len(byStatus) > 0 {
 		fmt.Println("\nStatus codes:")
 		for status, count := range byStatus {
@@ -594,8 +892,13 @@ func (ra *ResultAggregator) Display() {
 		}
 	}
 
-	// Print summary
+	// =========================================================================
+	// PRINT SUMMARY
+	// =========================================================================
+	// Calculate totals
 	success := len(ra.results) - len(errors)
+	
+	// Print final summary
 	fmt.Printf("\nTotal: %d, Success: %d, Failed: %d (%.1fs)\n",
 		len(ra.results),
 		success,
@@ -747,25 +1050,191 @@ func readURLs(filename string) ([]string, error) {
 
 ---
 
-## 9. Step 6 — Tests
+## 5. Step 2 — Worker Pool Implementation
 
-### `pool_test.go`
+### What / Why / How
+
+**What:** Create the pool that manages workers and distributes jobs.
+
+**Why:**
+- Pool manages the bounded concurrency (N workers, not unlimited)
+- Pool creates channels and passes them to workers
+- Pool handles starting/stopping workers
+
+**How:**
+1. Create buffered job channel
+2. Create result channel
+3. Create workers with channels
+4. Workers pull from job channel concurrently
+
+### Intuition: Why Bounded?
+
+```
+UNBOUNDED (BAD):
+  for _, url := range urls {
+      go fetch(url)  // 10,000 URLs = 10,000 goroutines!
+  }
+  
+  Problem: 
+  - Each goroutine = ~2KB stack
+  - 10,000 URLs = 20MB memory
+  - OS can't handle 10,000 concurrent network connections
+  - Scheduler thrashing: too many runnable goroutines
+
+BOUNDED (GOOD):
+  jobs := make(chan *Job, 100)  // Buffer = 100 jobs max
+  
+  for i := 0; i < 10; i++ {   // Only 10 workers
+      go worker(i, jobs)
+  }
+  
+  Benefits:
+  - 10 workers = ~20KB memory
+  - Job queue in channel = no heap allocation per job
+  - Backpressure: if jobs channel full, main blocks
+  - System stays responsive under load
+```
+
+### `pool.go`
 
 ```go
 package main
 
 import (
-	"context"
-	"testing"
-	"time"
+	"context"       // Context for cancellation
+	"fmt"          // Logging
+	"sync"         // WaitGroup, Mutex
 )
 
-func TestPoolCreation(t *testing.T) {
-	cfg := PoolConfig{
-		NumWorkers: 3,
-		JobTimeout: 5 * time.Second,
-		QueueSize:  10,
+// ============================================================================
+// POOL STRUCT
+// ============================================================================
+
+// Pool manages a set of workers and job distribution.
+// Holds all the state needed to run the worker pool.
+//
+// Why put everything in a struct?
+// - Groups related configuration
+// - Single parameter to pass to functions
+// - Can add methods for pool control
+type Pool struct {
+	Workers  int           // Number of workers to spawn
+	Jobs     chan *Job    // Channel for distributing work
+	Results  chan JobResult // Channel for collecting results
+	Context  context.Context // Cancellation signal
+	Cancel   context.CancelFunc // Function to call to cancel
+	Group    *sync.WaitGroup // Track worker completion
+}
+
+// ============================================================================
+// POOL CONSTRUCTOR  
+// ============================================================================
+
+// NewPool creates a new Pool with specified number of workers.
+// Sets up channels and context for the pool.
+//
+// How it works:
+// 1. Create job channel with buffer (backpressure)
+// 2. Create result channel
+// 3. Create context for cancellation
+// 4. Create WaitGroup for tracking
+//
+// Channel buffer size:
+// - Too small: workers idle, can't keep up
+// - Too much: wasted memory
+// - Rule of thumb: workers * 10 is usually good
+func NewPool(workers int, jobBuffer int) *Pool {
+	// Create context that can be cancelled
+	// context.Background() is the root, WithCancel adds cancellation
+	ctx, cancel := context.WithCancel(context.Background())
+	
+	return &Pool{
+		Workers:  workers,                    // N workers
+		Jobs:     make(chan *Job, jobBuffer), // Buffered job queue
+		Results:  make(chan JobResult, jobBuffer), // Buffered results
+		Context:  ctx,                       // Cancellation
+		Cancel:   cancel,                     // Call to stop
+		Group:    &sync.WaitGroup{},          // Track workers
 	}
+}
+
+// ============================================================================
+// START WORKERS
+// ============================================================================
+
+// Start spawns all workers and begins processing.
+// Each worker gets its own goroutine.
+//
+// How it works:
+// 1. Loop N times (for N workers)
+// 2. Create worker with channels and context
+// 3. Call Start() to begin worker goroutine
+// 4. Worker registers with WaitGroup internally
+func (p *Pool) Start() {
+	// Create N workers
+	for i := 0; i < p.Workers; i++ {
+		// Each worker receives:
+		// - Unique ID (i)
+		// - Jobs channel (p.Jobs) - shared by all workers
+		// - Results channel (p.Results) - shared by all workers
+		// - Context (p.Context) - shared by all workers
+		// - WaitGroup (p.Group) - shared by all workers
+		worker := NewWorker(i, p.Jobs, p.Results, p.Context, p.Group)
+		
+		// Start launches the worker goroutine
+		// Returns immediately, worker runs in background
+		worker.Start()
+	}
+}
+
+// ============================================================================
+// JOB SUBMISSION
+// ============================================================================
+
+// Submit adds a job to the pool's job queue.
+// Blocks if job channel is full (backpressure).
+//
+// Why block?
+// - If we didn't block, we'd lose jobs
+// - Caller waits until there's room
+// - This is natural backpressure!
+func (p *Pool) Submit(job *Job) {
+	// Sending to channel blocks if channel is full
+	// This backpressure prevents overwhelming the system
+	p.Jobs <- job
+}
+
+// ============================================================================
+// SHUTDOWN
+// ============================================================================
+
+// Shutdown signals all workers to stop and waits for them to finish.
+//
+// How it works:
+// 1. Cancel context (workers see ctx.Done())
+// 2. Close job channel (workers see <-jobs, ok=false)
+// 3. Wait for all workers to call wg.Done()
+// 4. Close result channel (no more results coming)
+func (p *Pool) Shutdown() {
+	// Step 1: Cancel context
+	// This triggers <-ctx.Done() in every worker
+	fmt.Println("Shutting down workers...")
+	p.Cancel()
+	
+	// Step 2: Close job channel
+	// Workers receive zero-value from closed channel
+	// This signals "no more jobs"
+	close(p.Jobs)
+	
+	// Step 3: Wait for all workers to finish
+	// wg.Wait() blocks until Add(1) count reaches 0
+	// Each worker calls Done() when it exits
+	p.Group.Wait()
+	
+	// Step 4: Close result channel
+	// After all workers done, no more results
+	close(p.Results)
+}
 
 	pool := NewPool(cfg)
 

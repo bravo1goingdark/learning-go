@@ -6,6 +6,8 @@
 
 ## Project Overview
 
+### What We're Building
+
 Build a user management HTTP service with:
 
 - **Repository Pattern** - In-memory data storage with interface
@@ -13,6 +15,53 @@ Build a user management HTTP service with:
 - **Dependency Injection** - Clean component wiring
 - **Pub-Sub** - Event-driven notifications
 - **HTTP Handlers** - RESTful API endpoints
+
+### Why This Project?
+
+| Why This Matters | Explanation |
+|-----------------|-------------|
+| **Production-ready** | Every real Go service uses layered architecture |
+| **Pattern mastery** | Repository, Service, DI, Events - all in one project |
+| **Extensibility** | Easy to swap in-memory for real database later |
+| **Testability** | Each layer can be tested independently |
+
+### How It Works (Intuition)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        HTTP Layer                           │
+│         POST /users    GET /users/{id}   DELETE /users/{id}│
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼ (depends on interface)
+┌─────────────────────────────────────────────────────────────┐
+│                      Service Layer                          │
+│          CreateUser    GetUser    UpdateUser   DeleteUser   │
+│              │            │            │            │       │
+│              ▼            ▼            ▼            ▼       │
+│          Validation   Validation   Validation   Validation │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼ (depends on interface)
+┌─────────────────────────────────────────────────────────────┐
+│                    Repository Layer                         │
+│              InMemoryUserRepository (interface)             │
+│                    │                                        │
+│                    ▼                                        │
+│              In-memory map                                  │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼ (fire-and-forget events)
+┌─────────────────────────────────────────────────────────────┐
+│                       Event Bus                            │
+│               (UserCreated, UserUpdated, UserDeleted)      │
+│                    │                                        │
+│                    ▼                                        │
+│              Event handlers (logging, etc.)                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key insight:** Each layer **only knows about the layer below it**. The HTTP layer doesn't know about the map - it only knows about the Service interface. This makes testing and swapping implementations easy.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -43,26 +92,39 @@ Build a user management HTTP service with:
 
 ## Step 1: Project Structure
 
+### What / Why / How
+
+**What:** The directory layout follows Go's project conventions.
+
+**Why:**
+- `cmd/` — executables (main.go)
+- `internal/` — private packages (can't be imported by external modules)
+- Layered folders: model → repository → service → handler
+
+**How:**
+- Each layer in its own folder
+- Dependencies point inward (handler → service → repository → model)
+
 ```
 06-software-patterns-project/
-├── cmd/
+├── cmd/                          # Executable entry points
 │   └── server/
-│       └── main.go
-├── internal/
-│   ├── model/
-│   │   └── user.go
-│   ├── repository/
-│   │   └── user.go
-│   ├── service/
-│   │   └── user.go
-│   ├── handler/
-│   │   └── user.go
-│   ├── events/
-│   │   ├── bus.go
+│       └── main.go               # Wiring everything together
+├── internal/                    # Private packages (internal/)
+│   ├── model/                    # Domain models (innermost)
+│   │   └── user.go              # User struct, constants
+│   ├── repository/               # Data access layer
+│   │   └── user.go              # Repository interface + impl
+│   ├── service/                  # Business logic layer
+│   │   └── user.go              # Service interface + impl
+│   ├── handler/                  # HTTP handlers
+│   │   └── user.go              # HTTP endpoint handlers
+│   ├── events/                   # Event bus (pub-sub)
+│   │   ├── bus.go               # Event system
 │   │   └── handlers/
-│   │       └── logger.go
-│   └── middleware/
-│       └── middleware.go
+│   │       └── logger.go       # Event handlers
+│   └── middleware/               # HTTP middleware
+│       └── middleware.go        # Logging, auth, etc.
 ├── go.mod
 └── README.md
 ```
@@ -71,24 +133,61 @@ Build a user management HTTP service with:
 
 ## Step 2: Model
 
+### What / Why / How
+
+**What:** Define the User struct and related constants.
+
+**Why:**
+- Model is the **innermost layer** — no dependencies on outer layers
+- Contains pure data, no behavior
+- Constants for status values avoid magic strings
+
+**How:**
+- Struct with JSON tags for HTTP serialization
+- Constants for valid status values
+
+### `internal/model/user.go`
+
 ```go
-// internal/model/user.go
 package model
 
 import "time"
 
+// ============================================================================
+// USER STRUCT
+// ============================================================================
+
+// User represents a user in our system.
+// We use JSON struct tags for automatic marshaling/unmarshaling.
+//
+// Why struct tags?
+// - Go doesn't serialize field names by default
+// - JSON tags tell the encoder what JSON keys to use
+// - Without tags: {"Name": "Alice"} - with tags: {"name": "alice"}
+//
+// Topic 5 (Structs): Struct with fields and tags
 type User struct {
-    ID        string    `json:"id"`
-    Name      string    `json:"name"`
-    Email     string    `json:"email"`
-    Status    string    `json:"status"`
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+	ID        string    `json:"id"`        // Unique identifier
+	Name      string    `json:"name"`      // User's display name
+	Email     string    `json:"email"`     // User's email (unique)
+	Status    string    `json:"status"`    // User status (active/inactive)
+	CreatedAt time.Time `json:"created_at"` // When created
+	UpdatedAt time.Time `json:"updated_at"` // Last update time
 }
 
+// ============================================================================
+// STATUS CONSTANTS
+// ============================================================================
+
+// Constants avoid "magic strings" throughout the codebase.
+//
+// Why constants?
+// - Type safety: StatusActive can't be misspelled
+// - IDE autocomplete: Type StatusActive. <tab> shows options
+// - Single source of truth: change once, everywhere updates
 const (
-    StatusActive   = "active"
-    StatusInactive = "inactive"
+	StatusActive   = "active"   // User can log in, use system
+	StatusInactive = "inactive" // User cannot log in
 )
 ```
 
@@ -96,46 +195,199 @@ const (
 
 ## Step 3: Repository (Interface + Implementation)
 
+### What / Why / How
+
+**What:** Define repository interface and in-memory implementation.
+
+**Why:**
+- **Interface** — defines contract, allows swapping implementations
+- **In-memory impl** — simple, fast, good for development/testing
+- **Later** — swap to PostgreSQL/MySQL without changing service layer
+
+**How:**
+- Interface defines CRUD methods
+- Implementation uses `map[string]*model.User` for storage
+- RWMutex for thread-safe access
+
+### Intuition: Repository Pattern
+
+```
+WITHOUT REPOSITORY (PROBLEM):
+  func GetUser(id string) *User {
+      //直接访问数据库
+      // If DB changes → change EVERY call site!
+  }
+
+WITH REPOSITORY (SOLUTION):
+  func GetUser(id string) *User {
+      repo.GetByID(id)  // Don't care WHERE data comes from
+  }
+  
+  // Later: repo := NewPostgreSQLRepo()
+  // Or:    repo := NewMockRepo()  // For testing!
+```
+
+### `internal/repository/user.go` — Interface
+
 ```go
-// internal/repository/user.go
 package repository
 
-import "learning-go/internal/model"
+import "learning-go/internal model"
 
+// ============================================================================
+// REPOSITORY INTERFACE
+// ============================================================================
+
+// UserRepository defines the contract for user data access.
+// ANY implementation (database, cache, mock) satisfies this interface.
+//
+// Why an interface?
+// - Service layer depends on ABSTRACTION, not CONCRETION
+// - Can swap implementations without changing service code
+// - Can use mock in tests
+//
+// Topic 7 (Interfaces): Define behavior, not implementation
 type UserRepository interface {
-    Create(user *model.User) error
-    GetByID(id string) (*model.User, error)
-    Update(user *model.User) error
-    Delete(id string) error
-    List() []*model.User
+	Create(user *model.User) error      // Add new user
+	GetByID(id string) (*model.User, error) // Fetch by ID
+	Update(user *model.User) error      // Update existing
+	Delete(id string) error             // Remove by ID
+	List() []*model.User                // Get all users
 }
 
+// Re-use model's not-found error
 var (
-    ErrNotFound = model.ErrNotFound
+	ErrNotFound = model.ErrNotFound
 )
 ```
 
+### `internal/repository/memory.go` — Implementation
+
 ```go
-// internal/repository/memory.go
 package repository
 
 import (
-    "errors"
-    "sync"
+	"errors" // errors.Is for error checking
+	"sync"  // RWMutex for thread safety
 
-    "learning-go/internal/model"
+	"learning-go/internal/model"
 )
 
+// ============================================================================
+// IN-MEMORY REPOSITORY
+// ============================================================================
+
+// userRepository stores users in a map.
+// In-memory = fast, but lost on restart.
+//
+// Why a map?
+// - O(1) lookup by ID
+// - Simple to implement
+// - Good for development/testing
+//
+// Thread Safety:
+// - RWMutex allows MANY readers OR ONE writer
+// - Multiple goroutines can read simultaneously
+// - Write operations are exclusive
 type userRepository struct {
-    mu   sync.RWMutex
-    data map[string]*model.User
+	mu   sync.RWMutex           // Read-write mutex
+	data map[string]*model.User // ID -> User map
 }
 
+// NewInMemory creates a new in-memory repository.
+// Returns interface (not concrete type) — caller depends on abstraction.
 func NewInMemory() UserRepository {
-    return &userRepository{
-        data: make(map[string]*model.User),
-    }
+	return &userRepository{
+		// Map must be initialized before use!
+		// nil map read = "", nil map write = panic
+		data: make(map[string]*model.User),
+	}
 }
+
+// ============================================================================
+// CRUD OPERATIONS
+// ============================================================================
+
+// Create adds a new user to the repository.
+func (r *userRepository) Create(user *model.User) error {
+	// Write lock: only one goroutine can write at a time
+	r.mu.Lock()
+	defer r.mu.Unlock() // Unlock when function returns
+
+	// Check if user already exists
+	if _, exists := r.data[user.ID]; exists {
+		return errors.New("user already exists")
+	}
+
+	// Store user in map
+	r.data[user.ID] = user
+	return nil
+}
+
+// GetByID retrieves a user by their ID.
+func (r *userRepository) GetByID(id string) (*model.User, error) {
+	// Read lock: many goroutines can read simultaneously
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	// Map lookup: returns zero-value if not found
+	user, exists := r.data[id]
+	if !exists {
+		return nil, ErrNotFound // Return sentinel error
+	}
+
+	// Return copy to prevent external mutation
+	// (*user) dereferences to get the User struct
+	return user, nil
+}
+
+// Update modifies an existing user.
+func (r *userRepository) Update(user *model.User) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	// Check if user exists
+	if _, exists := r.data[user.ID]; !exists {
+		return ErrNotFound
+	}
+
+	// Update in place
+	r.data[user.ID] = user
+	return nil
+}
+
+// Delete removes a user by ID.
+func (r *userRepository) Delete(id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	// Check existence
+	if _, exists := r.data[id]; !exists {
+		return ErrNotFound
+	}
+
+	// Delete from map
+	delete(r.data, id)
+	return nil
+}
+
+// List returns all users.
+func (r *userRepository) List() []*model.User {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	// Create new slice to return
+	// Pre-allocate with exact capacity
+	users := make([]*model.User, 0, len(r.data))
+	
+	// Range over map - order is random (that's OK for this use case)
+	for _, user := range r.data {
+		users = append(users, user)
+	}
+	
+	return users
+}
+```
 
 func (r *userRepository) Create(user *model.User) error {
     r.mu.Lock()
