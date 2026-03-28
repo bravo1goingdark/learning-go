@@ -1056,7 +1056,7 @@ function
 ### Exercise 3: Type Conversions ⭐⭐
 **Difficulty:** Beginner | **Time:** ~10 min
 
-Write a program that: (1) declares an `int` value of `65`, (2) converts it to `float64` and prints it, (3) converts the `int` to a `string` using `strconv.Itoa` and prints it.
+Write a program that: (1) declares an `int` value of `65`, (2) converts it to `float64` and prints the **type and value**, (3) converts the `int` to a `string` using `strconv.Itoa` and prints the type and value.
 
 <details>
 <summary>Solution</summary>
@@ -1073,11 +1073,17 @@ func main() {
 	i := 65
 
 	f := float64(i)
-	fmt.Println("float64:", f)
+	fmt.Printf("type: %T, value: %v\n", f, f)
 
 	s := strconv.Itoa(i)
-	fmt.Println("string:", s)
+	fmt.Printf("type: %T, value: %v\n", s, s)
 }
+```
+
+Output:
+```
+type: float64, value: 65
+type: string, value: 65
 ```
 
 </details>
