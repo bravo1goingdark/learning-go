@@ -9,6 +9,23 @@
 
 ---
 
+## Table of Contents
+
+1. [Why Structure Matters](#why-structure-matters) `[PRODUCTION]`
+2. [The `internal` vs `pkg` Rule](#the-internal-vs-pkg-rule) `[PRODUCTION]`
+3. [Standard Go Layout](#standard-go-layout) `[PRODUCTION]`
+4. [Layered Structure (Most Common)](#layered-structure-most-common) `[PRODUCTION]`
+5. [Feature-Based Structure (Alternative)](#feature-based-structure-alternative) `[PRODUCTION]`
+6. [Naming Conventions](#naming-conventions) `[PRODUCTION]`
+7. [Import Organization](#import-organization) `[PRODUCTION]`
+8. [Dependency Injection in main.go](#dependency-injection-in-maingo) `[PRODUCTION]`
+9. [Configuration Management](#configuration-management) `[PRODUCTION]`
+10. [Makefile for Development](#makefile-for-development) `[PRODUCTION]`
+11. [Quick Reference](#quick-reference) `[PRODUCTION]`
+12. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Project Structure Overview](../assets/project_struct.png)
 
 ---

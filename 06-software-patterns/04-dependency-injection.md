@@ -4,6 +4,20 @@
 
 ---
 
+## Table of Contents
+
+1. [What is Dependency Injection?](#what-is-dependency-injection) `[PRODUCTION]`
+2. [Why DI Matters](#why-di-matters) `[PRODUCTION]`
+3. [Constructor Injection (Recommended)](#constructor-injection-recommended) `[PRODUCTION]`
+4. [Functional Options Pattern](#functional-options-pattern) `[PRODUCTION]`
+5. [DI Container (Large Applications)](#di-container-large-applications) `[PRODUCTION]`
+6. [Testing with DI](#testing-with-di) `[PRODUCTION]`
+7. [Dependency Graph](#dependency-graph) `[PRODUCTION]`
+8. [Quick Reference](#quick-reference) `[PRODUCTION]`
+9. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Dependency Injection Overview](../assets/DI.png)
 
 ---

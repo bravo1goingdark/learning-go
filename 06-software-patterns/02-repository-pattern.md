@@ -4,6 +4,24 @@
 
 ---
 
+## Table of Contents
+
+1. [What is a Repository?](#what-is-a-repository) `[PRODUCTION]`
+2. [The Problem Without Repository](#the-problem-without-repository) `[PRODUCTION]`
+3. [The Solution: Interface + Implementation](#the-solution-interface--implementation) `[PRODUCTION]`
+4. [Defining the Interface](#defining-the-interface) `[PRODUCTION]`
+5. [In-Memory Implementation](#in-memory-implementation) `[PRODUCTION]`
+6. [PostgreSQL Implementation](#postgresql-implementation) `[PRODUCTION]`
+7. [Sentinel Errors](#sentinel-errors) `[PRODUCTION]`
+8. [Testing with Mocks](#testing-with-mocks) `[PRODUCTION]`
+9. [Transaction Support](#transaction-support) `[PRODUCTION]`
+10. [Pagination Support](#pagination-support) `[PRODUCTION]`
+11. [Quick Reference](#quick-reference) `[PRODUCTION]`
+12. [Benefits Summary](#benefits-summary) `[PRODUCTION]`
+13. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Repository Pattern Overview](../assets/repo_patt.png)
 
 ---

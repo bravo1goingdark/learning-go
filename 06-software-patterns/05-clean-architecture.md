@@ -4,6 +4,19 @@
 
 ---
 
+## Table of Contents
+
+1. [The Core Principle](#the-core-principle) `[PRODUCTION]`
+2. [The Four Layers](#the-four-layers) `[PRODUCTION]`
+3. [Wiring (main.go)](#wiring-maingo) `[PRODUCTION]`
+4. [Dependency Rule](#dependency-rule) `[PRODUCTION]`
+5. [Ports and Adapters (Hexagonal Architecture)](#ports-and-adapters-hexagonal-architecture) `[PRODUCTION]`
+6. [When to Use Clean Architecture](#when-to-use-clean-architecture) `[PRODUCTION]`
+7. [Quick Reference](#quick-reference) `[PRODUCTION]`
+8. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Clean Architecture Overview](../assets/clean_archit.png)
 
 ---

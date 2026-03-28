@@ -4,6 +4,23 @@
 
 ---
 
+## Table of Contents
+
+1. [What is Backpressure?](#what-is-backpressure) `[PRODUCTION]`
+2. [Backpressure Strategies Overview](#backpressure-strategies-overview) `[PRODUCTION]`
+3. [1. Bounded Queue (Most Common)](#1-bounded-queue-most-common) `[PRODUCTION]`
+4. [2. Drop Newest (Lossy)](#2-drop-newest-lossy) `[PRODUCTION]`
+5. [3. Drop Oldest (Ring Buffer)](#3-drop-oldest-ring-buffer) `[PRODUCTION]`
+6. [4. Rate Limiting (Token Bucket)](#4-rate-limiting-token-bucket) `[PRODUCTION]`
+7. [5. Load Shedding](#5-load-shedding) `[PRODUCTION]`
+8. [6. Context-Aware Backpressure](#6-context-aware-backpressure) `[PRODUCTION]`
+9. [Full HTTP Server with Backpressure](#full-http-server-with-backpressure) `[PRODUCTION]`
+10. [Choosing a Strategy](#choosing-a-strategy) `[PRODUCTION]`
+11. [Quick Reference](#quick-reference) `[PRODUCTION]`
+12. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Backpressure Strategies Overview](../assets/backpressure.png)
 
 ---

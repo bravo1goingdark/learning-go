@@ -4,6 +4,22 @@
 
 ---
 
+## Table of Contents
+
+1. [The Problem: Tight Coupling](#the-problem-tight-coupling) `[PRODUCTION]`
+2. [The Solution: Pub-Sub (Event Bus)](#the-solution-pub-sub-event-bus) `[PRODUCTION]`
+3. [Event Definitions](#event-definitions) `[PRODUCTION]`
+4. [Event Bus Implementation](#event-bus-implementation) `[PRODUCTION]`
+5. [Event Handlers (Subscribers)](#event-handlers-subscribers) `[PRODUCTION]`
+6. [Using Events in Service](#using-events-in-service) `[PRODUCTION]`
+7. [Wiring in main.go](#wiring-in-maingo) `[PRODUCTION]`
+8. [Synchronous vs Asynchronous Publishing](#synchronous-vs-asynchronous-publishing) `[PRODUCTION]`
+9. [Benefits Summary](#benefits-summary) `[PRODUCTION]`
+10. [Quick Reference](#quick-reference) `[PRODUCTION]`
+11. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Pub-Sub Design Overview](../assets/pub_sub.png)
 
 ---

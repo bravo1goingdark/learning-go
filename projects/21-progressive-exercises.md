@@ -4,6 +4,19 @@
 
 ---
 
+## Table of Contents
+
+1. [How to Use These Exercises](#how-to-use-these-exercises) `[CORE]`
+2. [Exercise Set 1: Basics (After Phase 1)](#exercise-set-1-basics-after-phase-1) `[CORE]`
+3. [Exercise Set 2: Structs & Methods (After Phase 2)](#exercise-set-2-structs--methods-after-phase-2) `[CORE]`
+4. [Exercise Set 3: Error Handling (After Phase 3)](#exercise-set-3-error-handling-after-phase-3) `[CORE]`
+5. [Exercise Set 4: Concurrency (After Phase 5)](#exercise-set-4-concurrency-after-phase-5) `[CORE]`
+6. [Exercise Set 5: JSON & HTTP (After stdlib-essentials)](#exercise-set-5-json--http-after-stdlib-essentials) `[CORE]`
+7. [Progress Checklist](#progress-checklist) `[CORE]`
+8. [Tips](#tips) `[CORE]`
+
+---
+
 ## How to Use These Exercises
 
 1. Copy the code into a `.go` file

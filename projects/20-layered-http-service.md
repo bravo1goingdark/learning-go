@@ -4,6 +4,24 @@
 
 ---
 
+## Table of Contents
+
+1. [Project Overview](#project-overview) `[CORE]`
+2. [Step 1: Project Structure](#step-1-project-structure) `[PRODUCTION]`
+3. [Step 2: Model](#step-2-model) `[CORE]`
+4. [Step 3: Repository (Interface + Implementation)](#step-3-repository-interface--implementation) `[PRODUCTION]`
+5. [Step 4: Events](#step-4-events) `[PRODUCTION]`
+6. [Step 5: Service](#step-5-service) `[PRODUCTION]`
+7. [Step 6: Handler](#step-6-handler) `[PRODUCTION]`
+8. [Step 7: Middleware](#step-7-middleware) `[PRODUCTION]`
+9. [Step 8: Main (Wiring)](#step-8-main-wiring) `[PRODUCTION]`
+10. [Step 9: Build and Run](#step-9-build-and-run) `[CORE]`
+11. [Expected Output](#expected-output) `[CORE]`
+12. [Quick Reference](#quick-reference) `[PRODUCTION]`
+13. [Extensions](#extensions) `[PRODUCTION]`
+
+---
+
 ## Project Overview
 
 ### What We're Building

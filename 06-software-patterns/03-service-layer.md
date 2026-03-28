@@ -4,6 +4,19 @@
 
 ---
 
+## Table of Contents
+
+1. [What Is a Service Layer?](#what-is-a-service-layer) `[PRODUCTION]`
+2. [Service Responsibilities (Detailed)](#service-responsibilities-detailed) `[PRODUCTION]`
+3. [Full Service Example](#full-service-example) `[PRODUCTION]`
+4. [Handler → Service Interaction](#handler--service-interaction) `[PRODUCTION]`
+5. [When Logic Belongs in Service vs Handler](#when-logic-belongs-in-service-vs-handler) `[PRODUCTION]`
+6. [Service Dependencies](#service-dependencies) `[PRODUCTION]`
+7. [Quick Reference](#quick-reference) `[PRODUCTION]`
+8. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Service Layer Overview](../assets/service_layer.png)
 
 ---

@@ -4,6 +4,22 @@
 
 ---
 
+## Table of Contents
+
+1. [The Problem](#the-problem) `[PRODUCTION]`
+2. [Retry Pattern](#retry-pattern) `[PRODUCTION]`
+3. [Full Retry Implementation](#full-retry-implementation) `[PRODUCTION]`
+4. [Circuit Breaker Pattern](#circuit-breaker-pattern) `[PRODUCTION]`
+5. [Circuit Breaker Implementation](#circuit-breaker-implementation) `[PRODUCTION]`
+6. [Retry + Circuit Breaker Combined](#retry--circuit-breaker-combined) `[PRODUCTION]`
+7. [When to Use Which](#when-to-use-which) `[PRODUCTION]`
+8. [What to Retry (and What NOT to)](#what-to-retry-and-what-not-to) `[PRODUCTION]`
+9. [Idempotency and Retries](#idempotency-and-retries) `[PRODUCTION]`
+10. [Quick Reference](#quick-reference) `[PRODUCTION]`
+11. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ![Retry + Circuit Breaker Overview](../assets/retry_circuit.png)
 
 ---
