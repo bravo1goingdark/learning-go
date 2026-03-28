@@ -6,13 +6,13 @@
 
 ## Table of Contents
 
-1. [Setup & Connection](#1-setup--connection-core)
-2. [Basic Queries](#2-basic-queries-core)
-3. [CRUD Operations](#3-crud-operations-core)
-4. [Prepared Statements](#4-prepared-statements-core)
-5. [Transactions](#5-transactions-core)
-6. [Error Handling](#6-error-handling-core)
-7. [Common Pitfalls](#7-common-pitfalls-core)
+1. [Setup & Connection](#1-setup--connection) `[CORE]`
+2. [Basic Queries](#2-basic-queries) `[CORE]`
+3. [CRUD Operations](#3-crud-operations) `[CORE]`
+4. [Prepared Statements](#4-prepared-statements) `[CORE]`
+5. [Transactions](#5-transactions) `[CORE]`
+6. [Error Handling](#6-error-handling) `[CORE]`
+7. [Common Pitfalls](#7-common-pitfalls) `[CORE]`
 
 ---
 

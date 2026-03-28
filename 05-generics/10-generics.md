@@ -6,23 +6,23 @@
 
 ## Table of Contents
 
-1. [Why Generics?](#1-why-generics-core)
-2. [Type Parameters Basics](#2-type-parameters-basics-core)
-3. [Type Constraints](#3-type-constraints-core)
-4. [Predeclared Constraints](#4-predeclared-constraints-core)
-5. [Custom Constraints with Interfaces](#5-custom-constraints-with-interfaces-core)
-6. [Type Sets and the ~ Operator](#6-type-sets-and-the--operator-core)
-7. [Generic Structs](#7-generic-structs-core)
-8. [Generic Methods](#8-generic-methods-production)
-9. [Generic Interfaces](#9-generic-interfaces-production)
-10. [Comparable Constraint Deep Dive](#10-comparable-constraint-deep-dive-core)
-11. [Type Inference](#11-type-inference-core)
-12. [Common Production Patterns](#12-common-production-patterns-production)
-13. [Generics vs Interfaces Performance](#13-generics-vs-interfaces-performance-internals)
-14. [Internals: How Go Implements Generics](#14-internals-how-go-implements-generics-internals)
-15. [Testing Generic Code](#15-testing-generic-code-production)
-16. [Common Pitfalls](#16-common-pitfalls-core)
-17. [Production Guidelines](#17-production-guidelines-production)
+1. [Why Generics?](#1-why-generics) `[CORE]`
+2. [Type Parameters Basics](#2-type-parameters-basics) `[CORE]`
+3. [Type Constraints](#3-type-constraints) `[CORE]`
+4. [Predeclared Constraints](#4-predeclared-constraints) `[CORE]`
+5. [Custom Constraints with Interfaces](#5-custom-constraints-with-interfaces) `[CORE]`
+6. [Type Sets and the ~ Operator](#6-type-sets-and-the--operator) `[CORE]`
+7. [Generic Structs](#7-generic-structs) `[CORE]`
+8. [Generic Methods](#8-generic-methods) `[PRODUCTION]`
+9. [Generic Interfaces](#9-generic-interfaces) `[PRODUCTION]`
+10. [Comparable Constraint Deep Dive](#10-comparable-constraint-deep-dive) `[CORE]`
+11. [Type Inference](#11-type-inference) `[CORE]`
+12. [Common Production Patterns](#12-common-production-patterns) `[PRODUCTION]`
+13. [Generics vs Interfaces Performance](#13-generics-vs-interfaces-performance) `[INTERNALS]`
+14. [Internals: How Go Implements Generics](#14-internals-how-go-implements-generics) `[INTERNALS]`
+15. [Testing Generic Code](#15-testing-generic-code) `[PRODUCTION]`
+16. [Common Pitfalls](#16-common-pitfalls) `[CORE]`
+17. [Production Guidelines](#17-production-guidelines) `[PRODUCTION]`
 
 ---
 

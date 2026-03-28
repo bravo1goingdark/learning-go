@@ -9,15 +9,15 @@
 
 ## Table of Contents
 
-1. [What Is a Worker Pool](#1-what-is-a-worker-pool-core)
-2. [Basic Worker Pool](#2-basic-worker-pool-core)
-3. [Worker Pool with Results](#3-worker-pool-with-results-core)
-4. [Context-Aware Worker Pool](#4-context-aware-worker-pool-core)
-5. [Dynamic Worker Pool](#5-dynamic-worker-pool-production)
-6. [Generic Worker Pool](#6-generic-worker-pool-production)
-7. [Rate-Limited Worker Pool](#7-rate-limited-worker-pool-production)
-8. [Production Patterns](#8-production-patterns-production)
-9. [Common Pitfalls](#9-common-pitfalls-core)
+1. [What Is a Worker Pool](#1-what-is-a-worker-pool) `[CORE]`
+2. [Basic Worker Pool](#2-basic-worker-pool) `[CORE]`
+3. [Worker Pool with Results](#3-worker-pool-with-results) `[CORE]`
+4. [Context-Aware Worker Pool](#4-context-aware-worker-pool) `[CORE]`
+5. [Dynamic Worker Pool](#5-dynamic-worker-pool) `[PRODUCTION]`
+6. [Generic Worker Pool](#6-generic-worker-pool) `[PRODUCTION]`
+7. [Rate-Limited Worker Pool](#7-rate-limited-worker-pool) `[PRODUCTION]`
+8. [Production Patterns](#8-production-patterns) `[PRODUCTION]`
+9. [Common Pitfalls](#9-common-pitfalls) `[CORE]`
 
 ---
 

@@ -41,57 +41,57 @@ Work through these folders in order. Each one builds on the previous.
 ### [01-foundations/](01-foundations/) — Start Here
 > The basics you must know before touching anything else.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 01 | [Go Toolchain](01-foundations/01-go-toolchain.md) | go mod, go build, go test, go vet, profiling |
-| 02 | [Variables & Zero Values](01-foundations/02-variables-zero-values.md) | Declaration forms, basic types, scoping rules |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 01 | [Go Toolchain](01-foundations/01-go-toolchain.md) | go mod, go build, go test, go vet, profiling | `[CORE]` `[PRODUCTION]` |
+| 02 | [Variables & Zero Values](01-foundations/02-variables-zero-values.md) | Declaration forms, basic types, scoping rules | `[CORE]` `[PRODUCTION]` |
 
 ### [02-data-structures/](02-data-structures/) — Build On Foundations
 > Go's built-in data structures. Know them inside-out.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 03 | [Arrays vs Slices](02-data-structures/03-arrays-vs-slices.md) | Arrays, slices, backing arrays, append mechanics |
-| 04 | [Maps](02-data-structures/04-maps.md) | Map internals, concurrency, iteration gotchas |
-| 05 | [Structs & Methods](02-data-structures/05-structs-and-methods.md) | Embedding, methods, composition over inheritance |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 03 | [Arrays vs Slices](02-data-structures/03-arrays-vs-slices.md) | Arrays, slices, backing arrays, append mechanics | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
+| 04 | [Maps](02-data-structures/04-maps.md) | Map internals, concurrency, iteration gotchas | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
+| 05 | [Structs & Methods](02-data-structures/05-structs-and-methods.md) | Embedding, methods, composition over inheritance | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
 
 ### [03-type-system/](03-type-system/) — Understand Go's Type Model
 > Pointers and interfaces — the key to idiomatic Go.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 06 | [Pointers](03-type-system/06-pointers.md) | Pointer basics, escape analysis, nil safety |
-| 07 | [Interfaces](03-type-system/07-interfaces.md) | Implicit satisfaction, type assertions, empty interface |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 06 | [Pointers](03-type-system/06-pointers.md) | Pointer basics, escape analysis, nil safety | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
+| 07 | [Interfaces](03-type-system/07-interfaces.md) | Implicit satisfaction, type assertions, empty interface | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
 
 ### [04-error-handling/](04-error-handling/) — Write Robust Code
 > Go's error model is unique. Master it before production.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 08 | [Error Handling](04-error-handling/08-error-handling.md) | Error values, wrapping, sentinel errors, custom types |
-| 09 | [Defer In Depth](04-error-handling/09-defer-in-depth.md) | Defer order, resource cleanup, panic/recover |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 08 | [Error Handling](04-error-handling/08-error-handling.md) | Error values, wrapping, sentinel errors, custom types | `[CORE]` `[PRODUCTION]` |
+| 09 | [Defer In Depth](04-error-handling/09-defer-in-depth.md) | Defer order, resource cleanup, panic/recover | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
 
 ### [05-generics/](05-generics/) — Type-Safe Abstractions
 > Go 1.18+ generics. Read this before concurrency — several concurrency topics use generic syntax.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 10 | [Generics](05-generics/10-generics.md) | Type parameters, constraints, generic structs, performance |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 10 | [Generics](05-generics/10-generics.md) | Type parameters, constraints, generic structs, performance | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
 
 ### [06-concurrency/](06-concurrency/) — Master Concurrency
 > Go's killer feature. Learn goroutines, channels, and real-world patterns.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 11 | [Goroutines](06-concurrency/11-goroutines.md) | G-M-P scheduler, closure gotchas, goroutine leaks |
-| 12 | [Channels](06-concurrency/12-channels.md) | Buffered/unbuffered, directional types, closing rules |
-| 13 | [Select](06-concurrency/13-select.md) | Multiplexing, timeouts, non-blocking, nil channels |
-| 14 | [Context](06-concurrency/14-context.md) | Cancellation, deadlines, values, HTTP propagation |
-| 15 | [WaitGroup](06-concurrency/15-waitgroup.md) | Waiting for goroutines, fire-and-forget, graceful shutdown |
-| 16 | [Mutex vs Channels](06-concurrency/16-mutex-vs-channels.md) | When to use which, RWMutex, sync.Map, sync.Once |
-| 17 | [Worker Pools](06-concurrency/17-worker-pools.md) | Bounded concurrency, context-aware pools, generics |
-| 18 | [Pipelines](06-concurrency/18-pipelines.md) | Chained stages, generators, context-aware pipelines |
-| 19 | [Fan-In / Fan-Out](06-concurrency/19-fan-in-fan-out.md) | Distribute work, merge results, bounded fan-out |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 11 | [Goroutines](06-concurrency/11-goroutines.md) | G-M-P scheduler, closure gotchas, goroutine leaks | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
+| 12 | [Channels](06-concurrency/12-channels.md) | Buffered/unbuffered, directional types, closing rules | `[CORE]` `[PRODUCTION]` `[INTERNALS]` |
+| 13 | [Select](06-concurrency/13-select.md) | Multiplexing, timeouts, non-blocking, nil channels | `[CORE]` `[PRODUCTION]` |
+| 14 | [Context](06-concurrency/14-context.md) | Cancellation, deadlines, values, HTTP propagation | `[CORE]` `[PRODUCTION]` |
+| 15 | [WaitGroup](06-concurrency/15-waitgroup.md) | Waiting for goroutines, fire-and-forget, graceful shutdown | `[CORE]` `[PRODUCTION]` |
+| 16 | [Mutex vs Channels](06-concurrency/16-mutex-vs-channels.md) | When to use which, RWMutex, sync.Map, sync.Once | `[CORE]` `[PRODUCTION]` |
+| 17 | [Worker Pools](06-concurrency/17-worker-pools.md) | Bounded concurrency, context-aware pools, generics | `[CORE]` `[PRODUCTION]` |
+| 18 | [Pipelines](06-concurrency/18-pipelines.md) | Chained stages, generators, context-aware pipelines | `[CORE]` `[PRODUCTION]` |
+| 19 | [Fan-In / Fan-Out](06-concurrency/19-fan-in-fan-out.md) | Distribute work, merge results, bounded fan-out | `[CORE]` `[PRODUCTION]` |
 
 ---
 
@@ -122,16 +122,16 @@ Work through these folders in order. Each one builds on the previous.
 ### [06-software-patterns/](06-software-patterns/) — Production Patterns
 > Essential patterns for building scalable, maintainable Go services.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 01 | [Project Structure](06-software-patterns/01-project-structure.md) | Layer organization, naming conventions, import groups |
-| 02 | [Repository Pattern](06-software-patterns/02-repository-pattern.md) | Data access abstraction, interface-based storage |
-| 03 | [Service Layer](06-software-patterns/03-service-layer.md) | Business logic, orchestration, validation |
-| 04 | [Dependency Injection](06-software-patterns/04-dependency-injection.md) | Constructor-based DI, testing with mocks |
-| 05 | [Clean Architecture](06-software-patterns/05-clean-architecture.md) | Domain, application, infrastructure layers |
-| 06 | [Pub-Sub Design](06-software-patterns/06-pub-sub-design.md) | Event-driven decoupling, async handlers |
-| 07 | [Retry + Circuit Breaker](06-software-patterns/07-retry-circuit-breaker.md) | Resilience, failure isolation |
-| 08 | [Backpressure Strategies](06-software-patterns/08-backpressure-strategies.md) | Rate limiting, load shedding |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 01 | [Project Structure](06-software-patterns/01-project-structure.md) | Layer organization, naming conventions, import groups | `[PRODUCTION]` |
+| 02 | [Repository Pattern](06-software-patterns/02-repository-pattern.md) | Data access abstraction, interface-based storage | `[PRODUCTION]` |
+| 03 | [Service Layer](06-software-patterns/03-service-layer.md) | Business logic, orchestration, validation | `[PRODUCTION]` |
+| 04 | [Dependency Injection](06-software-patterns/04-dependency-injection.md) | Constructor-based DI, testing with mocks | `[PRODUCTION]` |
+| 05 | [Clean Architecture](06-software-patterns/05-clean-architecture.md) | Domain, application, infrastructure layers | `[PRODUCTION]` |
+| 06 | [Pub-Sub Design](06-software-patterns/06-pub-sub-design.md) | Event-driven decoupling, async handlers | `[PRODUCTION]` |
+| 07 | [Retry + Circuit Breaker](06-software-patterns/07-retry-circuit-breaker.md) | Resilience, failure isolation | `[PRODUCTION]` |
+| 08 | [Backpressure Strategies](06-software-patterns/08-backpressure-strategies.md) | Rate limiting, load shedding | `[PRODUCTION]` |
 
 ---
 
@@ -150,17 +150,17 @@ Work through these folders in order. Each one builds on the previous.
 ### [07-systems-project/](07-systems-project/) — Capstone: Mini Message Queue
 > Build an in-memory message broker from scratch. Uses everything from Topics 1-19 and all Software Patterns.
 
-| # | File | What You'll Build |
-|---|------|-------------------|
-| 01 | [Overview](07-systems-project/01-overview.md) | Architecture, design decisions |
-| 02 | [Message Model](07-systems-project/02-message-model.md) | Message & topic types, sentinel errors |
-| 03 | [Subscriber](07-systems-project/03-subscriber.md) | Per-subscriber channels, 3 backpressure strategies |
-| 04 | [Broker Core](07-systems-project/04-broker-core.md) | Topic registry, fan-out, RWMutex |
-| 05 | [Service Layer](07-systems-project/05-service-layer.md) | Validation, business rules |
-| 06 | [Wiring](07-systems-project/06-wiring.md) | DI, main.go, config |
-| 07 | [Graceful Shutdown](07-systems-project/07-graceful-shutdown.md) | Context, drain, signal handling |
-| 08 | [Resilience](07-systems-project/08-resilience.md) | Dead letter queue, backpressure strategies |
-| 09 | [Demo](07-systems-project/09-demo.md) | Full walkthrough, test scenarios |
+| # | File | What You'll Build | Tags |
+|---|------|-------------------|------|
+| 01 | [Overview](07-systems-project/01-overview.md) | Architecture, design decisions | `[CORE]` |
+| 02 | [Message Model](07-systems-project/02-message-model.md) | Message & topic types, sentinel errors | `[CORE]` |
+| 03 | [Subscriber](07-systems-project/03-subscriber.md) | Per-subscriber channels, 3 backpressure strategies | `[CORE]` `[PRODUCTION]` |
+| 04 | [Broker Core](07-systems-project/04-broker-core.md) | Topic registry, fan-out, RWMutex | `[CORE]` |
+| 05 | [Service Layer](07-systems-project/05-service-layer.md) | Validation, business rules | `[CORE]` |
+| 06 | [Wiring](07-systems-project/06-wiring.md) | DI, main.go, config | `[CORE]` `[PRODUCTION]` |
+| 07 | [Graceful Shutdown](07-systems-project/07-graceful-shutdown.md) | Context, drain, signal handling | `[CORE]` `[PRODUCTION]` |
+| 08 | [Resilience](07-systems-project/08-resilience.md) | Dead letter queue, backpressure strategies | `[PRODUCTION]` |
+| 09 | [Demo](07-systems-project/09-demo.md) | Full walkthrough, test scenarios | `[CORE]` |
 
 **Milestone:** Working in-memory message broker with topic-based pub-sub, per-subscriber channels, backpressure, DLQ, and graceful shutdown.
 
@@ -169,12 +169,12 @@ Work through these folders in order. Each one builds on the previous.
 ### [08-stdlib-essentials/](08-stdlib-essentials/) — Standard Library Essentials
 > Practical topics for building real applications. Covers JSON, HTTP, databases, and logging.
 
-| # | Topic | What You'll Learn |
-|---|-------|-------------------|
-| 01 | [JSON & Encoding](08-stdlib-essentials/01-json-encoding.md) | Marshal/unmarshal, struct tags, nested structures, custom JSON |
-| 02 | [HTTP Basics](08-stdlib-essentials/02-http-basics.md) | HTTP client/server, routing, middleware, JSON APIs |
-| 03 | [Database SQL](08-stdlib-essentials/03-database-sql.md) | CRUD operations, prepared statements, transactions |
-| 04 | [Logging](08-stdlib-essentials/04-logging.md) | Basic log, structured logging with slog, custom loggers |
+| # | Topic | What You'll Learn | Tags |
+|---|-------|-------------------|------|
+| 01 | [JSON & Encoding](08-stdlib-essentials/01-json-encoding.md) | Marshal/unmarshal, struct tags, nested structures, custom JSON | `[CORE]` `[PRODUCTION]` |
+| 02 | [HTTP Basics](08-stdlib-essentials/02-http-basics.md) | HTTP client/server, routing, middleware, JSON APIs | `[CORE]` `[PRODUCTION]` |
+| 03 | [Database SQL](08-stdlib-essentials/03-database-sql.md) | CRUD operations, prepared statements, transactions | `[CORE]` |
+| 04 | [Logging](08-stdlib-essentials/04-logging.md) | Basic log, structured logging with slog, custom loggers | `[CORE]` `[PRODUCTION]` |
 
 ---
 

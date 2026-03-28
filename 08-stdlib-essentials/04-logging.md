@@ -6,12 +6,12 @@
 
 ## Table of Contents
 
-1. [Basic Logging (log)](#1-basic-logging-log-core)
-2. [Structured Logging (slog)](#2-structured-logging-slog-core)
-3. [Log Levels](#3-log-levels-core)
-4. [Custom Logger](#4-custom-logger-production)
-5. [Best Practices](#5-best-practices-core)
-6. [Common Pitfalls](#6-common-pitfalls-core)
+1. [Basic Logging (log)](#1-basic-logging-log) `[CORE]`
+2. [Structured Logging (slog)](#2-structured-logging-slog) `[CORE]`
+3. [Log Levels](#3-log-levels) `[CORE]`
+4. [Custom Logger](#4-custom-logger) `[PRODUCTION]`
+5. [Best Practices](#5-best-practices) `[CORE]`
+6. [Common Pitfalls](#6-common-pitfalls) `[CORE]`
 
 ---
 

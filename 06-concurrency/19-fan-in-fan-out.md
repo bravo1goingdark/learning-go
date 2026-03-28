@@ -9,16 +9,16 @@
 
 ## Table of Contents
 
-1. [What Is Fan-Out / Fan-In](#1-what-is-fan-out--fan-in-core)
-2. [Fan-Out](#2-fan-out-production)
-3. [Fan-In](#3-fan-in-production)
-4. [Fan-Out / Fan-In Together](#4-fan-out--fan-in-together-production)
-5. [Fan-Out with Context](#5-fan-out-with-context-production)
-6. [Fan-Out with Error Handling](#6-fan-out-with-error-handling-production)
-7. [Bounded Fan-Out](#7-bounded-fan-out-production)
-8. [Fan-In from Multiple Sources](#8-fan-in-from-multiple-sources-production)
-9. [Real-World Examples](#9-real-world-examples-production)
-10. [Common Pitfalls](#10-common-pitfalls-core)
+1. [What Is Fan-Out / Fan-In](#1-what-is-fan-out--fan-in) `[CORE]`
+2. [Fan-Out](#2-fan-out) `[PRODUCTION]`
+3. [Fan-In](#3-fan-in) `[PRODUCTION]`
+4. [Fan-Out / Fan-In Together](#4-fan-out--fan-in-together) `[PRODUCTION]`
+5. [Fan-Out with Context](#5-fan-out-with-context) `[PRODUCTION]`
+6. [Fan-Out with Error Handling](#6-fan-out-with-error-handling) `[PRODUCTION]`
+7. [Bounded Fan-Out](#7-bounded-fan-out) `[PRODUCTION]`
+8. [Fan-In from Multiple Sources](#8-fan-in-from-multiple-sources) `[PRODUCTION]`
+9. [Real-World Examples](#9-real-world-examples) `[PRODUCTION]`
+10. [Common Pitfalls](#10-common-pitfalls) `[CORE]`
 
 ---
 

@@ -8,17 +8,17 @@
 
 ## Table of Contents
 
-1. [The `error` Interface](#1-the-error-interface-core)
-2. [Creating Errors](#2-creating-errors-core)
-3. [Error Checking Patterns](#3-error-checking-patterns-core)
-4. [Error Wrapping (Go 1.13+)](#4-error-wrapping-go-113-core)
-5. [Sentinel Errors](#5-sentinel-errors-core)
-6. [Custom Error Types](#6-custom-error-types-core)
-7. [Error Inspection (`errors.Is`, `errors.As`)](#7-error-inspection-errorsis-errorsas-core)
-8. [Panic & Recover](#8-panic--recover-core)
-9. [Production Error Handling Patterns](#9-production-error-handling-patterns-production)
-10. [Structured Errors](#10-structured-errors-production)
-11. [Common Pitfalls](#11-common-pitfalls-core)
+1. [The `error` Interface](#1-the-error-interface) `[CORE]`
+2. [Creating Errors](#2-creating-errors) `[CORE]`
+3. [Error Checking Patterns](#3-error-checking-patterns) `[CORE]`
+4. [Error Wrapping (Go 1.13+)](#4-error-wrapping-go-113) `[CORE]`
+5. [Sentinel Errors](#5-sentinel-errors) `[CORE]`
+6. [Custom Error Types](#6-custom-error-types) `[CORE]`
+7. [Error Inspection (`errors.Is`, `errors.As`)](#7-error-inspection-errorsis-errorsas) `[CORE]`
+8. [Panic & Recover](#8-panic--recover) `[CORE]`
+9. [Production Error Handling Patterns](#9-production-error-handling-patterns) `[PRODUCTION]`
+10. [Structured Errors](#10-structured-errors) `[PRODUCTION]`
+11. [Common Pitfalls](#11-common-pitfalls) `[CORE]`
 
 ---
 

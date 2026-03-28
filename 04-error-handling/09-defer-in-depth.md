@@ -6,17 +6,17 @@
 ![Defer Keyword](../assets/09.png)
 ## Table of Contents
 
-1. [What Defer Does](#1-what-defer-does-core)
-2. [Execution Order (LIFO)](#2-execution-order-lifo-core)
-3. [Arguments Are Evaluated Immediately](#3-arguments-are-evaluated-immediately-core)
-4. [Deferred Closures](#4-deferred-closures-core)
-5. [Defer and Return Values](#5-defer-and-return-values-core)
-6. [Defer and Panic/Recover](#6-defer-and-panicrecover-core)
-7. [Defer in Loops](#7-defer-in-loops-core)
-8. [Defer Performance](#8-defer-performance-internals)
-9. [Production Patterns](#9-production-patterns-production)
-10. [Advanced Patterns](#10-advanced-patterns-production)
-11. [Common Pitfalls](#11-common-pitfalls-core)
+1. [What Defer Does](#1-what-defer-does) `[CORE]`
+2. [Execution Order (LIFO)](#2-execution-order-lifo) `[CORE]`
+3. [Arguments Are Evaluated Immediately](#3-arguments-are-evaluated-immediately) `[CORE]`
+4. [Deferred Closures](#4-deferred-closures) `[CORE]`
+5. [Defer and Return Values](#5-defer-and-return-values) `[CORE]`
+6. [Defer and Panic/Recover](#6-defer-and-panicrecover) `[CORE]`
+7. [Defer in Loops](#7-defer-in-loops) `[CORE]`
+8. [Defer Performance](#8-defer-performance) `[INTERNALS]`
+9. [Production Patterns](#9-production-patterns) `[PRODUCTION]`
+10. [Advanced Patterns](#10-advanced-patterns) `[PRODUCTION]`
+11. [Common Pitfalls](#11-common-pitfalls) `[CORE]`
 
 ---
 

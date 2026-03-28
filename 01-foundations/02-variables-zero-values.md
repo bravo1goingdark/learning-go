@@ -6,18 +6,18 @@
 ![Zero Values Overview](../assets/02.png)
 ## Table of Contents
 
-1. [Basic Types](#1-basic-types-core)
-2. [Variable Declaration Forms](#2-variable-declaration-forms-core)
-3. [Zero Values (Complete Reference)](#3-zero-values-complete-reference-core)
-4. [Short Declaration (`:=`)](#4-short-declaration--core)
-5. [Type Inference](#5-type-inference-core)
-6. [Constants](#6-constants-core)
-7. [Iota (Enumerations)](#7-iota-enumerations-core)
-8. [Blank Identifier (`_`)](#8-blank-identifier-_-core)
-9. [Type Conversions](#9-type-conversions-core)
-10. [Scope & Shadowing](#10-scope--shadowing-core)
-11. [Production Patterns](#11-production-patterns-production)
-12. [Common Pitfalls](#12-common-pitfalls-core)
+1. [Basic Types](#1-basic-types) `[CORE]`
+2. [Variable Declaration Forms](#2-variable-declaration-forms) `[CORE]`
+3. [Zero Values (Complete Reference)](#3-zero-values-complete-reference) `[CORE]`
+4. [Short Declaration (`:=`)](#4-short-declaration-) `[CORE]`
+5. [Type Inference](#5-type-inference) `[CORE]`
+6. [Constants](#6-constants) `[CORE]`
+7. [Iota (Enumerations)](#7-iota-enumerations) `[CORE]`
+8. [Blank Identifier (`_`)](#8-blank-identifier-_) `[CORE]`
+9. [Type Conversions](#9-type-conversions) `[CORE]`
+10. [Scope & Shadowing](#10-scope--shadowing) `[CORE]`
+11. [Production Patterns](#11-production-patterns) `[PRODUCTION]`
+12. [Common Pitfalls](#12-common-pitfalls) `[CORE]`
 
 ---
 

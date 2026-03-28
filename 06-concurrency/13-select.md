@@ -6,15 +6,15 @@
 ![Select Keyword](../assets/12.png)
 ## Table of Contents
 
-1. [Select Basics](#1-select-basics-core)
-2. [How Select Works](#2-how-select-works-core)
-3. [Default Case (Non-Blocking)](#3-default-case-non-blocking-core)
-4. [Timeouts with time.After](#4-timeouts-with-timeafter-core)
-5. [Select with Done Channel](#5-select-with-done-channel-core)
-6. [Select with Nil Channels](#6-select-with-nil-channels-core)
-7. [For-Select Loop](#7-for-select-loop-core)
-8. [Common Patterns](#8-common-patterns-production)
-9. [Common Pitfalls](#9-common-pitfalls-core)
+1. [Select Basics](#1-select-basics) `[CORE]`
+2. [How Select Works](#2-how-select-works) `[CORE]`
+3. [Default Case (Non-Blocking)](#3-default-case-non-blocking) `[CORE]`
+4. [Timeouts with time.After](#4-timeouts-with-timeafter) `[CORE]`
+5. [Select with Done Channel](#5-select-with-done-channel) `[CORE]`
+6. [Select with Nil Channels](#6-select-with-nil-channels) `[CORE]`
+7. [For-Select Loop](#7-for-select-loop) `[CORE]`
+8. [Common Patterns](#8-common-patterns) `[PRODUCTION]`
+9. [Common Pitfalls](#9-common-pitfalls) `[CORE]`
 
 ---
 

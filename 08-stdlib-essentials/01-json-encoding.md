@@ -6,14 +6,14 @@
 
 ## Table of Contents
 
-1. [JSON Basics](#1-json-basics-core)
-2. [Struct Tags](#2-struct-tags-core)
-3. [Unmarshaling (JSON → Go)](#3-unmarshaling-json--go-core)
-4. [Marshaling (Go → JSON)](#4-marshaling-go--json-core)
-5. [Nested Structures](#5-nested-structures-core)
-6. [Custom JSON (Marshaler/Unmarshaler)](#6-custom-json-marshalerunmarshaler-production)
-7. [Streaming JSON](#7-streaming-json-production)
-8. [Common Pitfalls](#8-common-pitfalls-core)
+1. [JSON Basics](#1-json-basics) `[CORE]`
+2. [Struct Tags](#2-struct-tags) `[CORE]`
+3. [Unmarshaling (JSON → Go)](#3-unmarshaling-json--go) `[CORE]`
+4. [Marshaling (Go → JSON)](#4-marshaling-go--json) `[CORE]`
+5. [Nested Structures](#5-nested-structures) `[CORE]`
+6. [Custom JSON (Marshaler/Unmarshaler)](#6-custom-json-marshalerunmarshaler) `[PRODUCTION]`
+7. [Streaming JSON](#7-streaming-json) `[PRODUCTION]`
+8. [Common Pitfalls](#8-common-pitfalls) `[CORE]`
 
 ---
 

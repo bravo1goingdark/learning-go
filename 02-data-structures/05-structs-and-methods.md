@@ -8,18 +8,18 @@
 
 ## Table of Contents
 
-1. [Struct Basics](#1-struct-basics-core)
-2. [Struct Construction](#2-struct-construction-core)
-3. [Methods](#3-methods-core)
-4. [Value vs Pointer Receivers](#4-value-vs-pointer-receivers-core)
-5. [Method Sets & Interface Satisfaction](#5-method-sets--interface-satisfaction-core)
-6. [Embedding (Composition)](#6-embedding-composition-core)
-7. [Struct Tags](#7-struct-tags-production)
-8. [Comparable Structs](#8-comparable-structs-core)
-9. [Empty Struct](#9-empty-struct-core)
-10. [Struct Memory Layout](#10-struct-memory-layout-internals)
-11. [Production Patterns](#11-production-patterns-production)
-12. [Common Pitfalls](#12-common-pitfalls-core)
+1. [Struct Basics](#1-struct-basics) `[CORE]`
+2. [Struct Construction](#2-struct-construction) `[CORE]`
+3. [Methods](#3-methods) `[CORE]`
+4. [Value vs Pointer Receivers](#4-value-vs-pointer-receivers) `[CORE]`
+5. [Method Sets & Interface Satisfaction](#5-method-sets--interface-satisfaction) `[CORE]`
+6. [Embedding (Composition)](#6-embedding-composition) `[CORE]`
+7. [Struct Tags](#7-struct-tags) `[PRODUCTION]`
+8. [Comparable Structs](#8-comparable-structs) `[CORE]`
+9. [Empty Struct](#9-empty-struct) `[CORE]`
+10. [Struct Memory Layout](#10-struct-memory-layout) `[INTERNALS]`
+11. [Production Patterns](#11-production-patterns) `[PRODUCTION]`
+12. [Common Pitfalls](#12-common-pitfalls) `[CORE]`
 
 ---
 

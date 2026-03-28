@@ -9,16 +9,16 @@
 
 ## Table of Contents
 
-1. [The Core Difference](#1-the-core-difference-core)
-2. [When to Use Mutex](#2-when-to-use-mutex-core)
-3. [When to Use Channels](#3-when-to-use-channels-core)
-4. [Mutex Deep Dive](#4-mutex-deep-dive-core)
-5. [RWMutex](#5-rwmutex-production)
-6. [sync.Map](#6-syncmap-production)
-7. [sync.Once](#7-synconce-production)
-8. [Channel as Mutex](#8-channel-as-mutex-core)
-9. [Side-by-Side Comparison](#9-side-by-side-comparison-core)
-10. [Decision Flowchart](#10-decision-flowchart-production)
+1. [The Core Difference](#1-the-core-difference) `[CORE]`
+2. [When to Use Mutex](#2-when-to-use-mutex) `[CORE]`
+3. [When to Use Channels](#3-when-to-use-channels) `[CORE]`
+4. [Mutex Deep Dive](#4-mutex-deep-dive) `[CORE]`
+5. [RWMutex](#5-rwmutex) `[PRODUCTION]`
+6. [sync.Map](#6-syncmap) `[PRODUCTION]`
+7. [sync.Once](#7-synconce) `[PRODUCTION]`
+8. [Channel as Mutex](#8-channel-as-mutex) `[CORE]`
+9. [Side-by-Side Comparison](#9-side-by-side-comparison) `[CORE]`
+10. [Decision Flowchart](#10-decision-flowchart) `[PRODUCTION]`
 
 ---
 

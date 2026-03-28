@@ -12,20 +12,20 @@
 
 ## Table of Contents
 
-1. [Arrays](#1-arrays-core)
-2. [Slices — The Three Fields](#2-slices--the-three-fields-core)
-3. [Slice Creation Methods](#3-slice-creation-methods-core)
-4. [Slicing Operations](#4-slicing-operations-core)
-5. [The `append` Function](#5-the-append-function-core)
-6. [Capacity Growth Strategy](#6-capacity-growth-strategy-core)
-7. [The Shared-Array Bug](#7-the-shared-array-bug-core)
-8. [Copy](#8-copy-core)
-9. [Nil Slice vs Empty Slice](#9-nil-slice-vs-empty-slice-core)
-10. [Slice Internals (Memory Layout)](#10-slice-internals-memory-layout-internals)
-11. [Passing Slices to Functions](#11-passing-slices-to-functions-core)
-12. [Common Patterns](#12-common-patterns-production)
-13. [Performance Considerations](#13-performance-considerations-production)
-14. [Common Pitfalls](#14-common-pitfalls-core)
+1. [Arrays](#1-arrays) `[CORE]`
+2. [Slices — The Three Fields](#2-slices--the-three-fields) `[CORE]`
+3. [Slice Creation Methods](#3-slice-creation-methods) `[CORE]`
+4. [Slicing Operations](#4-slicing-operations) `[CORE]`
+5. [The `append` Function](#5-the-append-function) `[CORE]`
+6. [Capacity Growth Strategy](#6-capacity-growth-strategy) `[CORE]`
+7. [The Shared-Array Bug](#7-the-shared-array-bug) `[CORE]`
+8. [Copy](#8-copy) `[CORE]`
+9. [Nil Slice vs Empty Slice](#9-nil-slice-vs-empty-slice) `[CORE]`
+10. [Slice Internals (Memory Layout)](#10-slice-internals-memory-layout) `[INTERNALS]`
+11. [Passing Slices to Functions](#11-passing-slices-to-functions) `[CORE]`
+12. [Common Patterns](#12-common-patterns) `[PRODUCTION]`
+13. [Performance Considerations](#13-performance-considerations) `[PRODUCTION]`
+14. [Common Pitfalls](#14-common-pitfalls) `[CORE]`
 
 ---
 

@@ -8,19 +8,19 @@
 
 ## Table of Contents
 
-1. [Installation & Environment](#1-installation--environment-core)
-2. [Go Modules (`go mod`)](#2-go-modules-go-mod-core)
-3. [Building (`go build`)](#3-building-go-build-core)
-4. [Running (`go run`)](#4-running-go-run-core)
-5. [Testing (`go test`)](#5-testing-go-test-core)
-6. [Formatting (`go fmt`)](#6-formatting-go-fmt-core)
-7. [Vetting (`go vet`)](#7-vetting-go-vet-core)
-8. [Dependency Management](#8-dependency-management-core)
-9. [Cross-Compilation](#9-cross-compilation-production)
-10. [Profiling & Benchmarks](#10-profiling--benchmarks-production)
-11. [Go Workspace (Monorepo)](#11-go-workspace-monorepo-production)
-12. [Production Build Patterns](#12-production-build-patterns-production)
-13. [Common Pitfalls](#13-common-pitfalls-core)
+1. [Installation & Environment](#1-installation--environment) `[CORE]`
+2. [Go Modules (`go mod`)](#2-go-modules-go-mod) `[CORE]`
+3. [Building (`go build`)](#3-building-go-build) `[CORE]`
+4. [Running (`go run`)](#4-running-go-run) `[CORE]`
+5. [Testing (`go test`)](#5-testing-go-test) `[CORE]`
+6. [Formatting (`go fmt`)](#6-formatting-go-fmt) `[CORE]`
+7. [Vetting (`go vet`)](#7-vetting-go-vet) `[CORE]`
+8. [Dependency Management](#8-dependency-management) `[CORE]`
+9. [Cross-Compilation](#9-cross-compilation) `[PRODUCTION]`
+10. [Profiling & Benchmarks](#10-profiling--benchmarks) `[PRODUCTION]`
+11. [Go Workspace (Monorepo)](#11-go-workspace-monorepo) `[PRODUCTION]`
+12. [Production Build Patterns](#12-production-build-patterns) `[PRODUCTION]`
+13. [Common Pitfalls](#13-common-pitfalls) `[CORE]`
 
 ---
 

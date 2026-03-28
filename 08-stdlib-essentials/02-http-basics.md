@@ -6,13 +6,13 @@
 
 ## Table of Contents
 
-1. [HTTP Client (Making Requests)](#1-http-client-making-requests-core)
-2. [HTTP Server (Handling Requests)](#2-http-server-handling-requests-core)
-3. [Routing](#3-routing-core)
-4. [Request Handling](#4-request-handling-core)
-5. [Middleware](#5-middleware-production)
-6. [JSON APIs](#6-json-apis-core)
-7. [Common Pitfalls](#7-common-pitfalls-core)
+1. [HTTP Client (Making Requests)](#1-http-client-making-requests) `[CORE]`
+2. [HTTP Server (Handling Requests)](#2-http-server-handling-requests) `[CORE]`
+3. [Routing](#3-routing) `[CORE]`
+4. [Request Handling](#4-request-handling) `[CORE]`
+5. [Middleware](#5-middleware) `[PRODUCTION]`
+6. [JSON APIs](#6-json-apis) `[CORE]`
+7. [Common Pitfalls](#7-common-pitfalls) `[CORE]`
 
 ---
 
