@@ -15,7 +15,7 @@
 5. [Testing (`go test`)](#5-testing-go-test) `[CORE]`
 6. [Formatting (`go fmt`)](#6-formatting-go-fmt) `[CORE]`
 7. [Vetting (`go vet`)](#7-vetting-go-vet) `[CORE]`
-8. [Dependency Management](#8-dependency-management) `[CORE]`
+8. [Dependency Management](#8-dependency-management) `[PRODUCTION]`
 9. [Cross-Compilation](#9-cross-compilation) `[PRODUCTION]`
 10. [Profiling & Benchmarks](#10-profiling--benchmarks) `[PRODUCTION]`
 11. [Go Workspace (Monorepo)](#11-go-workspace-monorepo) `[PRODUCTION]`
@@ -343,6 +343,8 @@ Unlike `go build`, `go install` puts the binary in `$GOBIN` and caches the build
 ---
 
 ## 5. Testing (`go test`)
+
+> **Note for Beginners:** Testing is a `[CORE]` topic and deeply integrated into Go, but if you're new to Go, **learn the language fundamentals first** (variables, functions, structs, etc.). Come back here once you've written some Go code. For now, focus on Exercise 3 (line 1135) to get hands-on experience.
 
 This is where Go shines. Testing is built into the toolchain. No frameworks required.
 
@@ -735,6 +737,8 @@ for _, item := range items {
 ---
 
 ## 8. Dependency Management
+
+> ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3. For now, you only need `go mod init`, `go mod tidy`, and `go get`.
 
 ### Versioning
 
