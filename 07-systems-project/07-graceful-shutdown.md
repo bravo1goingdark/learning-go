@@ -6,6 +6,17 @@
 
 ---
 
+## Table of Contents
+
+1. [Why Graceful Shutdown Matters](#why-graceful-shutdown-matters) `[CORE]`
+2. [The Shutdown Sequence](#the-shutdown-sequence) `[CORE]`
+3. [Code: Shutdown in Broker](#code-shutdown-in-broker) `[CORE]`
+4. [Code: Subscriber Drain on Shutdown](#code-subscriber-drain-on-shutdown) `[CORE]`
+5. [Code: Signal Handling in main.go](#code-signal-handling-in-maingo) `[CORE]`
+6. [Common Pitfalls](#common-pitfalls) `[PRODUCTION]`
+
+---
+
 ## Why Graceful Shutdown Matters
 
 ```
@@ -113,6 +124,12 @@
 ---
 
 ## Code: Shutdown in Broker
+
+**What:** The broker's `Shutdown()` method marks itself closed, copies topics into a slice, then drains each topic's subscribers.
+
+**Why copy topics into a slice first?** If we iterate the map while holding `RLock`, and `topic.close()` tries to `Lock` the topic, we risk deadlock if another goroutine holds topic `Lock` and waits for broker `RLock`. Copying breaks the lock dependency chain.
+
+**How:** Lock broker → set `closed = true` → RLock → copy topics slice → RUnlock → drain each topic (without holding broker lock).
 
 ```go
 // internal/broker/broker.go

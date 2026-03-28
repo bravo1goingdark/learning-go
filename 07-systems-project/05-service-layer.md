@@ -6,6 +6,20 @@
 
 ---
 
+## Table of Contents
+
+1. [Why a Service Layer?](#why-a-service-layer) `[CORE]`
+2. [The Service Interface](#the-service-interface) `[CORE]`
+3. [The Implementation](#the-implementation) `[CORE]`
+4. [Validation Rules](#validation-rules) `[CORE]`
+5. [Service Methods](#service-methods) `[CORE]`
+6. [Subscribe with Auto-Generated ID](#subscribe-with-auto-generated-id) `[CORE]`
+7. [Publish with ID Generation](#publish-with-id-generation) `[CORE]`
+8. [Error Propagation Chain](#error-propagation-chain) `[PRODUCTION]`
+9. [Testing the Service](#testing-the-service) `[PRODUCTION]`
+
+---
+
 ## Why a Service Layer?
 
 Without it, the HTTP handler calls the broker directly. That means:
@@ -106,7 +120,11 @@ func NewMessageQueue(b broker.Broker) MessageQueue {
 
 ## Validation Rules
 
-Every service method validates before calling the broker.
+**What:** Every service method validates input before calling the broker — topic name format, payload size, reserved names.
+
+**Why validate in the service, not the broker?** The broker is a pure routing engine. It should be fast. Validation takes time. The service layer acts as a gatekeeper — bad data never reaches the broker. This separation keeps the broker simple and the service responsible for business rules.
+
+**How:** Helper functions like `validateTopicName()` and `validatePayload()` are called at the start of each service method. Errors are wrapped with context using `fmt.Errorf("...: %w", err)`.
 
 ```go
 // TOPIC 8: Errors — wrap with context

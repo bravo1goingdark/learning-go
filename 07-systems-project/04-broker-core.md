@@ -4,9 +4,27 @@
 
 ---
 
+## Table of Contents
+
+1. [The Broker Interface](#the-broker-interface) `[CORE]`
+2. [Internal Topic State](#internal-topic-state) `[CORE]`
+3. [The Broker Implementation](#the-broker-implementation) `[CORE]`
+4. [Topic Management](#topic-management) `[CORE]`
+5. [Subscription](#subscription) `[CORE]`
+6. [Publishing — The Core Path](#publishing--the-core-path) `[CORE]`
+7. [Lifecycle](#lifecycle) `[PRODUCTION]`
+8. [Stats](#stats) `[PRODUCTION]`
+9. [Full Request Flow](#full-request-flow) `[CORE]`
+
+---
+
 ## The Broker Interface
 
-Define the interface first — the service layer depends on this, not on the concrete implementation.
+**What:** An interface defining the broker's public API — topic management, subscription, publishing, and lifecycle.
+
+**Why an interface?** (Topic 7: Interfaces) The service layer calls `broker.Publish()` without knowing if it's in-memory, Redis-backed, or a mock. We can swap implementations for testing. The interface is the contract — the implementation is the detail.
+
+**How:** Define methods for each operation. Return the interface from `New()`, not the concrete struct.
 
 ```go
 // internal/broker/broker.go
@@ -234,6 +252,12 @@ var b *broker.inMemoryBroker = broker.New(cfg)  // unexported type
 
 ## Topic Management
 
+**What:** CRUD operations on the topic registry — create, delete, list, check existence.
+
+**Why separate from the publish path?** Topic management is infrequent (create once, publish thousands of times). Using a write lock (`Lock`) for creation and a read lock (`RLock`) for publishing keeps the hot path fast.
+
+**How:** The `topics` map stores `map[string]*topic`. Create validates limits, delete drains subscribers, list copies values to avoid exposing internal state.
+
 ```go
 // TOPIC 4: Maps — CRUD operations
 // TOPIC 8: Error handling — sentinel errors
@@ -351,7 +375,11 @@ The `RLock` lookup returns `exists == false`, so we return `ErrTopicNotFound`. T
 
 ## Publishing — The Core Path
 
-This is the hot path. It must be fast.
+**What:** The hottest path in the system. A publisher sends a message, the broker routes it to all subscribers on that topic.
+
+**Why is this the core path?** Publishing happens thousands of times per second. Subscribing happens occasionally. Every nanosecond in `Publish()` matters. That's why we check `ctx.Done()` first (fast exit), use `RLock` (concurrent safe), and fan-out in a tight loop.
+
+**How:** Check cancellation → lookup topic (RLock) → fan-out to subscribers → collect errors → send failures to DLQ → return.
 
 ```go
 // TOPIC 18: Fan-out — one message, many subscribers

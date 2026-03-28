@@ -4,6 +4,21 @@
 
 ---
 
+## Table of Contents
+
+1. [File Structure (Final)](#file-structure-final) `[CORE]`
+2. [go.mod](#gomod) `[CORE]`
+3. [The Demo (in main.go)](#the-demo-in-maingo) `[CORE]`
+4. [Demo Scenario](#demo-scenario) `[CORE]`
+5. [Expected Output](#expected-output) `[CORE]`
+6. [Verification Checklist](#verification-checklist) `[CORE]`
+7. [Build & Run](#build--run) `[CORE]`
+8. [Testing Structure](#testing-structure) `[PRODUCTION]`
+9. [What to Extend Next](#what-to-extend-next) `[PRODUCTION]`
+10. [Concepts Applied — Full Map](#concepts-applied--full-map) `[CORE]`
+
+---
+
 ## File Structure (Final)
 
 After implementing everything from files 01-08, your project should look like:
@@ -127,6 +142,12 @@ func main() {
 ---
 
 ## Demo Scenario
+
+**What:** Five scenarios demonstrating every feature: basic pub-sub, backpressure, multiple topics, error handling with DLQ, and graceful shutdown.
+
+**Why five scenarios?** Each scenario isolates one feature so you can verify it works independently. Running them in sequence demonstrates the full system.
+
+**How:** A single `runDemo()` function runs all scenarios sequentially. Each scenario creates its own topic, subscribes, publishes, and verifies output.
 
 ```go
 func runDemo(ctx context.Context, svc service.MessageQueue) {

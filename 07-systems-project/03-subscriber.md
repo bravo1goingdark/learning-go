@@ -4,6 +4,19 @@
 
 ---
 
+## Table of Contents
+
+1. [The Problem](#the-problem) `[CORE]`
+2. [Backpressure Strategies](#backpressure-strategies) `[CORE]`
+3. [The Subscriber Struct](#the-subscriber-struct) `[CORE]`
+4. [Creating a Subscriber](#creating-a-subscriber) `[CORE]`
+5. [Publishing to a Subscriber](#publishing-to-a-subscriber) `[CORE]`
+6. [Consuming Messages](#consuming-messages) `[CORE]`
+7. [Closing a Subscriber](#closing-a-subscriber) `[CORE]`
+8. [Putting It Together](#putting-it-together) `[CORE]`
+
+---
+
 ## The Problem
 
 A publisher sends 1000 messages/sec. A subscriber can only process 10/sec. Without backpressure, the subscriber's buffer grows forever → OOM crash.
@@ -200,11 +213,12 @@ func (s *Subscriber) safeHandle(handler func(model.Message) error, msg model.Mes
 
 **Why `safeHandle` as a separate function?** The `defer` + `recover()` must be in the same goroutine as the panic. A separate function keeps the recovery logic clean and reusable. If we put `defer recover()` inside the `for` loop, it would need to be in an anonymous function anyway.
 
+```go
 type SubscriberStats struct {
-    Received  int64  // total messages received
-    Dropped   int64  // messages dropped (backpressure)
-    Errors    int64  // processing errors
-    LastMsgAt time.Time
+    Received  int64     // total messages received
+    Dropped   int64     // messages dropped (backpressure)
+    Errors    int64     // processing errors
+    LastMsgAt time.Time // when the last message was processed
 }
 ```
 

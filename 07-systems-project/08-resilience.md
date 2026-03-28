@@ -2,6 +2,23 @@
 
 > **Decision:** When a subscriber can't process a message, we don't drop it silently. We send it to a Dead Letter Queue (DLQ) for later inspection or retry.
 
+---
+
+## Table of Contents
+
+1. [What Is a Dead Letter Queue?](#what-is-a-dead-letter-queue) `[CORE]`
+2. [The Problem](#the-problem) `[CORE]`
+3. [Dead Letter Queue Design](#dead-letter-queue-design) `[CORE]`
+4. [Pushing to the DLQ](#pushing-to-the-dlq) `[CORE]`
+5. [Processing the DLQ](#processing-the-dlq) `[PRODUCTION]`
+6. [DLQ in the Publish Path](#dlq-in-the-publish-path) `[CORE]`
+7. [Backpressure Strategy Summary](#backpressure-strategy-summary) `[CORE]`
+8. [Why Not Retry Immediately?](#why-not-retry-immediately) `[PRODUCTION]`
+9. [Monitoring the DLQ](#monitoring-the-dlq) `[PRODUCTION]`
+10. [Integration with Broker Stats](#integration-with-broker-stats) `[PRODUCTION]`
+
+---
+
 ### What Is a Dead Letter Queue?
 
 A Dead Letter Queue (DLQ) is a safety net. In a pub-sub system, messages flow from publisher → broker → subscriber. If a subscriber's handler fails (crash, timeout, bad data), the message would be lost without a DLQ. Instead, failed messages go to a separate queue where you can:
@@ -39,6 +56,12 @@ With a DLQ:
 ---
 
 ## Dead Letter Queue Design
+
+**What:** A bounded channel that collects failed message deliveries. When a subscriber's handler returns an error, the message goes here instead of being lost.
+
+**Why bounded?** Every queue in the system must be bounded. Unbounded queues are unbounded memory leaks. If subscribers keep failing, an unbounded DLQ grows forever → same OOM problem we're trying to prevent.
+
+**How:** `make(chan DLQEntry, bufferSize)` with non-blocking `select` for pushing. When full, increment a `TotalDropped` counter and log — the system stays alive.
 
 ```go
 // internal/broker/dlq.go

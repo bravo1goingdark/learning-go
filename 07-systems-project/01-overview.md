@@ -4,6 +4,23 @@
 
 ---
 
+## Table of Contents
+
+1. [What We're Building](#what-were-building) `[CORE]`
+2. [Prerequisites](#prerequisites) `[CORE]`
+3. [How Messages Flow (End-to-End)](#how-messages-flow-end-to-end) `[CORE]`
+4. [Design Decisions](#design-decisions) `[CORE]`
+   - [Project Structure](#1-project-structure)
+   - [Layered Architecture](#2-layered-architecture)
+   - [Dependency Injection](#3-dependency-injection)
+   - [Per-Subscriber Bounded Channels](#4-per-subscriber-bounded-channels)
+   - [Context Cancellation](#5-context-cancellation)
+   - [Graceful Shutdown](#6-graceful-shutdown)
+5. [Topics Covered](#topics-covered) `[CORE]`
+6. [How to Approach This Project](#how-to-approach-this-project) `[CORE]`
+
+---
+
 ## What We're Building
 
 A **topic-based pub-sub message broker** that runs in-process. Publishers send messages to named topics. Subscribers receive messages on per-subscriber channels. The broker handles backpressure, cancellation, and graceful shutdown.
@@ -56,6 +73,56 @@ Before starting this project, ensure you've completed:
 
 ---
 
+## How Messages Flow (End-to-End)
+
+Before diving into design decisions, understand the complete lifecycle of a single message:
+
+```
+  STEP-BY-STEP: What happens when you call Publish("orders", msg)?
+
+  ┌────────────────────────────────────────────────────────────────────────────┐
+  │  Step 1: Publisher calls svc.Publish(ctx, "orders", payload, headers)     │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 2: Service layer validates                                          │
+  │          • Is "orders" a valid topic name? (length, charset)              │
+  │          • Is payload under 1MB?                                           │
+  │          • Is the topic reserved (_dlq, _system)?                         │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 3: Service creates Message struct                                   │
+  │          • Generates UUID for Message.ID                                  │
+  │          • Sets Timestamp = time.Now()                                    │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 4: Service calls broker.Publish(ctx, msg)                           │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 5: Broker checks ctx.Done() — fast exit if shutting down           │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 6: Broker looks up topic "orders" in map (RLock)                   │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 7: Topic.fanOut(msg) — loop over all subscribers                   │
+  │          │                                                                 │
+  │          ├──► sub1.Publish(ctx, msg) ──► channel buffer ──► consumer      │
+  │          ├──► sub2.Publish(ctx, msg) ──► channel buffer ──► consumer      │
+  │          └──► sub3.Publish(ctx, msg) ──► channel buffer ──► consumer      │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 8: If any sub.Publish() fails (buffer full) → DLQ entry            │
+  │          │                                                                 │
+  │          ▼                                                                 │
+  │  Step 9: Return nil (success) or error to caller                          │
+  │                                                                            │
+  └────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key insight:** The publish path is **synchronous** — it blocks until all subscribers receive the message (or backpressure is applied). The consumer path is **asynchronous** — subscribers process messages in their own goroutines.
+
+---
+
 ## Design Decisions
 
 ### 1. Project Structure → `06-software-patterns/01-project-structure.md`
@@ -85,26 +152,36 @@ Before starting this project, ensure you've completed:
 
 ### 2. Layered Architecture → `06-software-patterns/05-clean-architecture.md`
 
+**What:** The system is organized in concentric layers. Each layer only depends on the layer inside it.
+
+**Why:** Dependencies that point inward mean the core domain (Message, Topic) never changes when the outer layers (HTTP, CLI, config) change. You can swap the HTTP handler for a gRPC handler without touching the broker.
+
+**How:** Each layer defines an interface that the outer layer depends on. The concrete implementation is injected at startup.
+
 ```
   ┌──────────────────────────────────────────────────────────────────────────┐
   │                                                                          │
   │   ┌──────────────────────────────────────────────────────────────────┐   │
-  │   │  INFRASTRUCTURE                                                  │   │
-  │   │  cmd/server/main.go — wires everything, starts HTTP + broker    │   │
+  │   │  INFRASTRUCTURE (outermost)                                      │   │
+  │   │  cmd/server/main.go — knows ALL concrete types                   │   │
+  │   │  Wires dependencies, starts HTTP server, listens for signals     │   │
   │   │                                                                   │   │
   │   │   ┌────────────────────────────────────────────────────────────┐ │   │
   │   │   │  SERVICE LAYER                                            │ │   │
-  │   │   │  internal/service/mq.go — validate, orchestrate, publish  │ │   │
+  │   │   │  internal/service/mq.go — validates input, orchestrates   │ │   │
+  │   │   │  Depends on: broker.Broker interface (NOT concrete)       │ │   │
   │   │   │                                                            │ │   │
   │   │   │   ┌─────────────────────────────────────────────────────┐ │ │   │
-  │   │   │   │  BROKER LAYER (Domain)                              │ │ │   │
+  │   │   │   │  BROKER LAYER (Domain Core)                         │ │ │   │
   │   │   │   │  internal/broker/ — topic registry, fan-out,        │ │ │   │
   │   │   │   │  subscriber channels, backpressure, DLQ             │ │ │   │
+  │   │   │   │  Depends on: model only                             │ │ │   │
   │   │   │   │                                                       │ │ │   │
   │   │   │   │   ┌──────────────────────────────────────────────┐  │ │ │   │
-  │   │   │   │   │  MODEL (innermost)                            │  │ │ │   │
-  │   │   │   │   │  internal/model/ — Message, Topic types       │  │ │ │   │
-  │   │   │   │   │  No imports from outer layers                 │  │ │ │   │
+  │   │   │   │   │  MODEL (innermost — zero dependencies)       │  │ │ │   │
+  │   │   │   │   │  internal/model/ — Message, TopicConfig      │  │ │ │   │
+  │   │   │   │   │  No imports from outer layers                │  │ │ │   │
+  │   │   │   │   │  Pure data types, no behavior                │  │ │ │   │
   │   │   │   │   └──────────────────────────────────────────────┘  │ │ │   │
   │   │   │   └─────────────────────────────────────────────────────┘ │ │   │
   │   │   └────────────────────────────────────────────────────────────┘ │   │
@@ -113,9 +190,15 @@ Before starting this project, ensure you've completed:
   └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Dependencies point inward.** Model never imports broker. Broker never imports service. Service never imports cmd.
+**Dependency rule:** Arrows point inward. Model never imports broker. Broker never imports service. Service never imports cmd. If you see an import going outward, it's a violation.
 
 ### 3. Dependency Injection → `06-software-patterns/04-dependency-injection.md`
+
+**What:** `main.go` creates all concrete types and passes them as dependencies. No component creates its own dependencies.
+
+**Why:** We can test the service with a mock broker. We can swap the in-memory broker for a Redis-backed one later without changing the service. Each component only knows about interfaces, not implementations.
+
+**How:** Constructor functions accept interfaces and return structs. `main.go` is the only place that calls `broker.New()`.
 
 ```go
 // cmd/server/main.go — the ONLY place that knows concrete types
@@ -142,7 +225,11 @@ func main() {
 
 ### 4. Per-Subscriber Bounded Channels → `06-concurrency/17-worker-pools.md` + `06-software-patterns/08-backpressure-strategies.md`
 
-Each subscriber gets a **buffered channel**. When the buffer is full, we apply backpressure.
+**What:** Each subscriber gets a **buffered channel** of configurable size. When the buffer is full, we apply one of three backpressure strategies.
+
+**Why:** Without bounded channels, a slow subscriber's buffer grows forever → OOM crash. Bounded channels force us to decide: drop old messages, drop new messages, or block the publisher.
+
+**How:** The `Subscriber` struct holds `make(chan model.Message, bufferSize)`. The `Publish()` method uses `select` with `default` for non-blocking backpressure.
 
 ```
   Publisher                    Broker                         Subscriber
@@ -164,7 +251,11 @@ Each subscriber gets a **buffered channel**. When the buffer is full, we apply b
 
 ### 5. Context Cancellation → `06-concurrency/14-context.md`
 
-Every operation accepts `context.Context`. When cancelled, the broker stops:
+**What:** Every operation accepts `context.Context`. When cancelled, all components stop what they're doing.
+
+**Why:** Without context, there's no way to tell goroutines to stop. The process would hang forever on shutdown, or require `os.Exit()` which loses messages.
+
+**How:** `main.go` creates `ctx, cancel := context.WithCancel(...)`. On SIGINT, `cancel()` fires, and every goroutine checks `<-ctx.Done()`.
 - Accepting new publishes
 - Dispatching to subscribers
 - Waiting for subscriber drains
@@ -185,7 +276,11 @@ Every operation accepts `context.Context`. When cancelled, the broker stops:
 
 ### 6. Graceful Shutdown → `06-concurrency/15-waitgroup.md`
 
-On shutdown: stop accepting new messages, drain in-flight messages to subscribers, then exit.
+**What:** On shutdown: stop accepting new messages, drain in-flight messages to subscribers, then exit.
+
+**Why:** Calling `os.Exit()` immediately loses all messages in subscriber buffers. Graceful shutdown ensures zero message loss — every buffered message reaches its handler before the process exits.
+
+**How:** Close subscriber channels → wait for consumer goroutines to drain → `WaitGroup.Wait()` with timeout → print stats → exit.
 
 ```
   ┌──────────────────────────────────────────────────────────────────────────┐

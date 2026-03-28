@@ -4,6 +4,16 @@
 
 ---
 
+## Table of Contents
+
+1. [Why Start Here?](#why-start-here) `[CORE]`
+2. [The Message](#the-message) `[CORE]`
+3. [The Topic](#the-topic) `[CORE]`
+4. [Error Types](#error-types) `[CORE]`
+5. [What This Enables](#what-this-enables) `[CORE]`
+
+---
+
 ## Why Start Here?
 
 The model layer is the innermost dependency. It imports nothing from outer layers. If we get this wrong, everything built on top is wrong.

@@ -6,6 +6,17 @@
 
 ---
 
+## Table of Contents
+
+1. [The Dependency Graph](#the-dependency-graph) `[CORE]`
+2. [Configuration](#configuration) `[CORE]`
+3. [main.go — The Entry Point](#maingo--the-entry-point) `[CORE]`
+4. [Wiring Diagram](#wiring-diagram) `[CORE]`
+5. [Why This Order Matters](#why-this-order-matters) `[CORE]`
+6. [The Demo Function](#the-demo-function) `[PRODUCTION]`
+
+---
+
 ## The Dependency Graph
 
 ```
@@ -42,6 +53,12 @@
 ---
 
 ## Configuration
+
+**What:** A plain struct holding all configurable values — buffer sizes, timeouts, limits.
+
+**Why a separate config package?** (Pattern 01: Project structure) Configuration is a cross-cutting concern. Both broker and server read from it. Keeping it in `internal/config/` avoids circular imports. Using `Default()` with sensible defaults means you don't need a config file to run the demo.
+
+**How:** Nested structs (`Config.Broker.MaxTopics`) organize related settings. The `Default()` function returns a fully populated config — no nil fields, no zero-value surprises.
 
 ```go
 // internal/config/config.go
