@@ -125,7 +125,7 @@ Before diving into design decisions, understand the complete lifecycle of a sing
 
 ## Design Decisions
 
-### 1. Project Structure → `06-software-patterns/01-project-structure.md`
+### 1. Project Structure
 
 ```
   mini-mq/
@@ -150,7 +150,7 @@ Before diving into design decisions, understand the complete lifecycle of a sing
 
 **Why `internal/`?** Go's `internal` directory convention is a compile-time visibility rule: packages inside `internal/` can only be imported by code in the parent directory tree. So `mini-mq/internal/broker` can be imported by `mini-mq/cmd/server/main.go` (same module), but *not* by code in another module. This is Go's way of enforcing encapsulation — the broker is an implementation detail, not a public API. Use `pkg/` for code you *want* external consumers to import.
 
-### 2. Layered Architecture → `06-software-patterns/05-clean-architecture.md`
+### 2. Layered Architecture
 
 **What:** The system is organized in concentric layers. Each layer only depends on the layer inside it.
 
@@ -192,7 +192,7 @@ Before diving into design decisions, understand the complete lifecycle of a sing
 
 **Dependency rule:** Arrows point inward. Model never imports broker. Broker never imports service. Service never imports cmd. If you see an import going outward, it's a violation.
 
-### 3. Dependency Injection → `06-software-patterns/04-dependency-injection.md`
+### 3. Dependency Injection
 
 **What:** `main.go` creates all concrete types and passes them as dependencies. No component creates its own dependencies.
 
@@ -223,7 +223,7 @@ func main() {
 
 **Why DI?** We can test the service with a mock broker. We can swap the in-memory broker for a Redis-backed one later without changing the service.
 
-### 4. Per-Subscriber Bounded Channels → `06-concurrency/17-worker-pools.md` + `06-software-patterns/08-backpressure-strategies.md`
+### 4. Per-Subscriber Bounded Channels
 
 **What:** Each subscriber gets a **buffered channel** of configurable size. When the buffer is full, we apply one of three backpressure strategies.
 
@@ -249,7 +249,7 @@ func main() {
      │                            │    or block publisher)         │
 ```
 
-### 5. Context Cancellation → `06-concurrency/14-context.md`
+### 5. Context Cancellation
 
 **What:** Every operation accepts `context.Context`. When cancelled, all components stop what they're doing.
 
@@ -274,7 +274,7 @@ func main() {
          SIGINT received → cancel() → all goroutines see ctx.Done()
 ```
 
-### 6. Graceful Shutdown → `06-concurrency/15-waitgroup.md`
+### 6. Graceful Shutdown
 
 **What:** On shutdown: stop accepting new messages, drain in-flight messages to subscribers, then exit.
 

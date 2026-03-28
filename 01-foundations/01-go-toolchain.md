@@ -24,7 +24,7 @@
 
 ---
 
-## 1. Installation & Environment [CORE]
+## 1. Installation & Environment
 
 ### Verify Installation
 
@@ -65,7 +65,7 @@ export PATH=$PATH:$(go env GOPATH)/bin
 
 ---
 
-## 2. Go Modules (`go mod`) [CORE]
+## 2. Go Modules (`go mod`)
 
 Go modules replaced `GOPATH` mode. Every project has a `go.mod` file at its root.
 
@@ -189,7 +189,7 @@ Programmatic editing of `go.mod`. Useful in scripts/CI.
 
 ---
 
-## 3. Building (`go build`) [CORE]
+## 3. Building (`go build`)
 
 ### Basic Build
 
@@ -303,7 +303,7 @@ The race detector finds data races at runtime. **Never deploy `-race` binaries t
 
 ---
 
-## 4. Running (`go run`) [CORE]
+## 4. Running (`go run`)
 
 ### Basic Usage
 
@@ -342,7 +342,7 @@ Unlike `go build`, `go install` puts the binary in `$GOBIN` and caches the build
 
 ---
 
-## 5. Testing (`go test`) [CORE]
+## 5. Testing (`go test`)
 
 This is where Go shines. Testing is built into the toolchain. No frameworks required.
 
@@ -632,7 +632,7 @@ go tool cover -func=coverage.out           # Show per-function coverage
 
 ---
 
-## 6. Formatting (`go fmt`) [CORE]
+## 6. Formatting (`go fmt`)
 
 ### The Golden Rule
 
@@ -687,7 +687,7 @@ goimports -w .    # Formats + adds/removes imports
 
 ---
 
-## 7. Vetting (`go vet`) [CORE]
+## 7. Vetting (`go vet`)
 
 Static analysis that catches common mistakes.
 
@@ -734,7 +734,7 @@ for _, item := range items {
 
 ---
 
-## 8. Dependency Management [CORE]
+## 8. Dependency Management
 
 ### Versioning
 
@@ -782,7 +782,7 @@ go build ./...                  # Fails if go.mod is dirty
 
 ---
 
-## 9. Cross-Compilation [PRODUCTION]
+## 9. Cross-Compilation
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
@@ -828,7 +828,7 @@ build-all:
 
 ---
 
-## 10. Profiling & Benchmarks [PRODUCTION]
+## 10. Profiling & Benchmarks
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
@@ -894,7 +894,7 @@ go tool trace trace.out   # Opens browser UI
 
 ---
 
-## 11. Go Workspace (Monorepo) [PRODUCTION]
+## 11. Go Workspace (Monorepo)
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
@@ -925,7 +925,7 @@ Now `service-a` can import from `shared-libs` without publishing it. Changes are
 
 ---
 
-## 12. Production Build Patterns [PRODUCTION]
+## 12. Production Build Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects in Phases 1-3.
 
@@ -978,7 +978,7 @@ jobs:
 
 ---
 
-## 13. Common Pitfalls [CORE]
+## 13. Common Pitfalls
 
 ### 1. Forgetting `go mod tidy` After Adding Imports
 

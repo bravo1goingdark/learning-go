@@ -23,7 +23,7 @@
 
 ---
 
-## 1. Struct Basics [CORE]
+## 1. Struct Basics
 
 ### Definition
 
@@ -65,7 +65,7 @@ type OrderItem struct {
 
 ---
 
-## 2. Struct Construction [CORE]
+## 2. Struct Construction
 
 ### Method 1: Zero Value
 
@@ -207,7 +207,7 @@ u := NewUser("Alice", "alice@example.com",
 
 ---
 
-## 3. Methods [CORE]
+## 3. Methods
 
 Go has no classes. A method is simply a function with a **receiver** — an extra parameter that comes before the function name. The receiver is Go's equivalent of `self` or `this`, but it is explicitly typed and explicitly named. Any named type (not just structs) can have methods — you can add methods to `type Celsius float64`, `type UserID string`, etc.
 
@@ -271,7 +271,7 @@ fmt.Println(temp.Kelvin())      // 373.15
 
 ---
 
-## 4. Value vs Pointer Receivers [CORE]
+## 4. Value vs Pointer Receivers
 
 ### Value Receiver — Modifies Copy
 
@@ -342,7 +342,7 @@ func (u User) Email() string      { return u.email }
 
 ---
 
-## 5. Method Sets & Interface Satisfaction [CORE]
+## 5. Method Sets & Interface Satisfaction
 
 ### What Is a Method Set?
 
@@ -430,7 +430,7 @@ func main() {
 
 ---
 
-## 6. Embedding (Composition) [CORE]
+## 6. Embedding (Composition)
 
 Go has no inheritance. Instead, use **embedding** for composition. Go rejected inheritance because it creates tight coupling — when class B extends class A, changing A can break B. With embedding, `Dog` embeds `Animal` — Dog *has* an Animal, not *is* an Animal. You compose behavior without fragile base-class problems.
 
@@ -566,7 +566,7 @@ func (s *UserService) Create(user User) error {
 
 ---
 
-## 7. Struct Tags [PRODUCTION]
+## 7. Struct Tags
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -660,7 +660,7 @@ func parseValidateTag(tag string) map[string]string {
 
 ---
 
-## 8. Comparable Structs [CORE]
+## 8. Comparable Structs
 
 Structs are comparable if all their fields are comparable.
 
@@ -707,7 +707,7 @@ cache[CacheKey{UserID: 1, Path: "/api/users"}] = "cached-response"
 
 ---
 
-## 9. Empty Struct [CORE]
+## 9. Empty Struct
 
 The empty struct `struct{}` has zero size.
 
@@ -754,7 +754,7 @@ func (Validator) Validate(data []byte) error {
 
 ---
 
-## 10. Struct Memory Layout [INTERNALS]
+## 10. Struct Memory Layout
 
 > ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
@@ -820,7 +820,7 @@ fmt.Println(unsafe.Sizeof(Good{}))  // 24
 
 ---
 
-## 11. Production Patterns [PRODUCTION]
+## 11. Production Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -917,7 +917,7 @@ func LoadConfig(path string) (*Config, error) {
 
 ---
 
-## 12. Common Pitfalls [CORE]
+## 12. Common Pitfalls
 
 ### 1. Copying Mutex Fields
 

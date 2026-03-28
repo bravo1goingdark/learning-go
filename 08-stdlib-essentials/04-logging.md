@@ -15,7 +15,7 @@
 
 ---
 
-## 1. Basic Logging (log) [CORE]
+## 1. Basic Logging (log)
 
 ### Simple Logger
 
@@ -67,7 +67,7 @@ log.Println("This goes to the file")
 
 ---
 
-## 2. Structured Logging (slog) [CORE]
+## 2. Structured Logging (slog)
 
 `slog` (Go 1.21+) provides structured, machine-parseable logging.
 
@@ -140,7 +140,7 @@ slog.Info("user",
 
 ---
 
-## 3. Log Levels [CORE]
+## 3. Log Levels
 
 ### Level Hierarchy
 
@@ -191,7 +191,7 @@ slog.InfoContext(ctx, "processing request", "user_id", 42)
 
 ---
 
-## 4. Custom Logger [PRODUCTION]
+## 4. Custom Logger
 
 > ⏭️ **First pass? Skip this section.** Come back after completing projects.
 
@@ -297,7 +297,7 @@ logger.Info("logged to both stdout and file")
 
 ---
 
-## 5. Best Practices [CORE]
+## 5. Best Practices
 
 ### 1. Use Structured Logging
 
@@ -358,7 +358,7 @@ func processOrder(orderID string) error {
 
 ---
 
-## 6. Common Pitfalls [CORE]
+## 6. Common Pitfalls
 
 ### 1. Using fmt.Println for Logging
 

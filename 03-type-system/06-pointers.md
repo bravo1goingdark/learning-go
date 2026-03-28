@@ -22,7 +22,7 @@
 
 ---
 
-## 1. What is a Pointer [CORE]
+## 1. What is a Pointer
 
 A pointer **holds the memory address** of another variable.
 
@@ -49,7 +49,7 @@ Pointer:     p = 0x14000100008
 
 ---
 
-## 2. Declaration & Dereferencing [CORE]
+## 2. Declaration & Dereferencing
 
 ### `&` — Address Of
 
@@ -101,7 +101,7 @@ fmt.Println(r == nil)  // true
 
 ---
 
-## 3. Pointers with Functions [CORE]
+## 3. Pointers with Functions
 
 ### Pass by Value (Default) — Does NOT Modify Original
 
@@ -176,7 +176,7 @@ func findUser(id int) (*User, error) {
 
 ---
 
-## 4. Pointers with Structs [CORE]
+## 4. Pointers with Structs
 
 ### Creating Struct Pointers
 
@@ -225,7 +225,7 @@ func main() {
 
 ---
 
-## 5. `new()` vs `&Type{}` [CORE]
+## 5. `new()` vs `&Type{}`
 
 ### `new(T)` — Pointer to Zero Value
 
@@ -266,7 +266,7 @@ u2 := &User{Name: "Alice", Age: 30}
 
 ---
 
-## 6. Escape Analysis [INTERNALS]
+## 6. Escape Analysis
 
 > ⚠️ **GATE [INTERNALS]:** This section covers compiler internals (escape analysis, stack vs heap allocation). You can skip this on first read and return when optimizing performance.
 
@@ -359,7 +359,7 @@ func process() *int {
 
 ---
 
-## 7. When to Use Pointers [CORE]
+## 7. When to Use Pointers
 
 ### 1. To Modify a Value in a Function
 
@@ -454,7 +454,7 @@ func (f *File) Write(p []byte) (n int, err error) {
 
 ---
 
-## 8. When NOT to Use Pointers [CORE]
+## 8. When NOT to Use Pointers
 
 ### 1. Small Value Types
 
@@ -502,7 +502,7 @@ func process() {
 
 ---
 
-## 9. Pointer Gotchas [CORE]
+## 9. Pointer Gotchas
 
 ### 1. Nil Pointer Dereference
 
@@ -591,7 +591,7 @@ func main() {
 
 ---
 
-## 10. Production Patterns [PRODUCTION]
+## 10. Production Patterns
 
 > 🚧 **GATE [PRODUCTION]:** This section covers production-ready patterns (constructors, optional fields, atomic pointers). Ensure you understand sections 1-9 first.
 
@@ -670,7 +670,7 @@ func updateConfig(newCfg *Config) {
 
 ---
 
-## 11. Common Pitfalls [CORE]
+## 11. Common Pitfalls
 
 ### 1. Nil Pointer Dereference
 
@@ -750,7 +750,7 @@ func newUser() *User { return &User{Name: "Alice"} }
 
 ---
 
-## 12. Production Best Practices [PRODUCTION]
+## 12. Production Best Practices
 
 > 🚧 **GATE [PRODUCTION]:** This section covers production decision-making (pointer vs value, memory allocation patterns). Ensure you understand sections 1-11 first.
 
@@ -825,7 +825,7 @@ func putUser(u *User) {
 
 ---
 
-## 13. Performance Considerations [PRODUCTION]
+## 13. Performance Considerations
 
 > 🚧 **GATE [PRODUCTION]:** This section covers performance benchmarking and optimization with pointers.
 
@@ -891,7 +891,7 @@ func BenchmarkPointer(b *testing.B) {
 
 ---
 
-## 14. Debugging Pointers [PRODUCTION]
+## 14. Debugging Pointers
 
 ### Print Pointer Values
 
@@ -924,7 +924,7 @@ func printPointerInfo() {
 
 ---
 
-## 15. Testing with Pointers [PRODUCTION]
+## 15. Testing with Pointers
 
 ```go
 func TestPointerModification(t *testing.T) {

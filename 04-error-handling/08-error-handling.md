@@ -22,7 +22,7 @@
 
 ---
 
-## 1. The `error` Interface [CORE]
+## 1. The `error` Interface
 
 ```go
 type error interface {
@@ -82,7 +82,7 @@ func main() {
 
 ---
 
-## 2. Creating Errors [CORE]
+## 2. Creating Errors
 
 ### `errors.New`
 
@@ -139,7 +139,7 @@ func validate(name string) error {
 
 ---
 
-## 3. Error Checking Patterns [CORE]
+## 3. Error Checking Patterns
 
 Go's error handling has one rule: every function that can fail returns `error` as its last return value. The caller then has exactly four choices: (1) **handle it** immediately, (2) **wrap and propagate** it up the call stack, (3) **retry**, or (4) **explicitly ignore** it with `_`. This section shows each pattern.
 
@@ -211,7 +211,7 @@ result, _ := doSomething()  // Error is safe to ignore: best-effort operation
 
 ---
 
-## 4. Error Wrapping (Go 1.13+) [CORE]
+## 4. Error Wrapping (Go 1.13+)
 
 ### `%w` Verb
 
@@ -287,7 +287,7 @@ func doMultiple() error {
 
 ---
 
-## 5. Sentinel Errors [CORE]
+## 5. Sentinel Errors
 
 Pre-defined errors used for comparison. Without sentinels, callers would compare error messages as strings (`err.Error() == "not found"`) — fragile and breaks when wording changes. Sentinels provide stable, comparable error values. `errors.Is(err, ErrNotFound)` works even when the error has been wrapped with `fmt.Errorf(...%w...)`, walking the entire error chain.
 
@@ -348,7 +348,7 @@ var ErrNotFound = errors.New("not found")
 
 ---
 
-## 6. Custom Error Types [CORE]
+## 6. Custom Error Types
 
 ### Struct Error
 
@@ -450,7 +450,7 @@ func validateAge(age int) error {
 
 ---
 
-## 7. Error Inspection (`errors.Is`, `errors.As`) [CORE]
+## 7. Error Inspection (`errors.Is`, `errors.As`)
 
 ### `errors.Is` — Check Equality
 
@@ -533,7 +533,7 @@ errors.As(err, &httpErr)  // Correct
 
 ---
 
-## 8. Panic & Recover [CORE]
+## 8. Panic & Recover
 
 ### Panic
 
@@ -629,7 +629,7 @@ var tmpl = Must(template.New("main").Parse(templateStr))
 
 ---
 
-## 9. Production Error Handling Patterns [PRODUCTION]
+## 9. Production Error Handling Patterns
 
 > 🚧 **GATE [PRODUCTION]:** This section covers production error handling patterns (wrapping with context, error accumulation, typed HTTP errors, domain errors). Ensure you understand sections 1-8 first.
 
@@ -795,7 +795,7 @@ func (s *OrderService) Cancel(orderID string) error {
 
 ---
 
-## 10. Structured Errors (With `slog`) [PRODUCTION]
+## 10. Structured Errors (With `slog`)
 
 ```go
 import "log/slog"
@@ -827,7 +827,7 @@ func (s *Service) Process(ctx context.Context, id string) error {
 
 ---
 
-## 11. Common Pitfalls [CORE]
+## 11. Common Pitfalls
 
 ### 1. Ignoring Errors
 
@@ -977,7 +977,7 @@ var ErrNotFound = errors.New("not found")
 
 ---
 
-## 12. Testing Errors [PRODUCTION]
+## 12. Testing Errors
 
 > 🚧 **GATE [PRODUCTION]:** This section covers testing error handling patterns.
 
@@ -1033,7 +1033,7 @@ func doPanic() {
 
 ---
 
-## 13. Error Handling Best Practices [PRODUCTION]
+## 13. Error Handling Best Practices
 
 ### Don't Ignore Errors
 

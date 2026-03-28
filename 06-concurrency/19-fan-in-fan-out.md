@@ -22,7 +22,7 @@
 
 ---
 
-## 1. What Is Fan-Out / Fan-In [CORE]
+## 1. What Is Fan-Out / Fan-In
 
 ```
 Fan-Out: Distribute work to multiple goroutines
@@ -47,7 +47,7 @@ Fan-In: Collect results from multiple goroutines into one channel
 
 ---
 
-## 2. Fan-Out [PRODUCTION]
+## 2. Fan-Out
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -106,7 +106,7 @@ func worker(id int, jobs <-chan Job) {
 
 ---
 
-## 3. Fan-In [PRODUCTION]
+## 3. Fan-In
 
 Fan-in merges multiple channels into **one output channel**.
 
@@ -188,7 +188,7 @@ func fanInSelect(ch1, ch2 <-chan int) <-chan int {
 
 ---
 
-## 4. Fan-Out / Fan-In Together [PRODUCTION]
+## 4. Fan-Out / Fan-In Together
 
 The full pattern: distribute work (fan-out) then collect results (fan-in).
 
@@ -300,7 +300,7 @@ func fanIn(ctx context.Context, channels ...<-chan Result) <-chan Result {
 
 ---
 
-## 5. Fan-Out with Context [PRODUCTION]
+## 5. Fan-Out with Context
 
 All goroutines respect cancellation. When context is cancelled, everything stops.
 
@@ -344,7 +344,7 @@ func worker(ctx context.Context, id int, jobs <-chan Job) <-chan Result {
 
 ---
 
-## 6. Fan-Out with Error Handling [PRODUCTION]
+## 6. Fan-Out with Error Handling
 
 ### Fail-Fast: Cancel on First Error
 
@@ -427,7 +427,7 @@ func processAll(ctx context.Context, items []Item) []error {
 
 ---
 
-## 7. Bounded Fan-Out [PRODUCTION]
+## 7. Bounded Fan-Out
 
 Without bounds, spawning a goroutine per item creates N goroutines for N items. With 100,000 items, that's ~200MB of stack memory, massive scheduler contention, and potential OOM. Bounded fan-out limits concurrent goroutines to a fixed number (e.g., 10-100), keeping resource usage predictable regardless of input size.
 
@@ -507,7 +507,7 @@ func boundedFanOut(ctx context.Context, items []Item, numWorkers int) []Result {
 
 ---
 
-## 8. Fan-In from Multiple Sources [PRODUCTION]
+## 8. Fan-In from Multiple Sources
 
 ### Merge HTTP Response Channels
 
@@ -593,7 +593,7 @@ func mergeWithPriority(high, low <-chan Job) <-chan Job {
 
 ---
 
-## 9. Real-World Examples [PRODUCTION]
+## 9. Real-World Examples
 
 ### Parallel URL Checker
 
@@ -691,7 +691,7 @@ func processFiles(paths []string) error {
 
 ---
 
-## 10. Common Pitfalls [CORE]
+## 10. Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|

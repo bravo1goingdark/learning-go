@@ -23,7 +23,7 @@
 
 ---
 
-## 1. What Is a Goroutine [CORE]
+## 1. What Is a Goroutine
 
 A goroutine is a **lightweight thread** managed by the Go runtime. Not an OS thread.
 
@@ -37,7 +37,7 @@ A goroutine is a **lightweight thread** managed by the Go runtime. Not an OS thr
 
 ---
 
-## 2. Creating Goroutines [CORE]
+## 2. Creating Goroutines
 
 ### Basic Syntax
 
@@ -287,7 +287,7 @@ func main() {
 
 ---
 
-## 3. Goroutine Internals [INTERNALS]
+## 3. Goroutine Internals
 
 > ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
@@ -368,7 +368,7 @@ func main() {
 
 ---
 
-## 4. Goroutine Lifecycle [CORE]
+## 4. Goroutine Lifecycle
 
 ```
                             ┌──────────────────┐
@@ -412,7 +412,7 @@ func main() {
 
 ---
 
-## 5. Closure Gotchas [CORE]
+## 5. Closure Gotchas
 
 ### Closures Primer
 
@@ -478,7 +478,7 @@ for _, v := range values {
 
 ---
 
-## 6. Goroutine Leaks [PRODUCTION]
+## 6. Goroutine Leaks
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -537,7 +537,7 @@ func safe(ctx context.Context) {
 
 ---
 
-## 7. GOMAXPROCS & Scheduler [INTERNALS]
+## 7. GOMAXPROCS & Scheduler
 
 > ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
@@ -581,7 +581,7 @@ runtime.GC()
 
 ---
 
-## 8. Stack Growth [INTERNALS]
+## 8. Stack Growth
 
 > ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
@@ -621,7 +621,7 @@ go build -gcflags="-m" main.go
 
 ---
 
-## 9. Common Pitfalls [CORE]
+## 9. Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -653,7 +653,7 @@ func safeWorker(ctx context.Context, jobs <-chan int) {
 
 ---
 
-## 10. Production Best Practices [PRODUCTION]
+## 10. Production Best Practices
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -790,7 +790,7 @@ func worker(ctx context.Context, jobs <-chan Job) {
 
 ---
 
-## 11. Debugging Goroutines [PRODUCTION]
+## 11. Debugging Goroutines
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -840,7 +840,7 @@ GODEBUG=scheddetail=1 ./myapp
 
 ---
 
-## 12. Performance Considerations [PRODUCTION]
+## 12. Performance Considerations
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -876,7 +876,7 @@ Max stack: 1 GB (can grow dynamically)
 
 ---
 
-## 13. Common Production Patterns [PRODUCTION]
+## 13. Common Production Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 

@@ -29,7 +29,7 @@
 
 ---
 
-## 1. Arrays [CORE]
+## 1. Arrays
 
 ### Declaration
 
@@ -110,7 +110,7 @@ var ring [256]byte
 
 ---
 
-## 2. Slices — The Three Fields [CORE]
+## 2. Slices — The Three Fields
 
 A slice is a **descriptor** (fat pointer) with three fields:
 
@@ -164,7 +164,7 @@ fmt.Println(cap(s))  // 6 (or larger — grew automatically)
 
 ---
 
-## 3. Slice Creation Methods [CORE]
+## 3. Slice Creation Methods
 
 ### Method 1: Literal
 
@@ -225,7 +225,7 @@ for i := 0; i < 1000000; i++ {
 
 ---
 
-## 4. Slicing Operations [CORE]
+## 4. Slicing Operations
 
 **Before seeing the syntax, understand the core concept:** Slicing does NOT copy data. It creates a new slice header pointing into the same backing array. This is efficient (no allocation) but dangerous — modifying a sub-slice can silently modify the original. This is the #1 source of slice bugs in production Go.
 
@@ -275,7 +275,7 @@ sub := s[2:4]
 
 ---
 
-## 5. The `append` Function [CORE]
+## 5. The `append` Function
 
 ### Basic Usage
 
@@ -325,7 +325,7 @@ func addElement(s *[]int, v int) {
 
 ---
 
-## 6. Capacity Growth Strategy [CORE]
+## 6. Capacity Growth Strategy
 
 ### Growth Algorithm (Go 1.18+)
 
@@ -394,7 +394,7 @@ The pre-allocated version is typically 2-10x faster.
 
 ---
 
-## 7. The Shared-Array Bug [CORE]
+## 7. The Shared-Array Bug
 
 This is the **#1 slice bug** in production Go code.
 
@@ -475,7 +475,7 @@ func firstN(s []int, n int) []int {
 
 ---
 
-## 8. Copy [CORE]
+## 8. Copy
 
 ### Basic Copy
 
@@ -529,7 +529,7 @@ func insertAt[T any](s []T, i int, v T) []T {
 
 ---
 
-## 9. Nil Slice vs Empty Slice [CORE]
+## 9. Nil Slice vs Empty Slice
 
 For most operations, nil and empty slices behave identically — `len()`, `cap()`, `range`, and `append` all work the same. The distinction matters in exactly one place: **serialization**. If your API returns `null` when you meant `[]`, clients may break. Understanding this difference prevents subtle API bugs.
 
@@ -585,7 +585,7 @@ func getItems() []Item {
 
 ---
 
-## 10. Slice Internals (Memory Layout) [INTERNALS]
+## 10. Slice Internals (Memory Layout)
 
 > ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
@@ -822,7 +822,7 @@ fmt.Println(unsafe.Sizeof([]int{}))  // 24
 
 ---
 
-## 11. Passing Slices to Functions [CORE]
+## 11. Passing Slices to Functions
 
 ### Pass by Value (Default)
 
@@ -874,7 +874,7 @@ func main() {
 
 ---
 
-## 12. Common Patterns [PRODUCTION]
+## 12. Common Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -999,7 +999,7 @@ func deleteUnordered[T any](s []T, i int) []T {
 
 ---
 
-## 13. Performance Considerations [PRODUCTION]
+## 13. Performance Considerations
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -1064,7 +1064,7 @@ Use pointer slices when:
 
 ---
 
-## 14. Common Pitfalls [CORE]
+## 14. Common Pitfalls
 
 ### 1. The Shared-Array Bug (Most Common)
 
@@ -1177,7 +1177,7 @@ func equal(a, b []int) bool {
 
 ---
 
-## 15. Production Patterns [PRODUCTION]
+## 15. Production Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -1288,7 +1288,7 @@ func (q *Queue[T]) Len() int {
 
 ---
 
-## 16. Memory Optimization [PRODUCTION]
+## 16. Memory Optimization
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -1341,7 +1341,7 @@ func reuseSlice() {
 
 ---
 
-## 17. Slice vs Array Performance [INTERNALS]
+## 17. Slice vs Array Performance
 
 > ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
@@ -1360,7 +1360,7 @@ func benchmark() {
 
 ---
 
-## 18. Testing Slices [PRODUCTION]
+## 18. Testing Slices
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 

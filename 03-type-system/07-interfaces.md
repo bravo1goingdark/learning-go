@@ -23,7 +23,7 @@
 
 ---
 
-## 1. Interface Basics [CORE]
+## 1. Interface Basics
 
 An interface defines a **set of methods**. Any type that implements all those methods satisfies the interface.
 
@@ -72,7 +72,7 @@ func (f *File) Close() error {
 
 ---
 
-## 2. Implicit Satisfaction [CORE]
+## 2. Implicit Satisfaction
 
 ### No `implements` Keyword
 
@@ -144,7 +144,7 @@ func copyData(dst *os.File, src *os.File) error {
 
 ---
 
-## 3. Interface Internals [INTERNALS]
+## 3. Interface Internals
 
 > ⚠️ **GATE [INTERNALS]:** This section covers the internal two-word structure of interface values (eface/iface). You can skip this on first read and return when debugging interface behavior.
 
@@ -213,7 +213,7 @@ fmt.Println(unsafe.Sizeof(r))  // 16 (two 8-byte pointers on 64-bit)
 
 ---
 
-## 4. The Empty Interface (`any`) [CORE]
+## 4. The Empty Interface (`any`)
 
 ### Definition
 
@@ -259,7 +259,7 @@ func process(v any) {
 
 ---
 
-## 5. Type Assertions [CORE]
+## 5. Type Assertions
 
 ### Basic Assertion
 
@@ -307,7 +307,7 @@ if ok {
 
 ---
 
-## 6. Type Switches [CORE]
+## 6. Type Switches
 
 ```go
 func describe(v any) string {
@@ -361,7 +361,7 @@ case fmt.Stringer:    // Then Stringer (less specific)
 
 ---
 
-## 7. Nil Interface vs Interface Holding Nil [CORE]
+## 7. Nil Interface vs Interface Holding Nil
 
 **This is the #1 interface bug in production Go.**
 
@@ -468,7 +468,7 @@ func doSomething() error {
 
 ---
 
-## 8. Interface Composition [CORE]
+## 8. Interface Composition
 
 ### Combining Interfaces
 
@@ -533,7 +533,7 @@ func Migrate(db DB) error { ... }  // Needs both
 
 ---
 
-## 9. Standard Library Interfaces [CORE]
+## 9. Standard Library Interfaces
 
 ### Most Important Interfaces
 
@@ -649,7 +649,7 @@ func (r *MyReader) Read(p []byte) (n int, err error) {
 
 ---
 
-## 10. Design Principles [PRODUCTION]
+## 10. Design Principles
 
 > 🚧 **GATE [PRODUCTION]:** This section covers production interface design principles (accept interfaces/return structs, small interfaces, consumer-side definition). Ensure you understand sections 1-9 first.
 
@@ -741,7 +741,7 @@ func LoadConfig(path string) (*Config, error) { ... }
 
 ---
 
-## 11. Common Patterns [PRODUCTION]
+## 11. Common Patterns
 
 > 🚧 **GATE [PRODUCTION]:** This section covers production interface patterns (mocking, decorators, strategy pattern).
 
@@ -835,7 +835,7 @@ var _ io.ReadWriteCloser = (*File)(nil)
 
 ---
 
-## 12. Common Pitfalls [CORE]
+## 12. Common Pitfalls
 
 ### 1. Nil Interface Holding Nil Pointer
 
@@ -991,7 +991,7 @@ var _ io.Reader = (*MyReader)(nil)
 
 ---
 
-## 13. Production Patterns [PRODUCTION]
+## 13. Production Patterns
 
 > 🚧 **GATE [PRODUCTION]:** This section covers production patterns (dependency injection, interface composition, table-driven tests).
 
@@ -1112,7 +1112,7 @@ func TestFormatter(t *testing.T) {
 
 ---
 
-## 14. Error Handling with Interfaces [PRODUCTION]
+## 14. Error Handling with Interfaces
 
 ```go
 type ErrorHandler interface {
@@ -1150,7 +1150,7 @@ func (r *RetryHandler) Handle(err error) bool {
 
 ---
 
-## 15. Interface Performance [PRODUCTION]
+## 15. Interface Performance
 
 ```go
 // Interfaces add a small indirection cost
@@ -1169,7 +1169,7 @@ func directCall(s *someType) int {
 
 ---
 
-## 16. Common Mistakes [PRODUCTION]
+## 16. Common Mistakes
 
 ### Defining Interfaces Too Early
 
@@ -1224,7 +1224,7 @@ type Closer interface { Close() error }
 
 ---
 
-## 17. Testing with Interfaces [PRODUCTION]
+## 17. Testing with Interfaces
 
 ```go
 // Create mock implementations
@@ -1268,7 +1268,7 @@ func TestService(t *testing.T) {
 
 ---
 
-## 18. Interface vs Concrete Types [PRODUCTION]
+## 18. Interface vs Concrete Types
 
 ```go
 // Use concrete types when:
@@ -1292,7 +1292,7 @@ func NewCache() *Cache {
 
 ---
 
-## 19. Best Practices Summary [CORE]
+## 19. Best Practices Summary
 
 1. **Define interfaces at the consumer side** — not the producer
 2. **Keep interfaces small** — 1-3 methods is ideal

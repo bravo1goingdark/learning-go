@@ -19,7 +19,7 @@
 
 ---
 
-## 1. Channel Basics [CORE]
+## 1. Channel Basics
 
 Goroutines can share memory, but unprotected shared memory causes data races. Channels provide a safer alternative: instead of sharing memory and locking it, you **communicate** values between goroutines. This follows Go's philosophy: *"Do not communicate by sharing memory; instead, share memory by communicating."*
 
@@ -50,7 +50,7 @@ close(ch)      // Close channel
 
 ---
 
-## 2. Unbuffered Channels [CORE]
+## 2. Unbuffered Channels
 
 Unbuffered channels provide **synchronous** communication. Every send blocks until a receive happens.
 
@@ -112,7 +112,7 @@ func main() {
 
 ---
 
-## 3. Buffered Channels [CORE]
+## 3. Buffered Channels
 
 **When to choose buffered vs unbuffered:** Use unbuffered when you need synchronization — a handshake where sender and receiver must meet (e.g., signaling completion). Use buffered when the producer and consumer run at different speeds, or when you want to decouple timing. The buffer size = how many items can be produced before the consumer must catch up. If the consumer is slower than the producer and the buffer fills, the producer blocks.
 
@@ -296,7 +296,7 @@ val, ok := <-ch  // val=0, ok=false (always returns zero value, ok=false)
 
 ---
 
-## 4. Directional Channels [CORE]
+## 4. Directional Channels
 
 Restrict channel to send-only or receive-only at the **type level**.
 
@@ -354,7 +354,7 @@ func bad2(in <-chan int) {
 
 ---
 
-## 5. Closing Channels [CORE]
+## 5. Closing Channels
 
 ### Rules
 
@@ -411,7 +411,7 @@ case val, ok := <-ch:
 
 ---
 
-## 6. Range Over Channel [CORE]
+## 6. Range Over Channel
 
 `range` on a channel receives values until the channel is **closed**.
 
@@ -437,7 +437,7 @@ func main() {
 
 ---
 
-## 7. Nil Channels [CORE]
+## 7. Nil Channels
 
 A nil channel is the **zero value** of a channel. Operations on it **block forever**.
 
@@ -472,7 +472,7 @@ func process(ch1, ch2 <-chan int, done chan<- struct{}) {
 
 ---
 
-## 8. Channel Internals [INTERNALS]
+## 8. Channel Internals
 
 > ⏭️ **First pass? Skip this section.** This covers Go runtime internals. Come back when curious about how Go works under the hood.
 
@@ -531,7 +531,7 @@ Receive:
 
 ---
 
-## 9. Common Patterns [PRODUCTION]
+## 9. Common Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -600,7 +600,7 @@ func main() {
 
 ---
 
-## 10. Common Pitfalls [CORE]
+## 10. Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -614,7 +614,7 @@ func main() {
 
 ---
 
-## 11. Production Patterns [PRODUCTION]
+## 11. Production Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -805,7 +805,7 @@ func split(input <-chan T) (<-chan T, <-chan T) {
 
 ---
 
-## 12. Buffer Size Guidelines [PRODUCTION]
+## 12. Buffer Size Guidelines
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -836,7 +836,7 @@ buffer := calculateBuffer(100, 50*time.Millisecond) // 10
 
 ---
 
-## 13. Testing Channels [PRODUCTION]
+## 13. Testing Channels
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 

@@ -26,7 +26,7 @@
 
 ---
 
-## 1. Why Generics? [CORE]
+## 1. Why Generics?
 
 Generics solve the tradeoff between **reusability** and **type safety**. Before Go 1.18, you had to choose.
 
@@ -81,7 +81,7 @@ _ = Sum([]myInt{1, 2, 3})        // T = myInt (if underlying is int)
 
 ---
 
-## 2. Type Parameters Basics [CORE]
+## 2. Type Parameters Basics
 
 Type parameters are compile-time type variables. They exist only during compilation and are substituted with concrete types.
 
@@ -142,7 +142,7 @@ This is called **monomorphization** — compile-time code generation for each ty
 
 ---
 
-## 3. Type Constraints [CORE]
+## 3. Type Constraints
 
 A constraint is a compile-time contract. It tells the compiler: "T can be any type, as long as it supports X." Without constraints, the compiler can't allow operations like `+` or `==` on T because it doesn't know if T supports them — what if T is a struct? Constraints bridge this gap by specifying what operations T must support.
 
@@ -203,7 +203,7 @@ func Max[T Ordered](a, b T) T { ... }
 
 ---
 
-## 4. Predeclared Constraints [CORE]
+## 4. Predeclared Constraints
 
 Go provides built-in constraints for common use cases.
 
@@ -263,7 +263,7 @@ func Max[T constraints.Ordered](a, b T) T { ... }
 
 ---
 
-## 5. Custom Constraints with Interfaces [CORE]
+## 5. Custom Constraints with Interfaces
 
 Create reusable constraints for your domain.
 
@@ -330,7 +330,7 @@ _ = Display(Score(100))
 
 ---
 
-## 6. Type Sets and the ~ Operator [CORE]
+## 6. Type Sets and the ~ Operator
 
 **The problem the tilde solves:** You define `type UserID int64`. You want a generic function that works with `int64` and `UserID`. Without `~`, the constraint `int64` rejects `UserID` because Go treats them as different types. The `~` prefix says "accept any type whose *underlying* type is int64," which includes `UserID`. This is essential when your codebase uses custom types for domain concepts (UserID, OrderID, Price — all `int64` underneath).
 
@@ -413,7 +413,7 @@ type MyFloat float64    // OK (underlying float64)
 
 ---
 
-## 7. Generic Structs [CORE]
+## 7. Generic Structs
 
 Generic structs enable type-safe containers without runtime overhead.
 
@@ -521,7 +521,7 @@ v, ok := cache.Get("key") // v=42, ok=true
 
 ---
 
-## 8. Generic Methods [PRODUCTION]
+## 8. Generic Methods
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -594,7 +594,7 @@ result := Result[int]{val: 10}.
 
 ---
 
-## 9. Generic Interfaces [PRODUCTION]
+## 9. Generic Interfaces
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -655,7 +655,7 @@ func Sort[T any, S Sortable[T]](s S) {
 
 ---
 
-## 10. Comparable Constraint Deep Dive [CORE]
+## 10. Comparable Constraint Deep Dive
 
 The `comparable` constraint is more nuanced than it appears. Understanding it prevents subtle bugs.
 
@@ -755,7 +755,7 @@ func FindByIDs[T Entity](items []T, ids []string) []T {
 
 ---
 
-## 11. Type Inference [CORE]
+## 11. Type Inference
 
 Go's type inference reduces verbosity by letting the compiler figure out type arguments.
 
@@ -830,7 +830,7 @@ result := Combine([]int{1, 2}, []int{3, 4}) // T = int
 
 ---
 
-## 12. Common Production Patterns [PRODUCTION]
+## 12. Common Production Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -937,7 +937,7 @@ func Retry[T any](attempts int, delay time.Duration, fn func() (T, error)) (T, e
 
 ---
 
-## 13. Generics vs Interfaces Performance [INTERNALS]
+## 13. Generics vs Interfaces Performance
 
 > ⏭️ **First pass? Skip this section.** This covers compiler internals. Come back after completing Topics 11-19.
 
@@ -993,7 +993,7 @@ func Retry[T any](attempts int, delay time.Duration, fn func() (T, error)) (T, e
 
 ---
 
-## 14. Internals: How Go Implements Generics [INTERNALS]
+## 14. Internals: How Go Implements Generics
 
 > ⏭️ **First pass? Skip this section.** This covers compiler internals. Come back after completing Topics 11-19.
 
@@ -1072,7 +1072,7 @@ At runtime, Go passes a "dictionary" of type-specific operations:
 
 ---
 
-## 15. Testing Generic Code [PRODUCTION]
+## 15. Testing Generic Code
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -1114,7 +1114,7 @@ var _ Numeric = float64(0)
 
 ---
 
-## 16. Common Pitfalls [CORE]
+## 16. Common Pitfalls
 
 ### Pitfall 1: Over-Using `any`
 
@@ -1179,7 +1179,7 @@ u := First(users) // u is nil, not an empty User!
 
 ---
 
-## 17. Production Guidelines [PRODUCTION]
+## 17. Production Guidelines
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 

@@ -21,7 +21,7 @@
 
 ---
 
-## 1. Basic Types [CORE]
+## 1. Basic Types
 
 ### Numeric Types
 
@@ -66,7 +66,7 @@ var y int64 = 1000000000000000000 // Always works
 
 ---
 
-## 2. Variable Declaration Forms [CORE]
+## 2. Variable Declaration Forms
 
 **When to use which form:** The choice depends on scope, initialization needs, and readability. At package level, you must use `var` since `:=` isn't allowed. Within functions, prefer `:=` for local variables since it's more concise and the type is usually obvious from context. Use explicit `var` when you want zero value initialization without specifying a type, or when the variable might be reassigned later (making `:=` inappropriate). Use `var` with explicit type when the type isn't obvious from the right-hand side or when you want to make the type explicit for clarity.
 
@@ -160,7 +160,7 @@ p.Name = "Alice"
 
 ---
 
-## 3. Zero Values (Complete Reference) [CORE]
+## 3. Zero Values (Complete Reference)
 
 **Every variable in Go is initialized to its zero value.** There is no uninitialized memory. This is a core Go design decision.
 
@@ -268,7 +268,7 @@ Go eliminates the "is this null?" question for basic types. You only need to che
 
 ---
 
-## 4. Short Declaration (`:=`) [CORE]
+## 4. Short Declaration (`:=`)
 
 ### Rules
 
@@ -321,7 +321,7 @@ func main() {
 
 ---
 
-## 5. Type Inference [CORE]
+## 5. Type Inference
 
 Go infers types from the right-hand side of `:=` or `var` without explicit type.
 
@@ -364,7 +364,7 @@ var y float32 = 3.14 // Force float32, not float64
 
 ---
 
-## 6. Constants [CORE]
+## 6. Constants
 
 ### Basic Constants
 
@@ -443,7 +443,7 @@ Constants CANNOT be:
 
 ---
 
-## 7. Iota (Enumerations) [CORE]
+## 7. Iota (Enumerations)
 
 `iota` is a counter that increments in each `const` line.
 
@@ -566,7 +566,7 @@ func (s *Status) UnmarshalText(data []byte) error {
 
 ---
 
-## 8. Blank Identifier (`_`) [CORE]
+## 8. Blank Identifier (`_`)
 
 The blank identifier discards values. It's a write-only variable.
 
@@ -631,7 +631,7 @@ for range items {
 
 ---
 
-## 9. Type Conversions [CORE]
+## 9. Type Conversions
 
 Go requires **explicit** type conversions. No implicit conversions.
 
@@ -699,7 +699,7 @@ func stringToBytes(s string) []byte {
 
 ---
 
-## 10. Scope & Shadowing [CORE]
+## 10. Scope & Shadowing
 
 ### Scope Levels
 
@@ -779,7 +779,7 @@ func main() {
 
 ---
 
-## 11. Production Patterns [PRODUCTION]
+## 11. Production Patterns
 
 > ⏭️ **First pass? Skip this section.** The Functional Options Pattern uses closures (covered in Topic 11). Come back after completing Phase 5.
 
@@ -877,7 +877,7 @@ var (
 
 ---
 
-## 12. Common Pitfalls [CORE]
+## 12. Common Pitfalls
 
 ### 1. Integer Overflow
 

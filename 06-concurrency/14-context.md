@@ -19,7 +19,7 @@
 
 ---
 
-## 1. What Is Context [CORE]
+## 1. What Is Context
 
 **The problem context solves:** A web handler calls `getUser()`, which calls `db.Query()`. The client disconnects. How does `db.Query()` know to stop? Without context, there's no way to propagate cancellation across function boundaries and goroutines. `context.Context` solves this by threading a cancellation signal through every function call.
 
@@ -45,7 +45,7 @@ type Context interface {
 
 ---
 
-## 2. Creating Contexts [CORE]
+## 2. Creating Contexts
 
 ### `context.Background()`
 
@@ -74,7 +74,7 @@ ctx := context.TODO() // Same as Background, signals "fix me later"
 
 ---
 
-## 3. Cancellation [CORE]
+## 3. Cancellation
 
 ### `context.WithCancel`
 
@@ -141,7 +141,7 @@ cancelChild()
 
 ---
 
-## 4. Deadlines & Timeouts [CORE]
+## 4. Deadlines & Timeouts
 
 ### `context.WithTimeout`
 
@@ -197,7 +197,7 @@ func fetch(ctx context.Context, url string) ([]byte, error) {
 
 ---
 
-## 5. Context Values [CORE]
+## 5. Context Values
 
 ### Storing Values
 
@@ -237,7 +237,7 @@ ctx := context.WithValue(ctx, "traceID", "abc") // Don't do this
 
 ---
 
-## 6. Context Propagation [PRODUCTION]
+## 6. Context Propagation
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -291,7 +291,7 @@ func ProcessOrder(ctx context.Context, orderID string) error {
 
 ---
 
-## 7. Context in HTTP Servers [PRODUCTION]
+## 7. Context in HTTP Servers
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -345,7 +345,7 @@ func WithRequestID(next http.Handler) http.Handler {
 
 ---
 
-## 8. ErrCause Inspection [CORE]
+## 8. ErrCause Inspection
 
 ### `ctx.Err()` Returns
 
@@ -371,7 +371,7 @@ func handleErr(err error) {
 
 ---
 
-## 9. Common Patterns [PRODUCTION]
+## 9. Common Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -422,7 +422,7 @@ func retry(ctx context.Context, fn func() error, max int) error {
 
 ---
 
-## 10. Common Pitfalls [CORE]
+## 10. Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -436,7 +436,7 @@ func retry(ctx context.Context, fn func() error, max int) error {
 
 ---
 
-## 11. Production Best Practices [PRODUCTION]
+## 11. Production Best Practices
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -662,7 +662,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-## 12. Testing with Context [PRODUCTION]
+## 12. Testing with Context
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 

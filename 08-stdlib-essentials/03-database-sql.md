@@ -16,7 +16,7 @@
 
 ---
 
-## 1. Setup & Connection [CORE]
+## 1. Setup & Connection
 
 ### Install Driver
 
@@ -88,7 +88,7 @@ func connectDB() (*sql.DB, error) {
 
 ---
 
-## 2. Basic Queries [CORE]
+## 2. Basic Queries
 
 ### Query Single Row
 
@@ -166,7 +166,7 @@ func searchUsers(db *sql.DB, name string) ([]User, error) {
 
 ---
 
-## 3. CRUD Operations [CORE]
+## 3. CRUD Operations
 
 ### Create (Insert)
 
@@ -264,7 +264,7 @@ func deleteUser(db *sql.DB, id int) error {
 
 ---
 
-## 4. Prepared Statements [CORE]
+## 4. Prepared Statements
 
 Prepared statements are faster for repeated queries and prevent SQL injection.
 
@@ -325,7 +325,7 @@ func (r *UserRepo) Close() {
 
 ---
 
-## 5. Transactions [CORE]
+## 5. Transactions
 
 ### Basic Transaction
 
@@ -388,7 +388,7 @@ func getOrCreateUser(tx *sql.Tx, email string) (*User, error) {
 
 ---
 
-## 6. Error Handling [CORE]
+## 6. Error Handling
 
 ### Check for No Rows
 
@@ -452,7 +452,7 @@ if errors.Is(err, ErrNotFound) {
 
 ---
 
-## 7. Common Pitfalls [CORE]
+## 7. Common Pitfalls
 
 ### 1. Forgetting to Close Rows
 

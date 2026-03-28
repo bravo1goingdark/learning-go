@@ -20,7 +20,7 @@
 
 ---
 
-## 1. What Is WaitGroup [CORE]
+## 1. What Is WaitGroup
 
 A `WaitGroup` waits for a collection of goroutines to finish. The main goroutine calls `Add` to set the number of goroutines to wait for, then each goroutine calls `Done` when finished, and `Wait` blocks until all goroutines are done.
 
@@ -43,7 +43,7 @@ main goroutine                     worker goroutines
 
 ---
 
-## 2. Basic Usage [CORE]
+## 2. Basic Usage
 
 ```go
 func main() {
@@ -84,7 +84,7 @@ All workers done
 
 ---
 
-## 3. API Reference [CORE]
+## 3. API Reference
 
 ```go
 var wg sync.WaitGroup
@@ -105,7 +105,7 @@ var wg sync.WaitGroup
 
 ---
 
-## 4. Waiting for N Goroutines [CORE]
+## 4. Waiting for N Goroutines
 
 ### Known Count
 
@@ -153,7 +153,7 @@ wg.Wait()
 
 ---
 
-## 5. Dynamic Goroutine Spawning [PRODUCTION]
+## 5. Dynamic Goroutine Spawning
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -213,7 +213,7 @@ func main() {
 
 ---
 
-## 6. WaitGroup vs Channels [CORE]
+## 6. WaitGroup vs Channels
 
 | Feature | WaitGroup | Channel |
 |---------|-----------|---------|
@@ -285,7 +285,7 @@ func processAll(tasks []Task) []Result {
 
 ---
 
-## 7. Common Patterns [PRODUCTION]
+## 7. Common Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -360,7 +360,7 @@ func main() {
 
 ---
 
-## 8. Common Pitfalls [CORE]
+## 8. Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|

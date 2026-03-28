@@ -20,7 +20,7 @@
 
 ---
 
-## 1. What Defer Does [CORE]
+## 1. What Defer Does
 
 `defer` schedules a function call to run **when the surrounding function returns** — not when the block ends.
 
@@ -67,7 +67,7 @@ func process() error {
 
 ---
 
-## 2. Execution Order (LIFO) [CORE]
+## 2. Execution Order (LIFO)
 
 Deferred functions are pushed onto a **stack**. Last deferred = first executed.
 
@@ -125,7 +125,7 @@ func processFile(path string) error {
 
 ---
 
-## 3. Arguments Are Evaluated Immediately [CORE]
+## 3. Arguments Are Evaluated Immediately
 
 This is the **most important defer gotcha**.
 
@@ -266,7 +266,7 @@ func main() {
 
 ---
 
-## 4. Deferred Closures [CORE]
+## 4. Deferred Closures
 
 ### Capture by Reference
 
@@ -313,7 +313,7 @@ func example() (result int) {
 
 ---
 
-## 5. Defer and Return Values [CORE]
+## 5. Defer and Return Values
 
 This is one of Go's most subtle features.
 
@@ -432,7 +432,7 @@ func (s *Service) Process(ctx context.Context, req Request) (resp Response, err 
 
 ---
 
-## 6. Defer and Panic/Recover [CORE]
+## 6. Defer and Panic/Recover
 
 ### Defer Runs During Panic
 
@@ -540,7 +540,7 @@ func main() {
 
 ---
 
-## 7. Defer in Loops [CORE]
+## 7. Defer in Loops
 
 ### The Problem
 
@@ -621,7 +621,7 @@ func cleanup() {
 
 ---
 
-## 8. Defer Performance [INTERNALS]
+## 8. Defer Performance
 
 > ⚠️ **GATE [INTERNALS]:** This section covers defer's internal overhead and performance characteristics. You can skip this on first read and return when optimizing hot paths.
 
@@ -701,7 +701,7 @@ func BenchmarkExplicit(b *testing.B) {
 
 ---
 
-## 9. Production Patterns [PRODUCTION]
+## 9. Production Patterns
 
 > 🚧 **GATE [PRODUCTION]:** This section covers production defer patterns (resource cleanup, mutex unlock, transactions, HTTP body close, timing). Ensure you understand sections 1-8 first.
 
@@ -889,7 +889,7 @@ func (s *BatchWriter) Process(ctx context.Context, records []Record) error {
 
 ---
 
-## 10. Advanced Patterns [PRODUCTION]
+## 10. Advanced Patterns
 
 ### Pattern 1: Defer with Channel Signal
 
@@ -1034,7 +1034,7 @@ func (s *Service) Import(ctx context.Context, path string) error {
 
 ---
 
-## 11. Common Pitfalls [CORE]
+## 11. Common Pitfalls
 
 ### 1. Arguments Evaluated Immediately
 
@@ -1194,7 +1194,7 @@ defer func() {
 
 ---
 
-## 12. Debugging Defer [PRODUCTION]
+## 12. Debugging Defer
 
 > 🚧 **GATE [PRODUCTION]:** This section covers debugging techniques for defer execution order.
 

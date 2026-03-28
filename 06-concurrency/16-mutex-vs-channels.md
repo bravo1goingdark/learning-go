@@ -22,7 +22,7 @@
 
 ---
 
-## 1. The Core Difference [CORE]
+## 1. The Core Difference
 
 | | Mutex | Channel |
 |-|-------|---------|
@@ -38,7 +38,7 @@
 
 ---
 
-## 2. When to Use Mutex [CORE]
+## 2. When to Use Mutex
 
 Use a mutex when **multiple goroutines access shared state** and you need mutual exclusion.
 
@@ -91,7 +91,7 @@ func (p *Pool) Put(conn Connection) {
 
 ---
 
-## 3. When to Use Channels [CORE]
+## 3. When to Use Channels
 
 Use channels when you need to **coordinate goroutines** or **pass data between them**.
 
@@ -144,7 +144,7 @@ go func() {
 
 ---
 
-## 4. Mutex Deep Dive [CORE]
+## 4. Mutex Deep Dive
 
 ### Basic Mutex
 
@@ -210,7 +210,7 @@ func (c *UserCache) Count() int {
 
 ---
 
-## 5. RWMutex [PRODUCTION]
+## 5. RWMutex
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -255,7 +255,7 @@ Lock()   ──► Goroutine D writes ──► Unlock()   (exclusive — blocks
 
 ---
 
-## 6. sync.Map [PRODUCTION]
+## 6. sync.Map
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -293,7 +293,7 @@ m.Range(func(key, value any) bool {
 
 ---
 
-## 7. sync.Once [PRODUCTION]
+## 7. sync.Once
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -344,7 +344,7 @@ func GetService() *Service {
 
 ---
 
-## 8. Channel as Mutex [CORE]
+## 8. Channel as Mutex
 
 You can use a buffered channel of size 1 as a mutex. **Don't do this in production** — use `sync.Mutex`.
 
@@ -377,7 +377,7 @@ mu.Unlock() // Fast atomic release
 
 ---
 
-## 9. Side-by-Side Comparison [CORE]
+## 9. Side-by-Side Comparison
 
 ### Same Problem, Two Solutions
 
@@ -449,7 +449,7 @@ func (c *Counter) Value() int { return <-c.get }
 
 ---
 
-## 10. Decision Flowchart [PRODUCTION]
+## 10. Decision Flowchart
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 

@@ -16,7 +16,7 @@
 
 ---
 
-## 1. HTTP Client (Making Requests) [CORE]
+## 1. HTTP Client (Making Requests)
 
 ### GET Request
 
@@ -126,7 +126,7 @@ req.URL.RawQuery = params.Encode()
 
 ---
 
-## 2. HTTP Server (Handling Requests) [CORE]
+## 2. HTTP Server (Handling Requests)
 
 ### Simple Server
 
@@ -243,7 +243,7 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-## 3. Routing [CORE]
+## 3. Routing
 
 ### Method-Based Routing (Go 1.22+)
 
@@ -298,7 +298,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-## 4. Request Handling [CORE]
+## 4. Request Handling
 
 ### Complete CRUD Handler
 
@@ -377,7 +377,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-## 5. Middleware [PRODUCTION]
+## 5. Middleware
 
 > ⏭️ **First pass? Skip this section.** Come back after completing projects.
 
@@ -462,7 +462,7 @@ func main() {
 
 ---
 
-## 6. JSON APIs [CORE]
+## 6. JSON APIs
 
 ### Complete JSON API Example
 
@@ -569,7 +569,7 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 
 ---
 
-## 7. Common Pitfalls [CORE]
+## 7. Common Pitfalls
 
 ### 1. Not Closing Response Body
 

@@ -18,7 +18,7 @@
 
 ---
 
-## 1. Select Basics [CORE]
+## 1. Select Basics
 
 Without `select`, receiving from multiple channels requires sequential blocking — you'd block on `ch1`, then check `ch2`. With `select`, you wait on all channels simultaneously and respond to whichever is ready first. This is Go's multiplexer for channels.
 
@@ -44,7 +44,7 @@ case msg := <-ch3:
 
 ---
 
-## 2. How Select Works [CORE]
+## 2. How Select Works
 
 ```
 select {
@@ -91,7 +91,7 @@ case v := <-ch2:
 
 ---
 
-## 3. Default Case (Non-Blocking) [CORE]
+## 3. Default Case (Non-Blocking)
 
 Sometimes you want to try a channel operation but continue with other work if it's not ready. Without `default`, `select` blocks indefinitely. Adding `default` makes it a "try and move on" operation — essential for polling, rate limiting, and avoiding deadlocks when multiple channels might not have data yet.
 
@@ -139,7 +139,7 @@ func poll(ch <-chan int) {
 
 ---
 
-## 4. Timeouts with time.After [CORE]
+## 4. Timeouts with time.After
 
 `time.After` returns a channel that sends the current time after a duration.
 
@@ -205,7 +205,7 @@ func heartbeat(done <-chan struct{}) {
 
 ---
 
-## 5. Select with Done Channel [CORE]
+## 5. Select with Done Channel
 
 ### Context Cancellation Pattern
 
@@ -257,7 +257,7 @@ func run(ctx context.Context) {
 
 ---
 
-## 6. Select with Nil Channels [CORE]
+## 6. Select with Nil Channels
 
 Operations on nil channels **block forever**, effectively **disabling** that case.
 
@@ -297,7 +297,7 @@ func merge(ch1, ch2 <-chan int) <-chan int {
 
 ---
 
-## 7. For-Select Loop [CORE]
+## 7. For-Select Loop
 
 The most common concurrency pattern in Go.
 
@@ -358,7 +358,7 @@ func monitor(ctx context.Context, ch <-chan Event) {
 
 ---
 
-## 8. Common Patterns [PRODUCTION]
+## 8. Common Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -417,7 +417,7 @@ func readWithCancel(ctx context.Context, ch <-chan int) (int, error) {
 
 ---
 
-## 9. Common Pitfalls [CORE]
+## 9. Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|

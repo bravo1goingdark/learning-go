@@ -17,7 +17,7 @@
 
 ---
 
-## 1. JSON Basics [CORE]
+## 1. JSON Basics
 
 ### Import
 
@@ -65,7 +65,7 @@ fmt.Println(user.Age)   // 25
 
 ---
 
-## 2. Struct Tags [CORE]
+## 2. Struct Tags
 
 Struct tags control how Go fields map to JSON keys.
 
@@ -129,7 +129,7 @@ type Config struct {
 
 ---
 
-## 3. Unmarshaling (JSON → Go) [CORE]
+## 3. Unmarshaling (JSON → Go)
 
 ### Into a Struct
 
@@ -227,7 +227,7 @@ func (u *User) UnmarshalJSON(data []byte) error {
 
 ---
 
-## 4. Marshaling (Go → JSON) [CORE]
+## 4. Marshaling (Go → JSON)
 
 ### Pretty Print
 
@@ -286,7 +286,7 @@ func writeJSONResponse(w http.ResponseWriter, v interface{}) {
 
 ---
 
-## 5. Nested Structures [CORE]
+## 5. Nested Structures
 
 ### Embedded Structs
 
@@ -363,7 +363,7 @@ type Team struct {
 
 ---
 
-## 6. Custom JSON (Marshaler/Unmarshaler) [PRODUCTION]
+## 6. Custom JSON (Marshaler/Unmarshaler)
 
 > ⏭️ **First pass? Skip this section.** Come back after completing projects.
 
@@ -437,7 +437,7 @@ func toPublic(u User) UserPublic {
 
 ---
 
-## 7. Streaming JSON [PRODUCTION]
+## 7. Streaming JSON
 
 > ⏭️ **First pass? Skip this section.** Come back after completing projects.
 
@@ -503,7 +503,7 @@ func decodeJSONLines(path string) error {
 
 ---
 
-## 8. Common Pitfalls [CORE]
+## 8. Common Pitfalls
 
 ### 1. JSON Numbers are float64
 

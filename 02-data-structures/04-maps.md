@@ -22,7 +22,7 @@
 
 ---
 
-## 1. Map Basics [CORE]
+## 1. Map Basics
 
 A map is an **unordered** collection of key-value pairs. It's a reference type (like slices and channels).
 
@@ -44,7 +44,7 @@ var m map[string]int
 
 ---
 
-## 2. Creation Methods [CORE]
+## 2. Creation Methods
 
 ### Method 1: `make()`
 
@@ -82,7 +82,7 @@ m := make(map[string]int, 10000)
 
 ---
 
-## 3. CRUD Operations [CORE]
+## 3. CRUD Operations
 
 ### Create / Update
 
@@ -150,7 +150,7 @@ func main() {
 
 ---
 
-## 4. Iteration [CORE]
+## 4. Iteration
 
 ### Basic Range
 
@@ -232,7 +232,7 @@ for k := range m {
 
 ---
 
-## 5. Map Internals [INTERNALS]
+## 5. Map Internals
 
 > ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 
@@ -373,7 +373,7 @@ fmt.Println(unsafe.Sizeof(m))  // 8
 
 ---
 
-## 6. Key Types [CORE]
+## 6. Key Types
 
 ### Comparable Types (Can Be Keys)
 
@@ -454,7 +454,7 @@ fmt.Println(m[a])             // might not find
 
 ---
 
-## 7. Nil Map Behavior [CORE]
+## 7. Nil Map Behavior
 
 ### Reading from Nil Map
 
@@ -502,7 +502,7 @@ func NewService() *Service {
 
 ---
 
-## 8. Concurrency [PRODUCTION]
+## 8. Concurrency
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -655,7 +655,7 @@ This reduces lock contention by distributing keys across 32 independent shards.
 
 ---
 
-## 9. Common Patterns [PRODUCTION]
+## 9. Common Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -807,7 +807,7 @@ func getOrDefault[K comparable, V any](m map[K]V, key K, defaultVal V) V {
 
 ---
 
-## 10. Performance [PRODUCTION]
+## 10. Performance
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -869,7 +869,7 @@ for k, v := range m {
 
 ---
 
-## 11. Common Pitfalls [CORE]
+## 11. Common Pitfalls
 
 ### 1. Writing to Nil Map
 
@@ -1009,7 +1009,7 @@ maps.Values(m)                     // Iterator of values
 
 ---
 
-## 12. Production Best Practices [PRODUCTION]
+## 12. Production Best Practices
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -1190,7 +1190,7 @@ func (a *AtomicCounter) Inc(key string) int64 {
 
 ---
 
-## 13. Performance Considerations [PRODUCTION]
+## 13. Performance Considerations
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -1262,7 +1262,7 @@ func buildKey(parts ...string) string {
 
 ---
 
-## 14. Testing Maps [PRODUCTION]
+## 14. Testing Maps
 
 > ⏭️ **First pass? Skip this section.** Come back after completing the projects.
 
@@ -1322,7 +1322,7 @@ func TestMapConcurrency(t *testing.T) {
 
 ---
 
-## 15. Debugging Maps [INTERNALS]
+## 15. Debugging Maps
 
 > ⏭️ **First pass? Skip this section.** This covers low-level internals. Come back after completing Topics 1-10.
 

@@ -21,7 +21,7 @@
 
 ---
 
-## 1. What Is a Pipeline [CORE]
+## 1. What Is a Pipeline
 
 A pipeline is a series of stages connected by channels. Each stage is a goroutine that:
 
@@ -96,7 +96,7 @@ Step 4: sink() consumes
 
 ---
 
-## 2. Basic Pipeline [CORE]
+## 2. Basic Pipeline
 
 ```go
 func main() {
@@ -153,7 +153,7 @@ gen(1,2,3,4,5) → [1,2,3,4,5] → double → [2,4,6,8,10] → addOne → [3,5,7
 
 ---
 
-## 3. Pipeline Stages [PRODUCTION]
+## 3. Pipeline Stages
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -235,7 +235,7 @@ func mapStage[T, U any](in <-chan T, fn func(T) U) <-chan U {
 
 ---
 
-## 4. Generator Pattern [PRODUCTION]
+## 4. Generator Pattern
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -301,7 +301,7 @@ func readLines(path string) (<-chan string, error) {
 
 ---
 
-## 5. Pipeline with Error Handling [PRODUCTION]
+## 5. Pipeline with Error Handling
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -369,7 +369,7 @@ func parseLines(in <-chan string) Stage[int] {
 
 ---
 
-## 6. Pipeline with Context [PRODUCTION]
+## 6. Pipeline with Context
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -419,7 +419,7 @@ func main() {
 
 ---
 
-## 7. Bounded Pipelines [PRODUCTION]
+## 7. Bounded Pipelines
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -471,7 +471,7 @@ gen() ────►├── Worker 2 ──├───► filter() ──►
 
 ---
 
-## 8. Real-World Example: Log Processing [PRODUCTION]
+## 8. Real-World Example: Log Processing
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -584,7 +584,7 @@ func processLogs(ctx context.Context, path string) error {
 
 ---
 
-## 9. Common Pitfalls [PRODUCTION]
+## 9. Common Pitfalls
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -599,7 +599,7 @@ func processLogs(ctx context.Context, path string) error {
 
 ---
 
-## 10. Production Patterns [PRODUCTION]
+## 10. Production Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -815,7 +815,7 @@ func (p *Pipeline) Stop() {
 
 ---
 
-## 11. Testing Pipelines [PRODUCTION]
+## 11. Testing Pipelines
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 

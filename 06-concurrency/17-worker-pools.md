@@ -21,7 +21,7 @@
 
 ---
 
-## 1. What Is a Worker Pool [CORE]
+## 1. What Is a Worker Pool
 
 A fixed number of goroutines (workers) pull jobs from a shared channel and process them concurrently.
 
@@ -156,7 +156,7 @@ A fixed number of goroutines (workers) pull jobs from a shared channel and proce
 
 ---
 
-## 2. Basic Worker Pool [CORE]
+## 2. Basic Worker Pool
 
 ```go
 func worker(id int, jobs <-chan int, results chan<- int) {
@@ -200,7 +200,7 @@ func main() {
 
 ---
 
-## 3. Worker Pool with Results [CORE]
+## 3. Worker Pool with Results
 
 ### Collecting with WaitGroup
 
@@ -268,7 +268,7 @@ func runPool(ctx context.Context, jobs []Job, numWorkers int) ([]Result, error) 
 
 ---
 
-## 4. Context-Aware Worker Pool [CORE]
+## 4. Context-Aware Worker Pool
 
 Workers respect cancellation — clean shutdown on timeout or signal.
 
@@ -318,7 +318,7 @@ func main() {
 
 ---
 
-## 5. Dynamic Worker Pool [PRODUCTION]
+## 5. Dynamic Worker Pool
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -378,7 +378,7 @@ func (p *DynamicPool) Stop() {
 
 ---
 
-## 6. Generic Worker Pool [PRODUCTION]
+## 6. Generic Worker Pool
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16. (Go 1.18+)
 
@@ -453,7 +453,7 @@ for _, r := range results {
 
 ---
 
-## 7. Rate-Limited Worker Pool [PRODUCTION]
+## 7. Rate-Limited Worker Pool
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -495,7 +495,7 @@ func main() {
 
 ---
 
-## 8. Production Patterns [PRODUCTION]
+## 8. Production Patterns
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -843,7 +843,7 @@ func (p *AutoScalePool) monitor() {
 
 ---
 
-## 9. Common Pitfalls [CORE]
+## 9. Common Pitfalls
 
 | Pitfall | Problem | Fix |
 |---------|---------|-----|
@@ -877,7 +877,7 @@ func safeWorker(ctx context.Context, id int, jobs <-chan Job) {
 
 ---
 
-## 10. Worker Pool Testing [PRODUCTION]
+## 10. Worker Pool Testing
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -935,7 +935,7 @@ func TestWorkerPool(t *testing.T) {
 
 ---
 
-## 11. Monitoring Worker Pools [PRODUCTION]
+## 11. Monitoring Worker Pools
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
@@ -966,7 +966,7 @@ func init() {
 
 ---
 
-## 12. Debugging Worker Pools [PRODUCTION]
+## 12. Debugging Worker Pools
 
 > ⏭️ **First pass? Skip this section.** Come back after completing Topics 11-16.
 
