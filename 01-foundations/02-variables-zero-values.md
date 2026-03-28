@@ -12,7 +12,7 @@
 4. [Short Declaration (`:=`)](#4-short-declaration-) `[CORE]`
 5. [Type Inference](#5-type-inference) `[CORE]`
 6. [Constants](#6-constants) `[CORE]`
-7. [Iota (Enumerations)](#7-iota-enumerations) `[CORE]`
+7. [Iota (Enumerations)](#7-iota-enumerations) `[PRODUCTION]`
 8. [Blank Identifier (`_`)](#8-blank-identifier-_) `[CORE]`
 9. [Type Conversions](#9-type-conversions) `[CORE]`
 10. [Scope & Shadowing](#10-scope--shadowing) `[CORE]`
@@ -68,7 +68,17 @@ var y int64 = 1000000000000000000 // Always works
 
 ## 2. Variable Declaration Forms
 
-**When to use which form:** The choice depends on scope, initialization needs, and readability. At package level, you must use `var` since `:=` isn't allowed. Within functions, prefer `:=` for local variables since it's more concise and the type is usually obvious from context. Use explicit `var` when you want zero value initialization without specifying a type, or when the variable might be reassigned later (making `:=` inappropriate). Use `var` with explicit type when the type isn't obvious from the right-hand side or when you want to make the type explicit for clarity.
+**When to use which form:**
+
+| Form | Scope | Use Case |
+|------|-------|----------|
+| `var x Type` | Package + Function | Zero value, type explicit |
+| `var x = value` | Package + Function | Type inferred, explicit value |
+| `var x Type = value` | Package + Function | Both explicit |
+| `x := value` | Function only | Local variables, type inferred |
+| `var (...)` block | Package + Function | Multiple related variables |
+
+At package level, you must use `var` since `:=` isn't allowed. Within functions, prefer `:=` for local variables since it's more concise and the type is usually obvious from context.
 
 ### Form 1: `var` with Type (Package Level)
 
@@ -444,6 +454,8 @@ Constants CANNOT be:
 
 ## 7. Iota (Enumerations)
 
+> ⏭️ **First pass? Skip this section.** `iota` is useful but not essential for beginners. Come back when you need to define enums.
+
 `iota` is a counter that increments in each `const` line.
 
 ### Basic Usage
@@ -514,6 +526,8 @@ func main() {
 
 ### Production Enum Pattern
 
+> This is an advanced pattern — skip if you're new to Go.
+
 ```go
 type Status int
 
@@ -524,42 +538,8 @@ const (
     StatusDeleted
 )
 
-// String() makes Status implement fmt.Stringer
 func (s Status) String() string {
-    switch s {
-    case StatusPending:
-        return "pending"
-    case StatusActive:
-        return "active"
-    case StatusInactive:
-        return "inactive"
-    case StatusDeleted:
-        return "deleted"
-    default:
-        return "unknown"
-    }
-}
-
-// MarshalText implements encoding.TextMarshaler for JSON/YAML
-func (s Status) MarshalText() ([]byte, error) {
-    return []byte(s.String()), nil
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler
-func (s *Status) UnmarshalText(data []byte) error {
-    switch string(data) {
-    case "pending":
-        *s = StatusPending
-    case "active":
-        *s = StatusActive
-    case "inactive":
-        *s = StatusInactive
-    case "deleted":
-        *s = StatusDeleted
-    default:
-        return fmt.Errorf("unknown status: %s", data)
-    }
-    return nil
+    return [...]string{"", "pending", "active", "inactive", "deleted"}[s]
 }
 ```
 
@@ -702,6 +682,12 @@ func stringToBytes(s string) []byte {
 
 ### Scope Levels
 
+| Level | Where Defined | Accessible In |
+|-------|--------------|---------------|
+| Package | Outside functions | All functions in file |
+| Function | Inside function | Entire function + nested blocks |
+| Block | Inside `{}` block | Only that block |
+
 ```go
 package main
 
@@ -780,7 +766,7 @@ func main() {
 
 ## 11. Production Patterns
 
-> ⏭️ **First pass? Skip this section.** The Functional Options Pattern uses closures (covered in Topic 11). Come back after completing Phase 5.
+> ⏭️ **First pass? Skip this section.** The Functional Options Pattern uses advanced concepts (functions as values, closures). Come back after completing the functions section.
 
 ### Configuration Pattern
 
@@ -811,11 +797,11 @@ func main() {
 
 **When to use this pattern:** Use functional options when a struct has multiple optional fields that may be omitted, and you want a clear API without requiring users to set dozens of parameters or remember pointer/nil conventions. It's particularly valuable when: (1) most fields have sensible defaults, (2) you expect the struct to grow more optional fields over time (backward compatible), or (3) you want named, self-documenting configuration. For simple cases with only 1-2 optional fields, plain function parameters or setters are simpler.
 
-> **Prerequisites:** This pattern uses functions as values, variadic parameters (`...`), and closures — concepts not yet covered in detail. Here's the quick version:
+> **Prerequisites:** This pattern uses functions as values, variadic parameters (`...`), and closures. Here's the quick version — you'll learn these in detail in the Functions section:
 > - `type Option func(*Server)` defines `Option` as a function type that takes a `*Server`.
 > - `func WithHost(h string) Option { return func(s *Server) { s.host = h } }` returns a closure — an anonymous function that "remembers" the `host` value.
 > - `NewServer(opts ...Option)` accepts a variable number of `Option` functions.
-> - Full coverage of functions and closures in the concurrency section (Topic 11).
+> - Skip this pattern for now if it seems confusing — come back after learning about functions.
 
 ```go
 type Server struct {
