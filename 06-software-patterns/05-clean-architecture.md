@@ -4,6 +4,10 @@
 
 ---
 
+![Clean Architecture Overview](../assets/clean_archit.png)
+
+---
+
 ## The Core Principle
 
 **Dependencies point inward.** Inner layers never import outer layers.

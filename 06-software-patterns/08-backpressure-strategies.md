@@ -4,6 +4,10 @@
 
 ---
 
+![Backpressure Strategies Overview](../assets/backpressure.png)
+
+---
+
 ## What is Backpressure?
 
 Backpressure is the mechanism of **signaling upstream components to slow down** when downstream components can't keep up.

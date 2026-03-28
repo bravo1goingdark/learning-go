@@ -4,6 +4,10 @@
 
 ---
 
+![Pub-Sub Design Overview](../assets/pub_sub.png)
+
+---
+
 ## The Problem: Tight Coupling
 
 When services directly depend on each other, every change ripples through the codebase:

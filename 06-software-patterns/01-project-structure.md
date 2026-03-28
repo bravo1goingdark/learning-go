@@ -9,6 +9,10 @@
 
 ---
 
+![Project Structure Overview](../assets/project_struct.png)
+
+---
+
 ## Why Structure Matters
 
 When you open a codebase, you should know where to find things in under 10 seconds.

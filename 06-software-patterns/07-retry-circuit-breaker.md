@@ -4,6 +4,10 @@
 
 ---
 
+![Retry + Circuit Breaker Overview](../assets/retry_circuit.png)
+
+---
+
 ## The Problem
 
 Network calls fail. Services go down. Databases become unavailable.
