@@ -294,13 +294,12 @@ func getUser() (string, int, error) {
 }
 
 func main() {
-    // WRONG — creates new err each time
-    name, age, err := getUser()
+    name, age, err := getUser()  // OK — declares err
     if err != nil { return }
     
     name, age, err := getUser()  // COMPILE ERROR: err already declared
-    // Fix:
-    name, age, err = getUser()   // Use = not :=
+    // Fix: use = not :=
+    name, age, err = getUser()   // OK — reassigns existing err
 }
 ```
 
