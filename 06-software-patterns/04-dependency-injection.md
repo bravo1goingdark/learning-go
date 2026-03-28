@@ -4,6 +4,10 @@
 
 ---
 
+![Dependency Injection Overview](../assets/DI.png)
+
+---
+
 ## What is Dependency Injection?
 
 Dependency Injection (DI) means **passing dependencies to a component** instead of the component creating them internally.

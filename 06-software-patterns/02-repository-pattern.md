@@ -4,6 +4,10 @@
 
 ---
 
+![Repository Pattern Overview](../assets/repo_patt.png)
+
+---
+
 ## What is a Repository?
 
 A repository is an **abstraction layer** between your business logic and your data storage. It hides the details of how data is fetched and stored.

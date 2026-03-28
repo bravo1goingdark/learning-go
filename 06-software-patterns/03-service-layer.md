@@ -4,6 +4,10 @@
 
 ---
 
+![Service Layer Overview](../assets/service_layer.png)
+
+---
+
 ## What Is a Service Layer?
 
 The service layer is the **heart of your application** — it contains all business logic and orchestrates data operations.

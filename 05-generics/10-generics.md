@@ -4,6 +4,10 @@
 
 ---
 
+![Generics Overview](../assets/generic.png)
+
+---
+
 ## Table of Contents
 
 1. [Why Generics?](#1-why-generics) `[CORE]`
