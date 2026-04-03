@@ -401,53 +401,73 @@ This is the **#1 slice bug** in production Go code.
 ### The Bug
 
 ```go
-func getUsers() []User {
-    allUsers := []User{alice, bob, charlie, dave, eve}
-    return allUsers[:3]  // Return first 3
-}
+// demonstrateBug shows how a subslice shares the backing array of the original slice.
+// Appending within capacity overwrites elements in the original slice.
+func demonstrateBug() {
 
-func main() {
-    users := getUsers()  // [alice, bob, charlie]
-    
-    // Later, someone appends
-    users = append(users, frank)
-    
-    // Original allUsers is MODIFIED because they share the same underlying array!
-    // allUsers = [alice, bob, charlie, frank, eve]  ← frank overwrote dave!
+	allUsers := []string{"Alice", "Bob", "Charlie", "Dave", "Eve"}
+
+	// Subslice shares the same backing array as allUsers
+	users := allUsers[0:3]
+	fmt.Println("Before append:")
+	fmt.Println("  users:    ", users)    // Expected: [Alice Bob Charlie]
+	fmt.Println("  allUsers: ", allUsers) // Expected: [Alice Bob Charlie Dave Eve]
+
+	// Capacity allows append to reuse backing array, overwriting allUsers[3]
+	users = append(users, "Frank")
+
+	fmt.Println("\nAfter append(users, \"Frank\"):")
+	fmt.Println("  users:    ", users)    // Expected: [Alice Bob Charlie Frank]
+	fmt.Println("  allUsers: ", allUsers) // Expected: [Alice Bob Charlie Frank Eve] — "Dave" overwritten
+	fmt.Println()
 }
 ```
 
 ### Why It Happens
+```ascii
+allUsers = allUsers[0:5]  →  len=5, cap=5
+users    = allUsers[0:3]  →  len=3, cap=5  (shares the same backing array!)
 
+Backing array (shared):
+┌─────────┬─────────┬───────────┬────────┬────────┐
+│  Alice  │   Bob   │  Charlie  │  Dave  │  Eve   │
+└─────────┴─────────┴───────────┴────────┴────────┘
+  idx 0     idx 1     idx 2      idx 3    idx 4
+  ↑___________________↑
+   allUsers: len=5, cap=5
+   users:    len=3, cap=5
+
+append(users, "Frank") → len is 3, cap is 5 → fits!
+Writes "Frank" at index 3 of the SHARED backing array.
+
+Result:
+┌─────────┬─────────┬───────────┬─────────┬────────┐
+│  Alice  │   Bob   │  Charlie  │  Frank  │  Eve   │
+└─────────┴─────────┴───────────┴─────────┴────────┘
+                              ↑
+                        "Dave" was overwritten!
 ```
-allUsers ──→ [alice] [bob] [charlie] [dave] [eve]
-              len=5, cap=5
-
-users ─────→ [alice] [bob] [charlie] [dave] [eve]
-              len=3, cap=5 (still has capacity!)
-
-append(users, frank) — cap is 5, len is 3, fits!
-Result: [alice] [bob] [charlie] [frank] [eve]
-         ↑ dave was overwritten!
-```
-
 ### The Fix: Full Slice Expression
 
 ```go
-func getUsers() []User {
-    allUsers := []User{alice, bob, charlie, dave, eve}
-    return allUsers[:3:3]  // len=3, cap=3 — NO room to append
+// demonstrateFix creates an independent copy before appending so the original slice is unaffected.
+func demonstrateFix() {
+
+	allUsers := []string{"Alice", "Bob", "Charlie", "Dave", "Eve"}
+
+	// Create a separate copy with its own backing array
+	users := make([]string, 3)
+	copy(users, allUsers[0:3])
+	fmt.Println("Before append:")
+	fmt.Println("  users:    ", users)    // Expected: [Alice Bob Charlie]
+	fmt.Println("  allUsers: ", allUsers) // Expected: [Alice Bob Charlie Dave Eve]
+
+	users = append(users, "Frank")
+
+	fmt.Println("\nAfter append(users, \"Frank\"):")
+	fmt.Println("  users:    ", users)    // Expected: [Alice Bob Charlie Frank]
+	fmt.Println("  allUsers: ", allUsers) // Expected: [Alice Bob Charlie Dave Eve] — unchanged
 }
-```
-
-Now:
-```
-users ──→ [alice] [bob] [charlie]  ← same memory
-           len=3, cap=3
-
-append(users, frank) — cap is 3, len is 3, must reallocate!
-New array allocated: [alice] [bob] [charlie] [frank]
-allUsers remains:    [alice] [bob] [charlie] [dave] [eve]
 ```
 
 ### Production Rule
